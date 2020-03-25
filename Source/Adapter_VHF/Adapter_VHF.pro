@@ -17,8 +17,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp \
     socket/SocketManage.cpp \
-    config/ConfigLoader.cpp
+    config/ConfigLoader.cpp \
+    socket/TCPDataDecoder.cpp \
+    VHFLayer/SC_01Layer.cpp
 
 HEADERS += \
     socket/SocketManage.h \
-    config/ConfigLoader.h
+    config/ConfigLoader.h \
+    socket/TCPDataDecoder.h \
+    common.h \
+    VHFLayer/SC_01Layer.h

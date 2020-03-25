@@ -35,10 +35,10 @@ private:
     QTcpSocket                          *m_tcpSocket;
     QUdpSocket                          *m_udpSocket;
 
-    QString                             communicateIP;
-    int                                 dataTransPort;
-    int                                 ctlRevPort;
-    int                                 ctlSndPort;
+    QString                             m_communicateIP;
+    int                                 m_dataTransPort;
+    int                                 m_ctlRevPort;
+    int                                 m_ctlSndPort;
 };
 
 #endif // SOCKETMANAGE_H

@@ -2,6 +2,7 @@
 #include <QTcpSocket>
 #include <QUdpSocket>
 #include "config/ConfigLoader.h"
+#include "socket/TCPDataDecoder.h"
 #include <QDebug>
 
 SocketManage* SocketManage::m_socketMannage = NULL;
@@ -44,13 +45,13 @@ SocketManage* SocketManage::getInstance()
 
 void SocketManage::init()
 {
-    communicateIP = ConfigLoader::getInstance()->getCommunicateIP();
-    dataTransPort = ConfigLoader::getInstance()->getDataTransPort();
-    ctlRevPort = ConfigLoader::getInstance()->getCtlRevPort();
-    ctlSndPort = ConfigLoader::getInstance()->getCtlSndPort();
+    m_communicateIP = ConfigLoader::getInstance()->getCommunicateIP();
+    m_dataTransPort = ConfigLoader::getInstance()->getDataTransPort();
+    m_ctlRevPort = ConfigLoader::getInstance()->getCtlRevPort();
+    m_ctlSndPort = ConfigLoader::getInstance()->getCtlSndPort();
     m_tcpSocket->abort();
-    m_tcpSocket->connectToHost(QHostAddress(communicateIP), dataTransPort);
-    m_udpSocket->bind(QHostAddress::Any, ctlRevPort, QUdpSocket::ShareAddress);
+    m_tcpSocket->connectToHost(QHostAddress(m_communicateIP), m_dataTransPort);
+    m_udpSocket->bind(QHostAddress::Any, m_ctlRevPort, QUdpSocket::ShareAddress);
 }
 
 void SocketManage::tcpConnected()
@@ -75,7 +76,7 @@ void SocketManage::tcpReadData()
     array = m_tcpSocket->readAll();
     if (array.length() > 0)
     {
-        qDebug() << " Recv TCP Data :" << array.size();
+        TCPDataDecoder::getInstance()->recvTCPData(array.data(), array.length());
     }
 }
 
