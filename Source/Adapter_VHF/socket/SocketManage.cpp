@@ -4,6 +4,7 @@
 #include "config/ConfigLoader.h"
 #include "socket/TCPDataDecoder.h"
 #include <QDebug>
+#include <QTimer>
 
 SocketManage* SocketManage::m_socketMannage = NULL;
 QMutex  SocketManage::m_instanceMutex;
@@ -12,12 +13,15 @@ SocketManage::SocketManage(QObject *parent)
              : QObject(parent)
              , m_tcpSocket(new QTcpSocket(this))
              , m_udpSocket(new QUdpSocket(this))
+             , m_timer(new QTimer(this))
 {
     connect(m_tcpSocket, SIGNAL(connected()), this, SLOT(tcpConnected()));
     connect(m_tcpSocket, SIGNAL(disconnected()), this, SLOT(tcpDisconnected()));
     connect(m_tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(tcpError(QAbstractSocket::SocketError)));
     connect(m_tcpSocket,SIGNAL(readyRead()), this, SLOT(tcpReadData()));
     connect(m_udpSocket,SIGNAL(readyRead()), this, SLOT(udpReadData()));
+
+    connect(m_timer, SIGNAL(timeout()), this, SLOT(dealTimer()));
 }
 
 SocketManage::~SocketManage()
@@ -43,6 +47,15 @@ SocketManage* SocketManage::getInstance()
     return m_socketMannage;
 }
 
+void SocketManage::dealTimer()
+{
+//    int x =0X1234;
+//    char aa[10];
+//    memset(aa, 0, 10);
+//    memcpy(aa, &x, sizeof(int));
+//    m_tcpSocket->write(aa, 10);
+}
+
 void SocketManage::init()
 {
     m_communicateIP = ConfigLoader::getInstance()->getCommunicateIP();
@@ -57,6 +70,7 @@ void SocketManage::init()
 void SocketManage::tcpConnected()
 {
     qDebug() << "TCP Connected";
+    m_timer->start(1000);
 }
 
 void SocketManage::tcpDisconnected()

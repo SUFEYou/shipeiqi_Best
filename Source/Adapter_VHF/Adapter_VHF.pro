@@ -19,11 +19,19 @@ SOURCES += main.cpp \
     socket/SocketManage.cpp \
     config/ConfigLoader.cpp \
     socket/TCPDataDecoder.cpp \
-    VHFLayer/SC_01Layer.cpp
+    VHFLayer/SC_01Layer.cpp \
+    Uart/qextserialport.cpp \
+    #Uart/qextserialport_unix.cpp \
+    Uart/UartManage.cpp \
+    Uart/qextserialport_win.cpp
 
 HEADERS += \
     socket/SocketManage.h \
     config/ConfigLoader.h \
     socket/TCPDataDecoder.h \
     common.h \
-    VHFLayer/SC_01Layer.h
+    VHFLayer/SC_01Layer.h \
+    Uart/qextserialport.h \
+    Uart/qextserialport_global.h \
+    Uart/qextserialport_p.h \
+    Uart/UartManage.h

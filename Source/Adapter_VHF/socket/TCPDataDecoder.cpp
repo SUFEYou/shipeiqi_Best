@@ -1,6 +1,7 @@
 #include "TCPDataDecoder.h"
 #include <memory.h>
 #include "common.h"
+#include "VHFLayer/SC_01Layer.h"
 
 TCPDataDecoder* TCPDataDecoder::m_TCPDataDecoder = NULL;
 QMutex TCPDataDecoder::m_Mutex;
@@ -137,7 +138,7 @@ bool TCPDataDecoder::onAnalyzeSentenceToSlipFormat(char* pChar, quint16& nLen)
     return true;
 }
 
-void TCPDataDecoder::analyzeNetMsg(const char* pData,const int nLen)
+void TCPDataDecoder::analyzeNetMsg(char* pData,const int nLen)
 {
     if (nLen <= sizeof(NET_MSG_HEADER))
     {
@@ -193,7 +194,7 @@ void TCPDataDecoder::analyzeNetMsg(const char* pData,const int nLen)
             memcpy(&sText, pData+nCurLen, sizeof(NET_MSGEX_TEXT));
             nCurLen += sizeof(NET_MSGEX_TEXT);
 
-            //ACCtoRSCMessageData(sText.SendID,sText.RecvID,pData+nCurLen-1,sText.TextLength,sText.Encrypt,sText.Degree,sText.Serial);
+            ACCtoRSCMessageData(sText.SendID, sText.RecvID, pData+nCurLen-1, sText.TextLength, sText.Encrypt, sText.Degree, sText.Serial);
 
         }
         break;
@@ -205,7 +206,7 @@ void TCPDataDecoder::analyzeNetMsg(const char* pData,const int nLen)
 
             nCurLen += sizeof(NET_MSGEX_MSGDELETED);
 
-            //DeleteACCtoRSCMessageData(dObject.SendID,dObject.SerialBegin,dObject.SerialEnd);
+            DeleteACCtoRSCMessageData(dObject.SendID, dObject.SerialBegin, dObject.SerialEnd);
         }
         break;
     case VLNMSG_MSGEX_RECALLCODE:			// 二进制短报文回馈序号
@@ -215,4 +216,57 @@ void TCPDataDecoder::analyzeNetMsg(const char* pData,const int nLen)
     default:
         break;
     }
+}
+
+void TCPDataDecoder::ACCtoRSCMessageData(const int nSendID, const int nRecvID, char* pChar,const int nLen, bool bEncrypt,int nDegree, const int nSerial)
+{
+    VHFMsg Newmsg(new CSCRSC_ObjVHFMsg);
+    Newmsg->nSource		= nSendID;
+    Newmsg->nReceive	= nRecvID;
+    Newmsg->nDataLen	= nLen;
+    memcpy(Newmsg->pData,pChar,nLen);
+    Newmsg->nDegree		= nDegree;
+    Newmsg->bEncrypt		= bEncrypt;
+    Newmsg->nSerial		= nSerial;
+    Newmsg->nTimeCount	= 0;
+    Newmsg->nSendtimes	= 0;
+
+    bool bInsert = false;
+    QList<VHFMsg>::iterator iter = m_lVHFMsgList.begin();
+    while (iter != m_lVHFMsgList.end())
+    {
+        if (iter->data()->nDegree < Newmsg->nDegree)
+        {
+            m_lVHFMsgList.insert(iter, Newmsg);
+            bInsert = true;
+            break;
+        }
+        ++iter;
+    }
+    if (!bInsert)
+    {
+        m_lVHFMsgList.push_back(Newmsg);
+    }
+}
+
+bool TCPDataDecoder::DeleteACCtoRSCMessageData(const int nSendID, const int nSerialBegin, const int nSerialEnd)
+{
+    QList<VHFMsg>::iterator iter = m_lVHFMsgList.begin();
+    bool bFinder = false;
+    while (iter != m_lVHFMsgList.end())
+    {
+        if ((iter->data()->nSource == nSendID) && \
+            (iter->data()->nSerial >= nSerialBegin) && \
+            (iter->data()->nSerial <= nSerialEnd) )
+        {
+            bFinder = true;
+            m_lVHFMsgList.erase(iter);
+            if (iter->data()->nSerial == nSerialEnd)
+            {
+                break;
+            }
+        }
+        ++iter;
+    }
+    return bFinder;
 }

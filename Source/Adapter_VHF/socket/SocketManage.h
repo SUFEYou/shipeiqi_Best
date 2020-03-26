@@ -7,6 +7,7 @@
 
 class QTcpSocket;
 class QUdpSocket;
+class QTimer;
 
 class SocketManage : public QObject
 {
@@ -27,6 +28,7 @@ private slots:
     void tcpError(QAbstractSocket::SocketError socketError);
     void udpReadData();
 
+    void dealTimer();
 
 private:
     static SocketManage                 *m_socketMannage;
@@ -39,6 +41,8 @@ private:
     int                                 m_dataTransPort;
     int                                 m_ctlRevPort;
     int                                 m_ctlSndPort;
+
+    QTimer                              *m_timer;
 };
 
 #endif // SOCKETMANAGE_H
