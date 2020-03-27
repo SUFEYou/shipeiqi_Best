@@ -675,7 +675,7 @@ bool CSC_01Layer::DataLayerMessageStateApply(int nstate,QString strdesc)
         m_nTApply = LinkLayerGetApplyTime(TRUE,nMaxlen);
     }
     else
-        return FALSE;
+        return false;
 
     // Pack the State Message
     ActSenLAYMSG_STATEPack(nstate,strdesc);

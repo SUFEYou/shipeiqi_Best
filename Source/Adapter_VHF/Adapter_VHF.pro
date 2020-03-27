@@ -24,7 +24,8 @@ SOURCES += main.cpp \
     #Uart/qextserialport_unix.cpp \
     Uart/UartManage.cpp \
     Uart/qextserialport_win.cpp \
-    VHFLayer/CSC_01LayerClient.cpp
+    VHFLayer/CSC_01LayerClient.cpp \
+    VHFLayer/CSC_01LayerHead.cpp
 
 HEADERS += \
     socket/SocketManage.h \
@@ -36,4 +37,5 @@ HEADERS += \
     Uart/qextserialport_global.h \
     Uart/qextserialport_p.h \
     Uart/UartManage.h \
-    VHFLayer/CSC_01LayerClient.h
+    VHFLayer/CSC_01LayerClient.h \
+    VHFLayer/CSC_01LayerHead.h
