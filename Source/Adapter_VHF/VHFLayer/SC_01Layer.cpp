@@ -1,6 +1,7 @@
 #include "VHFLayer/SC_01Layer.h"
 #include <memory.h>
 #include "common.h"
+#include "VHFLayer/CE_VHFNodeManage.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Class CSCObjStage
@@ -400,7 +401,8 @@ bool CSC_01Layer::LinkLayerComStepTouch(int ncurid)
 // Send Out Data to Terminal
 bool CSC_01Layer::ComSendOutData(char* pchar,int nlength)
 {
-
+    if (CE_VHFNodeManage::getInstance()->PortCommSendOutData(pchar,nlength))
+        return true;
     return false;
 }
 

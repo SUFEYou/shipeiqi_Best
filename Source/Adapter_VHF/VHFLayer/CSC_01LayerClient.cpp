@@ -1,5 +1,6 @@
 #include "CSC_01LayerClient.h"
 #include "common.h"
+#include "VHFLayer/CE_VHFNodeManage.h"
 #include <QTime>
 #include <QDebug>
 
@@ -317,10 +318,7 @@ void CSC_01LayerClient::XTimeMaintenanceCircle()
         m_nTNotInChainCt++;
         if (m_nTNotInChainCt >= m_nTNotInChainCtLmt)
         {
-//			if (m_pMain)
-//			{
-//				((CCE_VHFNodeDlg*)m_pMain)->VHFLayerChangeClientToHead();
-//			}
+            CE_VHFNodeManage::getInstance()->VHFLayerChangeClientToHead();
         }
     }
 }

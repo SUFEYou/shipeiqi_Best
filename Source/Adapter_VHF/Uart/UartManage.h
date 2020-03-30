@@ -1,6 +1,6 @@
 #ifndef UARTMANAGE_H
 #define UARTMANAGE_H
-/*
+
 #include <QObject>
 #include <QMutex>
 
@@ -18,6 +18,12 @@ private:
     ~UartManage();
     void serialInit();
 
+signals:
+    void comRecData(const QByteArray &data);
+
+public slots:
+    void comSendData(char* pChar,int nLen);
+
 private slots:
     void readMyCom();
 
@@ -29,5 +35,4 @@ private:
     QextSerialPort          *m_myCom;
 
 };
-*/
 #endif // UARTMANAGE_H

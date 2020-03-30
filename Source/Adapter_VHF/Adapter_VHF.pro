@@ -15,14 +15,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+QMAKE_CXXFLAGS += -fpermissive
+
 SOURCES += main.cpp \
     socket/SocketManage.cpp \
     config/ConfigLoader.cpp \
     VHFLayer/SC_01Layer.cpp \
     Uart/qextserialport.cpp \
-    #Uart/qextserialport_unix.cpp \
     Uart/UartManage.cpp \
-    Uart/qextserialport_win.cpp \
     VHFLayer/CSC_01LayerClient.cpp \
     VHFLayer/CSC_01LayerHead.cpp \
     socket/TCPDataDeal.cpp \
@@ -43,3 +43,13 @@ HEADERS += \
     socket/TCPDataDeal.h \
     VHFLayer/CE_VHFNodeManage.h \
     VHFLayer/TerminalBase.h
+
+win32:{
+    SOURCES += Uart/qextserialport_win.cpp
+
+#    HEADERS +=
+}
+
+unix:{
+    SOURCES += Uart/qextserialport_unix.cpp
+}
