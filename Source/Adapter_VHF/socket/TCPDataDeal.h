@@ -1,23 +1,24 @@
-#ifndef TCPDATADECODER_H
-#define TCPDATADECODER_H
+#ifndef TCPDATADEAL_H
+#define TCPDATADEAL_H
 
 #include <QMutex>
 #include <QSharedPointer>
 #include <QList>
+#include "common.h"
 
 class CSCRSC_ObjVHFMsg;
 
 typedef QSharedPointer<CSCRSC_ObjVHFMsg> VHFMsg;
 
-class TCPDataDecoder
+class TCPDataDeal
 {
 public:
-    static TCPDataDecoder* getInstance();
+    static TCPDataDeal* getInstance();
     void recvTCPData(const char* data, const quint16 len);
 
 private:
-    TCPDataDecoder();
-    ~TCPDataDecoder();
+    TCPDataDeal();
+    ~TCPDataDeal();
     void onAnalyzeRemoteCTLData(const char nChar);
     bool onAnalyzeSentenceToSlipFormat(char* pChar, quint16& nLen);
     void analyzeNetMsg(char* pData,const int nLen);
@@ -25,14 +26,21 @@ private:
     bool DeleteACCtoRSCMessageData(const int nSendID, const int nSerialBegin, const int nSerialEnd);
 
 private:
-    static TCPDataDecoder*          m_TCPDataDecoder;
+    static TCPDataDeal*             m_TCPDataDeal;
     static QMutex                   m_Mutex;
-    char*                           m_pCMDRecv;			// 接收指令缓存
-    quint16                         m_nCMDRecvLen;		// 接收指令长度
+
+    char*                           m_pCMDRecv;             // 接收指令缓存
+    quint16                         m_nCMDRecvLen;          // 接收指令长度
+
+    // Send Messge Buffer
+    NET_MSG_HEADER                  m_sSendHead;			// Send header STRUCT
+    char*                           m_pBufSend;				// 发送数据缓存
+    int                             m_nBufSendLen;			// 发送数据缓存长度
+
     char*                           m_MRTPosData;
     quint16                         m_MRTPosDataLen;
 
     QList<VHFMsg>                   m_lVHFMsgList;
 };
 
-#endif // TCPDATADECODER_H
+#endif // TCPDATADEAL_H

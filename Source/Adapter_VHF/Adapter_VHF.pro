@@ -18,19 +18,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += main.cpp \
     socket/SocketManage.cpp \
     config/ConfigLoader.cpp \
-    socket/TCPDataDecoder.cpp \
     VHFLayer/SC_01Layer.cpp \
     Uart/qextserialport.cpp \
     #Uart/qextserialport_unix.cpp \
     Uart/UartManage.cpp \
     Uart/qextserialport_win.cpp \
     VHFLayer/CSC_01LayerClient.cpp \
-    VHFLayer/CSC_01LayerHead.cpp
+    VHFLayer/CSC_01LayerHead.cpp \
+    socket/TCPDataDeal.cpp
 
 HEADERS += \
     socket/SocketManage.h \
     config/ConfigLoader.h \
-    socket/TCPDataDecoder.h \
     common.h \
     VHFLayer/SC_01Layer.h \
     Uart/qextserialport.h \
@@ -38,4 +37,5 @@ HEADERS += \
     Uart/qextserialport_p.h \
     Uart/UartManage.h \
     VHFLayer/CSC_01LayerClient.h \
-    VHFLayer/CSC_01LayerHead.h
+    VHFLayer/CSC_01LayerHead.h \
+    socket/TCPDataDeal.h

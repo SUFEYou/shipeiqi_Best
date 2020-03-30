@@ -1,12 +1,11 @@
-#include "TCPDataDecoder.h"
+#include "TCPDataDeal.h"
 #include <memory.h>
-#include "common.h"
 #include "VHFLayer/SC_01Layer.h"
 
-TCPDataDecoder* TCPDataDecoder::m_TCPDataDecoder = NULL;
-QMutex TCPDataDecoder::m_Mutex;
+TCPDataDeal* TCPDataDeal::m_TCPDataDeal = NULL;
+QMutex TCPDataDeal::m_Mutex;
 
-TCPDataDecoder::TCPDataDecoder()
+TCPDataDeal::TCPDataDeal()
 {
     m_pCMDRecv = new char[RADIORTCCMDLEN];
     memset(m_pCMDRecv, 0, RADIORTCCMDLEN);
@@ -14,32 +13,37 @@ TCPDataDecoder::TCPDataDecoder()
     m_MRTPosData = new char[256];			//rodar of data
     memset(m_MRTPosData, 0, 256);
     m_MRTPosDataLen = 0;
+    m_pBufSend		= new char[RADIORTCCMDLEN];		// 发送数据缓存
+    memset(m_pBufSend, 0, RADIORTCCMDLEN);
+    m_nBufSendLen	= 0;	// 发送数据缓存长度
 }
 
-TCPDataDecoder::~TCPDataDecoder()
+TCPDataDeal::~TCPDataDeal()
 {
-    if (m_TCPDataDecoder != NULL)
-        delete m_TCPDataDecoder;
+    if (m_TCPDataDeal != NULL)
+        delete m_TCPDataDeal;
     if (m_MRTPosData != NULL)
         delete m_MRTPosData;
     if (m_pCMDRecv != NULL)
         delete m_pCMDRecv;
+    if (m_pBufSend != NULL)
+        delete m_pBufSend;
 }
 
-TCPDataDecoder* TCPDataDecoder::getInstance()
+TCPDataDeal* TCPDataDeal::getInstance()
 {
-    if (m_TCPDataDecoder == NULL)
+    if (m_TCPDataDeal == NULL)
     {
         QMutexLocker locker(&m_Mutex);
-        if (m_TCPDataDecoder == NULL)
+        if (m_TCPDataDeal == NULL)
         {
-            m_TCPDataDecoder = new TCPDataDecoder;
+            m_TCPDataDeal = new TCPDataDeal;
         }
     }
-    return m_TCPDataDecoder;
+    return m_TCPDataDeal;
 }
 
-void TCPDataDecoder::recvTCPData(const char* data, const quint16 len)
+void TCPDataDeal::recvTCPData(const char* data, const quint16 len)
 {
     if (len > 0)
     {
@@ -51,7 +55,7 @@ void TCPDataDecoder::recvTCPData(const char* data, const quint16 len)
 }
 
 //从网络报文数据中，获取SLIP封装数据
-void TCPDataDecoder::onAnalyzeRemoteCTLData(const char nChar)
+void TCPDataDeal::onAnalyzeRemoteCTLData(const char nChar)
 {
     if (nChar == 0xC0)
     {
@@ -81,7 +85,7 @@ void TCPDataDecoder::onAnalyzeRemoteCTLData(const char nChar)
 }
 
 //从SLIP封装中还原数据
-bool TCPDataDecoder::onAnalyzeSentenceToSlipFormat(char* pChar, quint16& nLen)
+bool TCPDataDeal::onAnalyzeSentenceToSlipFormat(char* pChar, quint16& nLen)
 {
     //bool bSt = false;
     int nS1 = 0;
@@ -138,7 +142,7 @@ bool TCPDataDecoder::onAnalyzeSentenceToSlipFormat(char* pChar, quint16& nLen)
     return true;
 }
 
-void TCPDataDecoder::analyzeNetMsg(char* pData,const int nLen)
+void TCPDataDeal::analyzeNetMsg(char* pData,const int nLen)
 {
     if (nLen <= sizeof(NET_MSG_HEADER))
     {
@@ -218,7 +222,7 @@ void TCPDataDecoder::analyzeNetMsg(char* pData,const int nLen)
     }
 }
 
-void TCPDataDecoder::ACCtoRSCMessageData(const int nSendID, const int nRecvID, char* pChar,const int nLen, bool bEncrypt,int nDegree, const int nSerial)
+void TCPDataDeal::ACCtoRSCMessageData(const int nSendID, const int nRecvID, char* pChar,const int nLen, bool bEncrypt,int nDegree, const int nSerial)
 {
     VHFMsg Newmsg(new CSCRSC_ObjVHFMsg);
     Newmsg->nSource		= nSendID;
@@ -249,7 +253,7 @@ void TCPDataDecoder::ACCtoRSCMessageData(const int nSendID, const int nRecvID, c
     }
 }
 
-bool TCPDataDecoder::DeleteACCtoRSCMessageData(const int nSendID, const int nSerialBegin, const int nSerialEnd)
+bool TCPDataDeal::DeleteACCtoRSCMessageData(const int nSendID, const int nSerialBegin, const int nSerialEnd)
 {
     QList<VHFMsg>::iterator iter = m_lVHFMsgList.begin();
     bool bFinder = false;

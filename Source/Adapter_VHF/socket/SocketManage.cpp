@@ -2,7 +2,7 @@
 #include <QTcpSocket>
 #include <QUdpSocket>
 #include "config/ConfigLoader.h"
-#include "socket/TCPDataDecoder.h"
+#include "socket/TCPDataDeal.h"
 #include <QDebug>
 #include <QTimer>
 
@@ -90,7 +90,7 @@ void SocketManage::tcpReadData()
     array = m_tcpSocket->readAll();
     if (array.length() > 0)
     {
-        TCPDataDecoder::getInstance()->recvTCPData(array.data(), array.length());
+        TCPDataDeal::getInstance()->recvTCPData(array.data(), array.length());
     }
 }
 
