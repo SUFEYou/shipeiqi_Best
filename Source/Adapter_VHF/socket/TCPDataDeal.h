@@ -19,9 +19,9 @@ public:
 private:
     TCPDataDeal();
     ~TCPDataDeal();
-    void onAnalyzeRemoteCTLData(const char nChar);
-    bool onAnalyzeSentenceToSlipFormat(char* pChar, quint16& nLen);
-    void analyzeNetMsg(char* pData,const int nLen);
+    void onAnalyzeRemoteCTLData(const unsigned char nChar);
+    bool onAnalyzeSentenceToSlipFormat(unsigned  char* pChar, quint16& nLen);
+    void analyzeNetMsg(unsigned char* pData,const int nLen);
     void ACCtoRSCMessageData(const int nSendID, const int nRecvID, char* pChar,const int nLen, bool bEncrypt,int nDegree, const int nSerial);
     bool DeleteACCtoRSCMessageData(const int nSendID, const int nSerialBegin, const int nSerialEnd);
 
@@ -29,7 +29,7 @@ private:
     static TCPDataDeal*             m_TCPDataDeal;
     static QMutex                   m_Mutex;
 
-    char*                           m_pCMDRecv;             // 接收指令缓存
+    unsigned char*                           m_pCMDRecv;             // 接收指令缓存
     quint16                         m_nCMDRecvLen;          // 接收指令长度
 
     // Send Messge Buffer

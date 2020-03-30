@@ -61,7 +61,7 @@ void CSCModelChain::operator =(CSCModelChain& chain)
 
     nMemNum		= chain.nMemNum;			// Member's Number
     nListMember.clear();                    // Member List on the Chain
-    for(int i = 0; i < nListMember.length(); ++i)
+    for(int i = 0; i < chain.nListMember.length(); ++i)
     {
         pCSCObjStage obj = chain.nListMember[i];
         nListMember.push_back(obj);
@@ -1133,7 +1133,7 @@ void CSC_01Layer::ActEncrypt_CodeCreate(char A,char B,char C)
     bool b1,b2,b7,Bins,A8,B8,C8;
     b1=b2=b7=Bins=A8=B8=C8=0;
     int j=0;
-    char tmp=0;
+    quint8 tmp=0;
     while(1)
     {
         EncryptKey[j]=A;
@@ -1175,13 +1175,13 @@ void CSC_01Layer::ActEncrypt_CodeCreate(char A,char B,char C)
 void CSC_01Layer::ActEncrypt_CharClear(char* pchar,const int nlength,char& nEmp,const char fix)
 {
     //求取nEmp,去0x0A标记
-    char tmp[256];
-    char d=0;
+    quint8 tmp[256];
+    unsigned char d=0;
     memset(tmp,0,256);
     for(int i=0;i<nlength;i++)
     {
         d=pchar[i];
-        tmp[d]=1;
+        tmp[d] = 1;
     }
 
     for(int i=255;i>=0;i--)

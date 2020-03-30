@@ -36,7 +36,7 @@ CSC_01LayerHead::~CSC_01LayerHead()
 //////////////////////////////////////////////////////////////////////////
 
 // Input the Layer Information
-void CSC_01LayerHead::UseDataInput(char* pchar,const int nlength)
+void CSC_01LayerHead::UseDataInput(const char* pchar,const int nlength)
 {
 //	UseSaveReceiveBytes(pchar,nlength);
     int i= 0;
@@ -52,7 +52,7 @@ void CSC_01LayerHead::UseDataInput(char* pchar,const int nlength)
 //
 //////////////////////////////////////////////////////////////////////////
 // Analyze the Sentence
-void CSC_01LayerHead::ActAnalyzeVHFLayer(char cRec)
+void CSC_01LayerHead::ActAnalyzeVHFLayer(unsigned char cRec)
 {
     switch(m_CFlag)
     {

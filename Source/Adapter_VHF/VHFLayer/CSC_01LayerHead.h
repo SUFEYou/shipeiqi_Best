@@ -14,7 +14,7 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Interface to User,Set the Stage & Layer Information
     // Input the Layer Information
-    void UseDataInput(char* pchar,const int nlength);
+    void UseDataInput(const char* pchar,const int nlength);
 
 public:
     // Translate the Data Layer Sentence
@@ -66,7 +66,7 @@ private:
     // Analyze Data Layer Char
     //////////////////////////////////////////////////////////////////////////
     // Analyze the Sentence
-    void ActAnalyzeVHFLayer(char cRec);
+    void ActAnalyzeVHFLayer(unsigned char cRec);
     void ActAnalyzeError();
 
 private:

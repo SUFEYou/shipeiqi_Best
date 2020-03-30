@@ -7,7 +7,7 @@ QMutex TCPDataDeal::m_Mutex;
 
 TCPDataDeal::TCPDataDeal()
 {
-    m_pCMDRecv = new char[RADIORTCCMDLEN];
+    m_pCMDRecv = new unsigned char[RADIORTCCMDLEN];
     memset(m_pCMDRecv, 0, RADIORTCCMDLEN);
     m_nCMDRecvLen = 0;
     m_MRTPosData = new char[256];			//rodar of data
@@ -55,7 +55,7 @@ void TCPDataDeal::recvTCPData(const char* data, const quint16 len)
 }
 
 //从网络报文数据中，获取SLIP封装数据
-void TCPDataDeal::onAnalyzeRemoteCTLData(const char nChar)
+void TCPDataDeal::onAnalyzeRemoteCTLData(const unsigned char nChar)
 {
     if (nChar == 0xC0)
     {
@@ -85,7 +85,7 @@ void TCPDataDeal::onAnalyzeRemoteCTLData(const char nChar)
 }
 
 //从SLIP封装中还原数据
-bool TCPDataDeal::onAnalyzeSentenceToSlipFormat(char* pChar, quint16& nLen)
+bool TCPDataDeal::onAnalyzeSentenceToSlipFormat(unsigned char* pChar, quint16& nLen)
 {
     //bool bSt = false;
     int nS1 = 0;
@@ -105,7 +105,7 @@ bool TCPDataDeal::onAnalyzeSentenceToSlipFormat(char* pChar, quint16& nLen)
     if (nCRC != nCRCGet)
         return FALSE;
 
-    char nTmp[RADIORTCCMDLEN];
+    unsigned char nTmp[RADIORTCCMDLEN];
     quint16 nLenTmp = nLen;
     memset(nTmp, 0, RADIORTCCMDLEN);
     memcpy(nTmp, pChar, nLenTmp);
@@ -142,9 +142,9 @@ bool TCPDataDeal::onAnalyzeSentenceToSlipFormat(char* pChar, quint16& nLen)
     return true;
 }
 
-void TCPDataDeal::analyzeNetMsg(char* pData,const int nLen)
+void TCPDataDeal::analyzeNetMsg(unsigned char* pData,const int nLen)
 {
-    if (nLen <= sizeof(NET_MSG_HEADER))
+    if (nLen <= static_cast<int>(sizeof(NET_MSG_HEADER)))
     {
         return;
     }
