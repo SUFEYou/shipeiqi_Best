@@ -54,7 +54,6 @@ void CSC_01LayerHead::UseDataInput(char* pchar,const int nlength)
 // Analyze the Sentence
 void CSC_01LayerHead::ActAnalyzeVHFLayer(char cRec)
 {
-#if 0
     switch(m_CFlag)
     {
     case 0:
@@ -113,12 +112,11 @@ void CSC_01LayerHead::ActAnalyzeVHFLayer(char cRec)
     default:
         break;
     }
-#endif
 }
 
 void CSC_01LayerHead::ActAnalyzeError()
 {
-//	m_CFlag=0;
+    m_CFlag=0;
 }
 
 //////////////////////////////////////////////////////////////////////////

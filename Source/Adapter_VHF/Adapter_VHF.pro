@@ -25,7 +25,9 @@ SOURCES += main.cpp \
     Uart/qextserialport_win.cpp \
     VHFLayer/CSC_01LayerClient.cpp \
     VHFLayer/CSC_01LayerHead.cpp \
-    socket/TCPDataDeal.cpp
+    socket/TCPDataDeal.cpp \
+    VHFLayer/CE_VHFNodeManage.cpp \
+    VHFLayer/TerminalBase.cpp
 
 HEADERS += \
     socket/SocketManage.h \
@@ -38,4 +40,6 @@ HEADERS += \
     Uart/UartManage.h \
     VHFLayer/CSC_01LayerClient.h \
     VHFLayer/CSC_01LayerHead.h \
-    socket/TCPDataDeal.h
+    socket/TCPDataDeal.h \
+    VHFLayer/CE_VHFNodeManage.h \
+    VHFLayer/TerminalBase.h

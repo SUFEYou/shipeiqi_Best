@@ -4,6 +4,7 @@
 #include <QSharedPointer>
 #include <QList>
 #include <QTime>
+#include "VHFLayer/TerminalBase.h"
 
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
@@ -110,7 +111,7 @@ private:
 
 typedef QSharedPointer<CSCObjRecall> pCSCObjRecall;
 
-class CSC_01Layer
+class CSC_01Layer : public CTerminalBase
 {
 public:
     CSC_01Layer();
