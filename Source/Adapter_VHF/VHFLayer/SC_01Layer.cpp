@@ -574,11 +574,15 @@ bool CSC_01Layer::DataLayerMessageParse(char* pchar,const int nlength,CSCRSC_Obj
     }
 
     // Receive ID
-    msg.nReceive = pchar[len]*256+pchar[len+1];
+    msg.nReceive = 0;
+    msg.nReceive = ((msg.nReceive | pchar[len]) << 8) | pchar[len+1];
+    //msg.nReceive = pchar[len]*256+pchar[len+1];
     len += 2;
 
     // Source ID
-    msg.nSource	= pchar[len]*256+pchar[len+1];
+    msg.nSource = 0;
+    msg.nSource = ((msg.nSource | pchar[len]) << 8) | pchar[len+1];
+    //msg.nSource	= pchar[len]*256+pchar[len+1];
     len += 2;
 
     // Data
@@ -811,7 +815,9 @@ bool CSC_01Layer::ActSenLAYMSG_CONTROLUnpack(char* pchar,const int nlength)
     m_nRecvChain.Clear();
 
     // Chain ID
-    m_nRecvChain.nChainId = pchar[1]*256+pchar[2];
+    m_nRecvChain.nChainId = 0;
+    m_nRecvChain.nChainId = ((m_nRecvChain.nChainId | pchar[1]) << 8) | pchar[2];
+    //m_nRecvChain.nChainId = pchar[1]*256+pchar[2];
 
     // Out Time Limit
     m_nRecvChain.nLimitOut = pchar[3];
@@ -837,7 +843,9 @@ bool CSC_01Layer::ActSenLAYMSG_CONTROLUnpack(char* pchar,const int nlength)
         }
 
         pCSCObjStage obj(new CSCObjStage);
-        obj->id = pchar[7+3*i]*256+pchar[8+3*i];
+        obj->id = 0;
+        obj->id = ((obj->id | pchar[7+3*i]) << 8) | pchar[8+3*i];
+        //obj->id = pchar[7+3*i]*256+pchar[8+3*i];
         a = pchar[9+3*i];
         a >>= 4;
         obj->state = a;
@@ -1016,8 +1024,13 @@ bool CSC_01Layer::ActSenLAYMSG_MSGCALLUnpack(char* pchar,const int nlength)
         }
 
         pCSCObjRecall msg(new CSCObjRecall);
-        msg->nSource = pchar[len]*256   + pchar[len+1];
-        msg->nSerial = pchar[len+2]*256 + pchar[len+3];
+        msg->nSource = 0;
+        msg->nSource = ((msg->nSource | pchar[len]) << 8) | pchar[len+1];
+        //msg->nSource = pchar[len]*256   + pchar[len+1];
+
+        msg->nSerial = 0;
+        msg->nSerial = ((msg->nSerial | pchar[len+2]) << 8) | pchar[len+3];
+        //msg->nSerial = pchar[len+2]*256 + pchar[len+3];
         m_nRecvCallList.push_back(msg);
 
         len += 4;

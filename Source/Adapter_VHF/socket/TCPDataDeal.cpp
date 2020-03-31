@@ -31,7 +31,7 @@ TCPDataDeal::TCPDataDeal()
     m_pCMDSend			= new unsigned char[RADIORTCCMDLEN];			// 发送指令缓存
     m_nCMDSendLen		= 0;		// 发送指令长度
 
-    m_nRSCID			= 0;
+    m_nRSCID			= 999;
     m_strRSCDesc.clear();
     m_strRSCName.clear();
     m_nState			= 0;		// RSC State
