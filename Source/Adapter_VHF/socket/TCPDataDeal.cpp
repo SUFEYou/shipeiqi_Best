@@ -1,6 +1,7 @@
 #include "TCPDataDeal.h"
 #include <memory.h>
 #include "VHFLayer/SC_01Layer.h"
+#include "VHFLayer/CE_VHFNodeManage.h"
 #include "socket/SocketManage.h"
 
 TCPDataDeal* TCPDataDeal::m_TCPDataDeal = NULL;
@@ -297,7 +298,7 @@ void TCPDataDeal::analyzeNetMsg(unsigned char* pData,const int nLen)
             memcpy(&sText, pData+nCurLen, sizeof(NET_MSGEX_TEXT));
             nCurLen += sizeof(NET_MSGEX_TEXT);
 
-            ACCtoRSCMessageData(sText.SendID, sText.RecvID, (char*)(pData+nCurLen-1), sText.TextLength, sText.Encrypt, sText.Degree, sText.Serial);
+            CE_VHFNodeManage::getInstance()->ACCtoRSCMessageData(sText.SendID, sText.RecvID, (char*)(pData+nCurLen-1), sText.TextLength, sText.Encrypt, sText.Degree, sText.Serial);
 
         }
         break;
@@ -309,7 +310,7 @@ void TCPDataDeal::analyzeNetMsg(unsigned char* pData,const int nLen)
 
             nCurLen += sizeof(NET_MSGEX_MSGDELETED);
 
-            DeleteACCtoRSCMessageData(dObject.SendID, dObject.SerialBegin, dObject.SerialEnd);
+            CE_VHFNodeManage::getInstance()->DeleteACCtoRSCMessageData(dObject.SendID, dObject.SerialBegin, dObject.SerialEnd);
         }
         break;
     case VLNMSG_MSGEX_RECALLCODE:			// 二进制短报文回馈序号
@@ -319,57 +320,4 @@ void TCPDataDeal::analyzeNetMsg(unsigned char* pData,const int nLen)
     default:
         break;
     }
-}
-
-void TCPDataDeal::ACCtoRSCMessageData(const int nSendID, const int nRecvID, char* pChar,const int nLen, bool bEncrypt,int nDegree, const int nSerial)
-{
-    VHFMsg Newmsg(new CSCRSC_ObjVHFMsg);
-    Newmsg->nSource		= nSendID;
-    Newmsg->nReceive	= nRecvID;
-    Newmsg->nDataLen	= nLen;
-    memcpy(Newmsg->pData,pChar,nLen);
-    Newmsg->nDegree		= nDegree;
-    Newmsg->bEncrypt		= bEncrypt;
-    Newmsg->nSerial		= nSerial;
-    Newmsg->nTimeCount	= 0;
-    Newmsg->nSendtimes	= 0;
-
-    bool bInsert = false;
-    QList<VHFMsg>::iterator iter = m_lVHFMsgList.begin();
-    while (iter != m_lVHFMsgList.end())
-    {
-        if (iter->data()->nDegree < Newmsg->nDegree)
-        {
-            m_lVHFMsgList.insert(iter, Newmsg);
-            bInsert = true;
-            break;
-        }
-        ++iter;
-    }
-    if (!bInsert)
-    {
-        m_lVHFMsgList.push_back(Newmsg);
-    }
-}
-
-bool TCPDataDeal::DeleteACCtoRSCMessageData(const int nSendID, const int nSerialBegin, const int nSerialEnd)
-{
-    QList<VHFMsg>::iterator iter = m_lVHFMsgList.begin();
-    bool bFinder = false;
-    while (iter != m_lVHFMsgList.end())
-    {
-        if ((iter->data()->nSource == nSendID) && \
-            (iter->data()->nSerial >= nSerialBegin) && \
-            (iter->data()->nSerial <= nSerialEnd) )
-        {
-            bFinder = true;
-            m_lVHFMsgList.erase(iter);
-            if (iter->data()->nSerial == nSerialEnd)
-            {
-                break;
-            }
-        }
-        ++iter;
-    }
-    return bFinder;
 }

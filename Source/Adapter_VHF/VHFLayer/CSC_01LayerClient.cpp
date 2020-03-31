@@ -216,7 +216,7 @@ bool CSC_01LayerClient::DataLayerMessageAnalyze(char* pchar,const int nlength)
                 // to Main Exchange Class do with the Data
                 // 处理接收到的广播报文
                 CE_VHFNodeManage::getInstance()->PackToSendRMTtoRSCMessageData(m_nRecvMsg.nSource,m_nRecvMsg.nReceive, \
-                                                                               m_pMsgRecvData,m_pMsgRecvLen,true);
+                                                                               (unsigned char*)m_pMsgRecvData,m_pMsgRecvLen,true);
 
                 strDesc = QString("%1=>LAYMSG_MSGCAST").arg(m_nRecvMsg.nSource);
             }
@@ -236,7 +236,7 @@ bool CSC_01LayerClient::DataLayerMessageAnalyze(char* pchar,const int nlength)
                 // to Main Exchange Class do with the Data
                 // 处理接收到的报文
                 CE_VHFNodeManage::getInstance()->PackToSendRMTtoRSCMessageData(m_nRecvMsg.nSource,m_nRecvMsg.nReceive,\
-                                                                               m_pMsgRecvData,m_pMsgRecvLen,FALSE);
+                                                                               (unsigned char*)m_pMsgRecvData,m_pMsgRecvLen,FALSE);
 
                 strDesc = QString("%1=>LAYMSG_MSGONCE").arg(m_nRecvMsg.nSource);
 
@@ -250,24 +250,12 @@ bool CSC_01LayerClient::DataLayerMessageAnalyze(char* pchar,const int nlength)
             {
                 // to Main Exchange Class do with the data
 
-//                POSITION pos = m_nRecvCallList.GetHeadPosition();
-//                while (pos)
-//                {
-//                    CSCObjRecall& msg = m_nRecvCallList.GetNext(pos);
-//                    {
-//                        if (m_pMain)
-//                        {
-//                            ((CCE_VHFNodeDlg*)m_pMain)->RMTtoRSCMessageSerial(msg.nSource,msg.nSerial);
-//                        }
-//                    }
-//                }
+                for (int i = 0; i < m_nRecvCallList.length(); ++i)
+                {
+                    CE_VHFNodeManage::getInstance()->RMTtoRSCMessageSerial(m_nRecvCallList[i]->nSource,m_nRecvCallList[i]->nSerial);
+                }
 
-//                if (m_pMain)
-//                {
-
-//                    ((CCE_VHFNodeDlg*)m_pMain)->ReSetListCountNum();
-//                }
-                //strDesc.Format(L"%d=>LAYMSG_MSGCALL",m_nRecvMsg.nSource);
+                CE_VHFNodeManage::getInstance()->ReSetListCountNum();
                 strDesc = QString("%1=>LAYMSG_MSGCALL").arg(m_nRecvMsg.nSource);
             }
         }
@@ -427,18 +415,14 @@ void CSC_01LayerClient::LinkLayerComSendMemoryData()
     memset(m_pDSendData,0,PACK_LENGTHLIMIT);
     m_pDSendLen	 = 0;
 
-//    if (m_pMain)
-//    {
-//        qDebug() << "Client HFLayerSendDataFromListWait";
-//        int nRecall = ((CCE_VHFNodeDlg*)m_pMain)->VHFLayerSendDataFromListWait(m_nDataMaxLen);
-//        if (nRecall == 1)
-//        {
-//            TRACE(_T("\n\r"));
-//            qDebug() << "Client nRecall";
-//            qDebug() << QString("%1<=LAYAPP_TEXT").arg(m_nCodeMe);
-//            ((CCE_VHFNodeDlg*)m_pMain)->VHFLayerReportControlMessage(LAYMSG_MSGONCE,strDesc);
-//        }
-//    }
+    int nRecall = CE_VHFNodeManage::getInstance()->VHFLayerSendDataFromListWait(m_nDataMaxLen);
+    if (nRecall == 1)
+    {
+        qDebug() << "Client nRecall";
+        qDebug() << QString("%1<=LAYAPP_TEXT").arg(m_nCodeMe);
+        //((CCE_VHFNodeDlg*)m_pMain)->VHFLayerReportControlMessage(LAYMSG_MSGONCE,strDesc);
+    }
+
     // Still Online
     DataLayerMessageStateApply(LAYAPP_STILL,QString(""));	// use the space
     DataLayerSendMemoryGather(m_pDApplyData,m_pDApplyLen);

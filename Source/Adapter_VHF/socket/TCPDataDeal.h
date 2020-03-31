@@ -2,13 +2,8 @@
 #define TCPDATADEAL_H
 
 #include <QMutex>
-#include <QSharedPointer>
-#include <QList>
+#include <QString>
 #include "common.h"
-
-class CSCRSC_ObjVHFMsg;
-
-typedef QSharedPointer<CSCRSC_ObjVHFMsg> VHFMsg;
 
 class TCPDataDeal
 {
@@ -22,6 +17,12 @@ public:
     //(1) 生成SLIP协议帧，数据长度不能为0
     // Pack Slip Sentence Format
     void PackDataToSlipFormat(unsigned char* pSourceData,int nSourceLen);
+    //(2) 从串行数据中，获取SLIP封装数据
+    // Get State Information from Recall Data
+    void onAnalyzeRemoteCTLData(const unsigned char nChar);
+    //(3) 从SLIP封装中还原数据
+    // Get Slip Sentence
+    bool onAnalyzeSentenceToSlipFormat(unsigned  char* pChar, quint16& nLen);
 
     // 发送数据
     void SendData(unsigned char* pData = NULL,int nLen = 0);
@@ -29,15 +30,7 @@ public:
 private:
     TCPDataDeal();
     ~TCPDataDeal();
-    //(2) 从串行数据中，获取SLIP封装数据
-    // Get State Information from Recall Data
-    void onAnalyzeRemoteCTLData(const unsigned char nChar);
-    //(3) 从SLIP封装中还原数据
-    // Get Slip Sentence
-    bool onAnalyzeSentenceToSlipFormat(unsigned  char* pChar, quint16& nLen);
     void analyzeNetMsg(unsigned char* pData,const int nLen);
-    void ACCtoRSCMessageData(const int nSendID, const int nRecvID, char* pChar,const int nLen, bool bEncrypt,int nDegree, const int nSerial);
-    bool DeleteACCtoRSCMessageData(const int nSendID, const int nSerialBegin, const int nSerialEnd);
 
 public:
     //////////////////////////////////////////////////////////////////////////
@@ -67,8 +60,6 @@ private:
 
     char*                           m_MRTPosData;
     quint16                         m_MRTPosDataLen;
-
-    QList<VHFMsg>                   m_lVHFMsgList;
 };
 
 #endif // TCPDATADEAL_H
