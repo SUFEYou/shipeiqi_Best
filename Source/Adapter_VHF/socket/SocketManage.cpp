@@ -94,6 +94,11 @@ void SocketManage::tcpReadData()
     }
 }
 
+void SocketManage::tcpSendData(unsigned char* pData,int nLen)
+{
+    m_tcpSocket->write((char*)(pData), nLen);
+}
+
 void SocketManage::udpReadData()
 {
     while (m_udpSocket->hasPendingDatagrams())

@@ -1,7 +1,9 @@
 #include "CE_VHFNodeManage.h"
 #include "VHFLayer/CSC_01LayerHead.h"
 #include "VHFLayer/CSC_01LayerClient.h"
+#include "socket/TCPDataDeal.h"
 #include "Uart/UartManage.h"
+#include <time.h>
 #include <QTimer>
 #include <QDebug>
 
@@ -15,6 +17,19 @@ CE_VHFNodeManage::CE_VHFNodeManage()
 {
     m_pLayerVHFClient->UseSetTerminalTag(CTerminalBase::TERM_VHFLAYER);
     m_pLayerVHFHead->UseSetTerminalTag(CTerminalBase::TERM_VHFLAYER);
+
+    m_pBufSend		= new unsigned char[RADIORTCCMDLEN];		// 发送数据缓存
+    m_nBufSendLen	= 0;	// 发送数据缓存长度
+    m_pExDataSend   = new unsigned char[RADIORTCCMDLEN];		// 发送数据缓存
+    m_nExDataSLen	= 0;	// 发送数据缓存长度
+
+    memset(&m_sSendHead,0,sizeof(NET_MSG_HEADER));
+    m_sSendHead.MessageModel	= A01VLN_MSGMODEL_STATION_EX;
+    m_nVHFIDMe		= 0;
+
+    m_MRTPosData = new unsigned char[256];			//rodar of data
+    m_MRTPosDataLen = 0;
+    memset(m_MRTPosData,0,256);
 
     connect(UartManage::getInstance(), SIGNAL(comRecData(QByteArray)), this, SLOT(OnCommRecData(QByteArray)));
     connect(this, SIGNAL(comSendData(char*,int)), UartManage::getInstance(), SLOT(comSendData(char*,int)));
@@ -132,4 +147,188 @@ void CE_VHFNodeManage::VHFLayerChangeClientToHead()
         m_pLayerVHFHead->SetAvailable(true);
         m_pLayerVHFHead->LinkLayerCircleMomentToBegin();
     }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// 信息交互操作
+//////////////////////////////////////////////////////////////////////////
+// 向上反馈 ==>>
+// 上报当前接收到的报文
+void CE_VHFNodeManage::PackToSendRMTtoRSCMessageData(const int nSendID,const int nRecvID,unsigned char* pChar,const int nLen,bool bEncrypt)
+{
+    // 向ACC汇报当前所到的报文
+    memset(m_pBufSend,0,RADIORTCCMDLEN);
+    m_nBufSendLen	= sizeof(NET_MSG_HEADER);
+
+    NET_MSGEX_TEXT sText;
+    sText.SendID	= nSendID;
+    sText.RecvID	= nRecvID;
+    sText.Degree	= 0;
+    sText.Encrypt	= bEncrypt;
+    sText.TextLength	= nLen;
+    sText.Serial	= 0;
+
+    memcpy(m_pBufSend+m_nBufSendLen,&sText,sizeof(NET_MSGEX_TEXT));
+    m_nBufSendLen	+= sizeof(NET_MSGEX_TEXT);
+
+    memcpy(m_pBufSend+m_nBufSendLen-1,pChar,nLen);
+    m_nBufSendLen	+= (nLen-1);
+
+    // Header Information
+    time_t ltime;
+    time(&ltime);
+    m_sSendHead.MessageLen		= m_nBufSendLen;
+    m_sSendHead.MessageSerial	= (unsigned long)(ltime);
+    m_sSendHead.MessageType		= VLNMSG_MSGEX_TEXT;
+    memcpy(m_pBufSend,&m_sSendHead,sizeof(NET_MSG_HEADER));
+
+    TCPDataDeal::getInstance()->PackDataToSlipFormat(m_pBufSend,m_nBufSendLen);
+    TCPDataDeal::getInstance()->SendData();
+
+}
+
+// 上报用户报文发送完成
+void CE_VHFNodeManage::PackToSendRMTtoRSCMessageSerial(const int nSendID,const int nSerial)
+{
+    if (nSendID > 0)
+    {
+        // 生成报文发送给ACC
+        memset(m_pBufSend,0,RADIORTCCMDLEN);
+        m_nBufSendLen	= sizeof(NET_MSG_HEADER);
+
+        NET_MSGEX_RECALLCODE sRecall;
+        sRecall.SendID	= nSendID;
+        sRecall.Serial	= nSerial;
+
+        memcpy(m_pBufSend+m_nBufSendLen,&sRecall,sizeof(NET_MSGEX_RECALLCODE));
+        m_nBufSendLen	+= sizeof(NET_MSGEX_RECALLCODE);
+
+        // Header Information
+        time_t ltime;
+        time(&ltime);
+        m_sSendHead.MessageLen		= m_nBufSendLen;
+        m_sSendHead.MessageSerial	= unsigned long(ltime);
+        m_sSendHead.MessageType		= VLNMSG_MSGEX_RECALLCODE;
+        memcpy(m_pBufSend,&m_sSendHead,sizeof(NET_MSG_HEADER));
+
+        TCPDataDeal::getInstance()->PackDataToSlipFormat(m_pBufSend,m_nBufSendLen);
+        TCPDataDeal::getInstance()->SendData();
+    }
+}
+
+// 上报当前链表状态
+void CE_VHFNodeManage::RSCtoACCChainState()
+{
+    CSCModelChain cChain;
+    if (m_pLayerVHFHead->GetAvailable())
+    {
+        cChain	= m_pLayerVHFHead->m_nChain;
+    }
+    else if (m_pLayerVHFClient->GetAvailable())
+    {
+        cChain	= m_pLayerVHFClient->m_nChain;
+    }
+
+    // 生成报文发送给ACC
+    memset(m_pBufSend,0,RADIORTCCMDLEN);
+    m_nBufSendLen	= sizeof(NET_MSG_HEADER);
+
+    NET_RSC_UPDATEMRT sChain;
+    sChain.RSCID	=TCPDataDeal::getInstance()->m_nRSCID;
+    sChain.Count	= (unsigned short)(cChain.nListMember.length());
+    memcpy(m_pBufSend+m_nBufSendLen, &sChain, sizeof(NET_RSC_UPDATEMRT));
+    m_nBufSendLen	+= sizeof(NET_RSC_UPDATEMRT);
+
+    time_t ltime;
+    time(&ltime);
+
+    for (int i = 0; i < cChain.nListMember.length(); ++i)
+    {
+        NET_MRT_STATE sState;
+        sState.inRSCID	=  sChain.RSCID;
+        sState.MRTID	= cChain.nListMember[i]->id;
+        sState.LastTime	= (unsigned long)(ltime);
+        sState.SignalLevel	= cChain.nListMember[i]->signal;
+        sState.State	= cChain.nListMember[i]->state;
+        sState.Going	= cChain.nListMember[i]->sequence;
+
+        memcpy(m_pBufSend+m_nBufSendLen-sizeof(NET_MRT_STATE), &sState, sizeof(NET_MRT_STATE));
+        m_nBufSendLen	+= sizeof(NET_MRT_STATE);
+    }
+
+    // Header Information
+    m_sSendHead.MessageLen		= m_nBufSendLen;
+    m_sSendHead.MessageSerial	= (unsigned long)(ltime);
+    m_sSendHead.MessageType		= VLNMSG_RSC_UPDATEMRT;
+    memcpy(m_pBufSend,&m_sSendHead,sizeof(NET_MSG_HEADER));
+
+    TCPDataDeal::getInstance()->PackDataToSlipFormat(m_pBufSend,m_nBufSendLen);
+    TCPDataDeal::getInstance()->SendData();
+}
+
+
+
+
+// <==接收到链锯回馈的处理
+bool  CE_VHFNodeManage::RMTtoRSCMessageSerial(const int nSendID,const int nSerial)
+{
+    qDebug() << "RMTtoRSCMessageSerial SendID " << nSendID << " nSerial " << nSerial;
+
+    bool bFinder = false;
+    POSITION pos = m_lVHFMsgList.GetHeadPosition();
+    POSITION prvpos;
+    while(pos)
+    {
+        prvpos = pos;
+        CSCRSC_ObjVHFMsg& msg = m_lVHFMsgList.GetNext(pos);
+        if (msg.nSource == nSendID && msg.nSerial == nSerial)
+        {
+            TRACE(_T("RMTtoRSCMessageSerial RemoveAt SendID %d,nSerial %d\n\r"),nSendID,nSerial);
+            m_lVHFMsgList.RemoveAt(prvpos);
+            bFinder = TRUE;
+
+            PackToSendRMTtoRSCMessageSerial(nSendID,nSerial);
+            break;
+        }
+    }
+    LeaveCriticalSection(&m_hDlgCritical);
+    return bFinder;
+}
+
+
+
+
+
+
+
+
+void  CE_VHFNodeManage::ReSetListCountNum()
+{
+//    EnterCriticalSection(&m_hDlgCritical);
+
+//// 	LARGE_INTEGER litmp1;
+//// 	QueryPerformanceFrequency(&litmp1);
+//// 	double frezValue = (double)litmp1.QuadPart;
+////
+//// 	QueryPerformanceCounter(&litmp1);
+//// 	LONGLONG Qpart1 = litmp1.QuadPart;
+//    LONGLONG count1 = GetTickCount();
+
+
+//    POSITION pos = m_lVHFMsgList.GetHeadPosition();
+//    POSITION prvpos;
+//    while(pos)
+//    {
+//        prvpos = pos;
+//        CSCRSC_ObjVHFMsg& msg = m_lVHFMsgList.GetNext(pos);
+//        msg.nTimeCount = 0;
+//    }
+
+//// 	LARGE_INTEGER litmp2;
+//// 	LONGLONG Qpart2;
+//// 	QueryPerformanceCounter(&litmp2);
+//// 	Qpart2 = litmp2.QuadPart;
+//    LONGLONG count2 = GetTickCount();
+//    TRACE(_T("ReSetListCountNum %d \r\n"),count2 - count1);
+//    LeaveCriticalSection(&m_hDlgCritical);
 }

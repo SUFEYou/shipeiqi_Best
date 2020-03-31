@@ -1,6 +1,7 @@
 #include "TCPDataDeal.h"
 #include <memory.h>
 #include "VHFLayer/SC_01Layer.h"
+#include "socket/SocketManage.h"
 
 TCPDataDeal* TCPDataDeal::m_TCPDataDeal = NULL;
 QMutex TCPDataDeal::m_Mutex;
@@ -16,6 +17,17 @@ TCPDataDeal::TCPDataDeal()
     m_pBufSend		= new char[RADIORTCCMDLEN];		// 发送数据缓存
     memset(m_pBufSend, 0, RADIORTCCMDLEN);
     m_nBufSendLen	= 0;	// 发送数据缓存长度
+
+    m_pCMDRecv			= new unsigned char[RADIORTCCMDLEN];
+    m_nCMDRecvLen		= 0;
+
+    m_nRSCID			= 0;
+    m_strRSCDesc.clear();
+    m_strRSCName.clear();
+    m_nState			= 0;		// RSC State
+    m_nGoing			= 0;		// 运行状态
+    m_nLastTime			= 0;		// 最后更新时间
+
 }
 
 TCPDataDeal::~TCPDataDeal()
@@ -54,9 +66,95 @@ void TCPDataDeal::recvTCPData(const char* data, const quint16 len)
     }
 }
 
-//从网络报文数据中，获取SLIP封装数据
+// 发送数据
+void TCPDataDeal::SendData(unsigned char* pData,int nLen)
+{
+    if (nLen <= 0)
+    {
+        SocketManage::getInstance()->tcpSendData(m_pCMDSend, m_nCMDSendLen);
+    }
+    else
+    {
+        SocketManage::getInstance()->tcpSendData(pData,nLen);
+    }
+}
+
+//(1) 生成SLIP协议帧，数据长度不能为0
+// Pack Slip Sentence Format
+void TCPDataDeal::PackDataToSlipFormat(unsigned char* pSourceData,int nSourceLen)
+{
+    // m_pCMDSend 发送数据的缓存
+    // m_nCMDSendLen 发送数据的长度
+    memset(m_pCMDSend,0,RADIORTCCMDLEN);
+    m_nCMDSendLen	= 0;
+
+    // 开始标识
+    m_pCMDSend[m_nCMDSendLen++]	= 0xC0;
+
+    // 替换 0xC0 和 0xDB
+    unsigned char tmp[RADIORTCCMDLEN];
+    int  tmp_len = 0;
+    memset(tmp,0,RADIORTCCMDLEN);
+
+    for (int i = 0; i<nSourceLen; i++)
+    {
+        if (*(pSourceData+i) == 0xC0)
+        {
+            tmp[tmp_len++]	= 0xDB;
+            tmp[tmp_len++]	= 0xDC;
+        }
+        else if (*(pSourceData+i) == 0xDB)
+        {
+            tmp[tmp_len++]	= 0xDB;
+            tmp[tmp_len++]	= 0xDD;
+        }
+        else
+        {
+            tmp[tmp_len++]	= *(pSourceData+i);
+        }
+    }
+
+    // 参数
+    if (nSourceLen > 0)
+    {
+        memcpy(m_pCMDSend+m_nCMDSendLen,tmp,tmp_len);
+        m_nCMDSendLen += tmp_len;
+
+        // CRC校验
+        unsigned char nCRC = m_pCMDSend[1];
+        for(int i=2; i<m_nCMDSendLen; i++)
+        {
+            nCRC	^= m_pCMDSend[i];
+        }
+
+        unsigned char nCRCData = nCRC;
+        nCRCData >>= 4;
+        m_pCMDSend[m_nCMDSendLen++]	= nCRCData;
+        nCRCData	= nCRC;
+        nCRCData <<= 4;
+        nCRCData >>= 4;
+        m_pCMDSend[m_nCMDSendLen++]	= nCRCData;
+    }
+    else
+    {
+        // Check Number
+        m_pCMDSend[m_nCMDSendLen++]	= 0x00;
+        m_pCMDSend[m_nCMDSendLen++]	= 0x00;
+    }
+
+    // 结束标识
+    m_pCMDSend[m_nCMDSendLen++]	= 0xC0;
+}
+
+//(2) 从串行数据中，获取SLIP封装数据
+// Get State Information from Recall Data
 void TCPDataDeal::onAnalyzeRemoteCTLData(const unsigned char nChar)
 {
+    // m_pCMDRecv:接收数据的缓存
+    // m_nCMDRecvLen：接收数据的长度
+    // Port Feed Back time is zero
+
+    // Analyze Receive Data
     if (nChar == 0xC0)
     {
         if (m_nCMDRecvLen > 2)
@@ -84,7 +182,8 @@ void TCPDataDeal::onAnalyzeRemoteCTLData(const unsigned char nChar)
     }
 }
 
-//从SLIP封装中还原数据
+//(3) 从SLIP封装中还原数据
+// Get Slip Sentence
 bool TCPDataDeal::onAnalyzeSentenceToSlipFormat(unsigned char* pChar, quint16& nLen)
 {
     //bool bSt = false;
@@ -198,7 +297,7 @@ void TCPDataDeal::analyzeNetMsg(unsigned char* pData,const int nLen)
             memcpy(&sText, pData+nCurLen, sizeof(NET_MSGEX_TEXT));
             nCurLen += sizeof(NET_MSGEX_TEXT);
 
-            ACCtoRSCMessageData(sText.SendID, sText.RecvID, pData+nCurLen-1, sText.TextLength, sText.Encrypt, sText.Degree, sText.Serial);
+            ACCtoRSCMessageData(sText.SendID, sText.RecvID, (char*)(pData+nCurLen-1), sText.TextLength, sText.Encrypt, sText.Degree, sText.Serial);
 
         }
         break;

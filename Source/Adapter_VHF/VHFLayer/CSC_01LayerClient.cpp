@@ -8,7 +8,7 @@ CSC_01LayerClient::CSC_01LayerClient()
 {
     m_nDataMaxLen = PACK_LENGTHLIMIT;
     m_bMsgStill	= FALSE;		// Message Still
-    m_nTNotInChainCt	= 0;		// 不在链表中的时间汇总
+    m_nTNotInChainCt	= 0;	// 不在链表中的时间汇总
     m_nTNotInChainCtLmt	= 300;	// 不在链接中的时间界限
     m_IsInChainWhereNum = 0;
 }
@@ -168,10 +168,7 @@ bool CSC_01LayerClient::DataLayerMessageAnalyze(char* pchar,const int nlength)
                     }
 
                     // 上报当前链表状态
-//                    if(m_pMain)
-//                    {
-//                        ((CCE_VHFNodeDlg*)m_pMain)->RSCtoACCChainState();
-//                    }
+                    CE_VHFNodeManage::getInstance()->RSCtoACCChainState();
 
                 }
                 else // if (m_nChainIDGo == 0 && m_nChainIDNow == 0)
@@ -218,13 +215,9 @@ bool CSC_01LayerClient::DataLayerMessageAnalyze(char* pchar,const int nlength)
             {
                 // to Main Exchange Class do with the Data
                 // 处理接收到的广播报文
-//                if (m_pMain)
-//                {
-//                    ((CCE_VHFNodeDlg*)m_pMain)->PackToSendRMTtoRSCMessageData(m_nRecvMsg.nSource,m_nRecvMsg.nReceive,
-//                        m_pMsgRecvData,m_pMsgRecvLen,TRUE);
-//                }
+                CE_VHFNodeManage::getInstance()->PackToSendRMTtoRSCMessageData(m_nRecvMsg.nSource,m_nRecvMsg.nReceive, \
+                                                                               m_pMsgRecvData,m_pMsgRecvLen,true);
 
-                //strDesc.Format(L"%d=>LAYMSG_MSGCAST",m_nRecvMsg.nSource);
                 strDesc = QString("%1=>LAYMSG_MSGCAST").arg(m_nRecvMsg.nSource);
             }
         }
@@ -242,13 +235,9 @@ bool CSC_01LayerClient::DataLayerMessageAnalyze(char* pchar,const int nlength)
                 qDebug() << "CLIENT LAYMSG_MSGONCE msg.nSource " << msg->nSource << " msg.nSerial " << msg->nSerial;
                 // to Main Exchange Class do with the Data
                 // 处理接收到的报文
-//                if (m_pMain)
-//                {
-//                    ((CCE_VHFNodeDlg*)m_pMain)->PackToSendRMTtoRSCMessageData(m_nRecvMsg.nSource,m_nRecvMsg.nReceive,
-//                                                                                    m_pMsgRecvData,m_pMsgRecvLen,FALSE);
-//                }
+                CE_VHFNodeManage::getInstance()->PackToSendRMTtoRSCMessageData(m_nRecvMsg.nSource,m_nRecvMsg.nReceive,\
+                                                                               m_pMsgRecvData,m_pMsgRecvLen,FALSE);
 
-                //strDesc.Format(L"%d=>LAYMSG_MSGONCE",m_nRecvMsg.nSource);
                 strDesc = QString("%1=>LAYMSG_MSGONCE").arg(m_nRecvMsg.nSource);
 
             }
@@ -260,6 +249,7 @@ bool CSC_01LayerClient::DataLayerMessageAnalyze(char* pchar,const int nlength)
             if (ActSenLAYMSG_MSGCALLUnpack(m_nRecvMsg.pData,m_nRecvMsg.nDataLen))
             {
                 // to Main Exchange Class do with the data
+
 //                POSITION pos = m_nRecvCallList.GetHeadPosition();
 //                while (pos)
 //                {

@@ -15,7 +15,7 @@ class SocketManage : public QObject
 public:
     static SocketManage* getInstance();
     void init();
-
+    void tcpSendData(unsigned char* pData = NULL,int nLen = 0);
 
 private:
     SocketManage(QObject *parent = NULL);
