@@ -7,7 +7,7 @@
 CSC_01LayerClient::CSC_01LayerClient()
 {
     m_nDataMaxLen = PACK_LENGTHLIMIT;
-    m_bMsgStill	= FALSE;		// Message Still
+    m_bMsgStill	= false;		// Message Still
     m_nTNotInChainCt	= 0;	// 不在链表中的时间汇总
     m_nTNotInChainCtLmt	= 300;	// 不在链接中的时间界限
     m_IsInChainWhereNum = 0;
@@ -236,7 +236,7 @@ bool CSC_01LayerClient::DataLayerMessageAnalyze(char* pchar,const int nlength)
                 // to Main Exchange Class do with the Data
                 // 处理接收到的报文
                 CE_VHFNodeManage::getInstance()->PackToSendRMTtoRSCMessageData(m_nRecvMsg.nSource,m_nRecvMsg.nReceive,\
-                                                                               (unsigned char*)m_pMsgRecvData,m_pMsgRecvLen,FALSE);
+                                                                               (unsigned char*)m_pMsgRecvData,m_pMsgRecvLen,false);
 
                 strDesc = QString("%1=>LAYMSG_MSGONCE").arg(m_nRecvMsg.nSource);
 
@@ -347,7 +347,7 @@ void CSC_01LayerClient::LinkLayerMainCircle()
                             LinkLayerCircleMomentToApply();
                         }
                     }
-                    m_bTCircleSend = FALSE;
+                    m_bTCircleSend = false;
                 }
             }
 

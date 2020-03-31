@@ -414,7 +414,7 @@ void CSC_01LayerHead::LinkLayerComSendMemoryData()
     if (ActSenLAYMSG_MSGCALLPack(0))
     {
         CSCRSC_ObjVHFMsg msgrecall;
-        msgrecall.bEncrypt = FALSE;
+        msgrecall.bEncrypt = false;
         msgrecall.nDataLen = m_pExDataLen;
         memcpy(msgrecall.pData,m_pExData,m_pExDataLen);
         msgrecall.nReceive = BROADCAST_ID;
@@ -453,7 +453,7 @@ void CSC_01LayerHead::LinkLayerComSendMemoryData()
 
     ActSenLAYMSG_CONTROLPack(m_nChain);
     CSCRSC_ObjVHFMsg msg;
-    msg.bEncrypt = FALSE;
+    msg.bEncrypt = false;
     msg.nDataLen = m_pExDataLen;
     memcpy(msg.pData,m_pExData,m_pExDataLen);
     msg.nReceive = BROADCAST_ID;
@@ -487,7 +487,7 @@ void CSC_01LayerHead::LinkLayerComSendApplyData()
     if (m_bSendApplyCan)
     {
         ComSendOutData(m_pDApplyData,m_pDApplyLen);
-        m_bSendApplyCan	= FALSE;
+        m_bSendApplyCan	= false;
     }
 
 }

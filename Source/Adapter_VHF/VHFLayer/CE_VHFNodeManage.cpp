@@ -464,7 +464,7 @@ int CE_VHFNodeManage::XSetVHFMRTPosDataAppend(unsigned char* pPosData,int PosDat
     }
 
     // Judge the Length of the VHF Layer Memory Space Leave
-    int t = m_pVHFLayer->DataLayerSendMemoryGatherJudge(FALSE,PosDataLen,maxlength);
+    int t = m_pVHFLayer->DataLayerSendMemoryGatherJudge(false,PosDataLen,maxlength);
 
     if ( t == 1)
     {

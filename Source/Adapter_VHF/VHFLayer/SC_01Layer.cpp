@@ -281,8 +281,7 @@ bool CSC_01Layer::LinkLayerGetStageCanRecvData(int stage)
         pCSCObjStage obj = m_nChain.nListMember[i];
         if (obj->id == stage)
         {
-            if (obj->state == LAYSTA_ONLINE ||
-                obj->signal == LAYSTA_SUCCESS)
+            if ((obj->state == LAYSTA_ONLINE) || (obj->signal == LAYSTA_SUCCESS))
             {
                 return true;
             }
@@ -674,7 +673,7 @@ bool CSC_01Layer::DataLayerMessageStateApply(int nstate,QString strdesc)
             // Default Value is 5 seconds
             nMaxlen = 5*m_nTimeFactor;
         }
-        m_nTApply = LinkLayerGetApplyTime(TRUE,nMaxlen);
+        m_nTApply = LinkLayerGetApplyTime(true,nMaxlen);
     }
     else
         return false;

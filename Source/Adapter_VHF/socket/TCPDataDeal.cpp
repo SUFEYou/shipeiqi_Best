@@ -245,7 +245,7 @@ bool TCPDataDeal::onAnalyzeSentenceToSlipFormat(unsigned char* pChar, quint16& n
     nCRCGet += *(pChar+nLen-1);
 
     if (nCRC != nCRCGet)
-        return FALSE;
+        return false;
 
     unsigned char nTmp[RADIORTCCMDLEN];
     quint16 nLenTmp = nLen;
