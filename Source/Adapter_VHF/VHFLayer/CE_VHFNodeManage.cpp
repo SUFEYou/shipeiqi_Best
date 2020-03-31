@@ -48,6 +48,9 @@ void CE_VHFNodeManage::init()
 {
     //////////////////////////////////////////////////////////////////////////
         // 链路基本信息
+    m_pLayerVHFHead->m_nCodeMe = 1000;
+    m_pLayerVHFClient->m_nCodeMe = 1000;
+
     m_pLayerVHFClient->m_nDataMaxLen = 1020;
     m_pLayerVHFHead->m_nDataMaxLen = 1020;
 
