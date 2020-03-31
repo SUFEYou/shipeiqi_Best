@@ -144,7 +144,7 @@ bool CSC_01LayerClient::DataLayerMessageAnalyze(char* pchar,const int nlength)
     {
     case LAYMSG_CONTROL:
         {
-            qDebug() << "Client  LAYMSG_CONTROL";
+            //qDebug() << "Client  LAYMSG_CONTROL";
             if (ActSenLAYMSG_CONTROLUnpack(m_nRecvMsg.pData,m_nRecvMsg.nDataLen))
             {
                 // Judge is in the Chain & Can Send
@@ -199,7 +199,7 @@ bool CSC_01LayerClient::DataLayerMessageAnalyze(char* pchar,const int nlength)
         break;
     case LAYMSG_STATE:
         {
-            qDebug() << "Client  LAYMSG_STATE";
+            //qDebug() << "Client  LAYMSG_STATE";
             if(m_nRecvState == LAYAPP_STILL)	// Still Online
             {
             }
@@ -210,7 +210,7 @@ bool CSC_01LayerClient::DataLayerMessageAnalyze(char* pchar,const int nlength)
         break;
     case LAYMSG_MSGCAST:
         {
-            qDebug() << "Client  LAYMSG_MSGCAST";
+            //qDebug() << "Client  LAYMSG_MSGCAST";
             if (ActSenLAYMSG_MSGCASTUnpack(m_nRecvMsg.pData,m_nRecvMsg.nDataLen))
             {
                 // to Main Exchange Class do with the Data
@@ -224,7 +224,7 @@ bool CSC_01LayerClient::DataLayerMessageAnalyze(char* pchar,const int nlength)
         break;
     case LAYMSG_MSGONCE:
         {
-            qDebug() << "Client  LAYMSG_MSGONCE";
+            //qDebug() << "Client  LAYMSG_MSGONCE";
             if (ActSenLAYMSG_MSGONCEUnpack(m_nRecvMsg.pData,m_nRecvMsg.nDataLen))
             {
                 // Add the Recall
@@ -245,7 +245,7 @@ bool CSC_01LayerClient::DataLayerMessageAnalyze(char* pchar,const int nlength)
         break;
     case LAYMSG_MSGCALL:
         {
-            qDebug() << "Client  LAYMSG_MSGCALL";
+            //qDebug() << "Client  LAYMSG_MSGCALL";
             if (ActSenLAYMSG_MSGCALLUnpack(m_nRecvMsg.pData,m_nRecvMsg.nDataLen))
             {
                 // to Main Exchange Class do with the data
@@ -325,7 +325,7 @@ void CSC_01LayerClient::LinkLayerMainCircle()
         {
             //////////////////////////////////////////////////////
             // Wait for the time to Send Out Data
-            qDebug() << "Client  MOMENT_CIRCLE";
+            //qDebug() << "Client  MOMENT_CIRCLE";
             m_nTOutCount++;
 
             if (m_bTCircleSend)
@@ -362,7 +362,7 @@ void CSC_01LayerClient::LinkLayerMainCircle()
         {
             ///////////////////////////////////////////////////////
             // Send What
-            qDebug() << "Client  MOMENT_APPLY";
+            //qDebug() << "Client  MOMENT_APPLY";
             m_nTOutCount++;
             if (m_bSendApplyCan)
             {
@@ -383,7 +383,7 @@ void CSC_01LayerClient::LinkLayerMainCircle()
         {
             // Judge the Client to Head Change Operate
             // Drift Time Out Count
-            qDebug() << "Client  MOMENT_DRIFT";
+            //qDebug() << "Client  MOMENT_DRIFT";
             m_nTOutCount++;
             if (m_nTOutCount >= m_nChain.nLimitDrift*m_nTimeFactor)
             {

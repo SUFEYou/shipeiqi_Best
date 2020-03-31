@@ -14,7 +14,13 @@ SocketManage::SocketManage(QObject *parent)
              , m_tcpSocket(new QTcpSocket(this))
              , m_udpSocket(new QUdpSocket(this))
              , m_timer(new QTimer(this))
+             , m_bACCLinkOk(false)
 {
+    m_nACCCloseCt		= 0;			// 断链计数
+    m_nACCCloseCtLmt	= 30;			// 断链计数限制
+    m_nACCUpdateCt		= 0;			// 上报状态计数
+    m_nACCUpdateCtLmt	= 60;			// 上报状态计数限制
+
     connect(m_tcpSocket, SIGNAL(connected()), this, SLOT(tcpConnected()));
     connect(m_tcpSocket, SIGNAL(disconnected()), this, SLOT(tcpDisconnected()));
     connect(m_tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(tcpError(QAbstractSocket::SocketError)));
@@ -22,6 +28,7 @@ SocketManage::SocketManage(QObject *parent)
     connect(m_udpSocket,SIGNAL(readyRead()), this, SLOT(udpReadData()));
 
     connect(m_timer, SIGNAL(timeout()), this, SLOT(dealTimer()));
+    m_timer->start(1000);
 }
 
 SocketManage::~SocketManage()
@@ -49,11 +56,26 @@ SocketManage* SocketManage::getInstance()
 
 void SocketManage::dealTimer()
 {
-//    int x =0X1234;
-//    char aa[10];
-//    memset(aa, 0, 10);
-//    memcpy(aa, &x, sizeof(int));
-//    m_tcpSocket->write(aa, 10);
+    if (m_bACCLinkOk)
+    {
+        m_nACCCloseCt	= 0;
+        m_nACCUpdateCt++;
+        if (m_nACCUpdateCt > m_nACCUpdateCtLmt)
+        {
+            m_nACCUpdateCt = 0;
+            TCPDataDeal::getInstance()->RSCtoACCUpdateStateInfo();
+        }
+
+    }
+    else
+    {
+        m_nACCCloseCt++;
+        if (m_nACCCloseCt >= m_nACCCloseCtLmt)
+        {
+            m_tcpSocket->abort();
+            m_tcpSocket->connectToHost(QHostAddress(m_communicateIP), m_dataTransPort);
+        }
+    }
 }
 
 void SocketManage::init()
@@ -70,18 +92,20 @@ void SocketManage::init()
 void SocketManage::tcpConnected()
 {
     qDebug() << "TCP Connected";
-    m_timer->start(1000);
+    m_bACCLinkOk = true;
 }
 
 void SocketManage::tcpDisconnected()
 {
     qDebug() << "TCP Disconnected";
+    m_bACCLinkOk = false;
 }
 
 void SocketManage::tcpError(QAbstractSocket::SocketError socketError)
 {
     Q_UNUSED(socketError);
     qDebug() << "TCP Err: " << m_tcpSocket->errorString();
+    m_bACCLinkOk = false;
 }
 
 void SocketManage::tcpReadData()

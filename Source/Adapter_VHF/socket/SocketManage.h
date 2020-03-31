@@ -43,6 +43,11 @@ private:
     int                                 m_ctlSndPort;
 
     QTimer                              *m_timer;
+    bool                                m_bACCLinkOk;
+    int                                 m_nACCCloseCt;			// 断链计数
+    int                                 m_nACCCloseCtLmt;		// 断链计数限制
+    int                                 m_nACCUpdateCt;			// 上报状态计数
+    int                                 m_nACCUpdateCtLmt;		// 上报状态计数限制
 };
 
 #endif // SOCKETMANAGE_H

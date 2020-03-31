@@ -40,15 +40,30 @@ CE_VHFNodeManage::CE_VHFNodeManage()
 CE_VHFNodeManage::~CE_VHFNodeManage()
 {
     if (m_pLayerVHFClient != NULL)
+    {
         delete m_pLayerVHFClient;
+        m_pLayerVHFClient = NULL;
+    }
     if (m_pLayerVHFHead != NULL)
+    {
         delete m_pLayerVHFHead;
+        m_pLayerVHFHead = NULL;
+    }
     if (m_pBufSend != NULL)
-        delete m_pBufSend;
+    {
+        delete[] m_pBufSend;
+        m_pBufSend = NULL;
+    }
     if (m_pExDataSend != NULL)
-        delete m_pExDataSend;
+    {
+        delete[] m_pExDataSend;
+        m_pExDataSend = NULL;
+    }
     if (m_MRTPosData != NULL)
-        delete m_MRTPosData;
+    {
+        delete[] m_MRTPosData;
+        m_MRTPosData = NULL;
+    }
 }
 
 CE_VHFNodeManage* CE_VHFNodeManage::getInstance()

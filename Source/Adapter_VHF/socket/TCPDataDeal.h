@@ -27,12 +27,20 @@ public:
     // 发送数据
     void SendData(unsigned char* pData = NULL,int nLen = 0);
 
+    //////////////////////////////////////////////////////////////////////////
+    // 上报Client状态基本信息
+    //////////////////////////////////////////////////////////////////////////
+    // 上报基本状态
+    void RSCtoACCUpdateBaseInfo();
+    // 上报状态信息
+    void RSCtoACCUpdateStateInfo();
+
 private:
     TCPDataDeal();
     ~TCPDataDeal();
     void analyzeNetMsg(unsigned char* pData,const int nLen);
 
-public:
+public: 
     //////////////////////////////////////////////////////////////////////////
     // RSC的基本信息
     //////////////////////////////////////////////////////////////////////////
@@ -43,22 +51,29 @@ public:
     int                             m_nGoing;			// 运行状态
     int                             m_nLastTime;		// 最后更新时间
 
-    unsigned char*                  m_pCMDSend;			// 发送指令缓存
-    int                             m_nCMDSendLen;		// 发送指令长度
-
 private:
     static TCPDataDeal*             m_TCPDataDeal;
     static QMutex                   m_Mutex;
 
+    // --- Command Store --- //
+    unsigned char*                  m_pDataRecvBuf;			// Receive Buffer
+    int                             m_nDataRecvBufLen;		// Buffer Size
+
+    unsigned char*                  m_pDataSendBuf;
+    int                             m_nDataSendBufLen;		// Buffer Size
+
     unsigned char*                  m_pCMDRecv;             // 接收指令缓存
     quint16                         m_nCMDRecvLen;          // 接收指令长度
 
+    unsigned char*                  m_pCMDSend;			// 发送指令缓存
+    int                             m_nCMDSendLen;		// 发送指令长度
+
     // Send Messge Buffer
     NET_MSG_HEADER                  m_sSendHead;			// Send header STRUCT
-    char*                           m_pBufSend;				// 发送数据缓存
+    unsigned char*                  m_pBufSend;				// 发送数据缓存
     int                             m_nBufSendLen;			// 发送数据缓存长度
 
-    char*                           m_MRTPosData;
+    unsigned char*                  m_MRTPosData;
     quint16                         m_MRTPosDataLen;
 };
 

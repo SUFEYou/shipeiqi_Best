@@ -1,5 +1,7 @@
 #include "CSC_01LayerHead.h"
 #include "common.h"
+#include <VHFLayer/CE_VHFNodeManage.h>
+#include <VHFLayer/CSC_01LayerClient.h>
 #include <QTime>
 #include <QDebug>
 
@@ -158,53 +160,44 @@ bool CSC_01LayerHead::DataLayerMessageAnalyze(char* pchar,const int nlength)
             if (ActSenLAYMSG_CONTROLUnpack(m_nRecvMsg.pData,m_nRecvMsg.nDataLen))
             {
             // 上报当前链表状态
-#if 0
-                if(m_pMain)
+                CE_VHFNodeManage::getInstance()->RSCtoACCChainState();
+                if (NULL != CE_VHFNodeManage::getInstance()->m_pLayerVHFClient)
                 {
-                    ((CCE_VHFNodeDlg*)m_pMain)->RSCtoACCChainState();
-                    if (NULL != ((CCE_VHFNodeDlg*)m_pMain)->m_pLayerVHFClient)
+                    SetAvailable(false);
+                    CE_VHFNodeManage::getInstance()->m_pLayerVHFClient->m_nChain	= m_nRecvChain;
+                    CE_VHFNodeManage::getInstance()->m_pLayerVHFClient->m_nTNotInChainCt = 0;
+                    CE_VHFNodeManage::getInstance()->m_pLayerVHFClient->SetAvailable(true);
+                    CE_VHFNodeManage::getInstance()->m_pLayerVHFClient->m_nMeState = 0;
+
+                    CE_VHFNodeManage::getInstance()->m_pLayerVHFClient->m_nChainIDGo = m_nRecvChain.nChainId;
+                    CE_VHFNodeManage::getInstance()->m_pLayerVHFClient->m_bSendOK        = false;
+                    CE_VHFNodeManage::getInstance()->m_pLayerVHFClient->LinkLayerCircleMomentToCircle();
+                    CE_VHFNodeManage::getInstance()->m_pLayerVHFClient->m_nMeState = 0;
+                }
+                else
+                {
+                    m_nChain = m_nRecvChain;
+                    m_nChainIDNow	= m_nChain.nChainId;
+                    m_nSeatNow = m_nRecvMsg.nSource;
+                    m_bSendOK  = false;
+
+                    LinkLayerCircleMomentToCircle();
+                    LinkLayerChainDealWithRecvMsg(m_nSeatNow);
+                }
+
+                if (m_bMainChange)
+                {
+                    if (m_bMainCode == m_nRecvMsg.nSource)
                     {
-                        SetAvailable(FALSE);
-                        ((CCE_VHFNodeDlg*)m_pMain)->m_pLayerVHFClient->m_nChain	= m_nRecvChain;
-                        ((CCE_VHFNodeDlg*)m_pMain)->m_pLayerVHFClient->m_nTNotInChainCt = 0;
-                        ((CCE_VHFNodeDlg*)m_pMain)->m_pLayerVHFClient->SetAvailable(true);
-                        ((CCE_VHFNodeDlg*)m_pMain)->m_pLayerVHFClient->m_nMeState = 0;
 
-                        ((CCE_VHFNodeDlg*)m_pMain)->m_pLayerVHFClient->m_nChainIDGo = m_nRecvChain.nChainId;
-                        ((CCE_VHFNodeDlg*)m_pMain)->m_pLayerVHFClient->m_bSendOK        = false;
-                        ((CCE_VHFNodeDlg*)m_pMain)->m_pLayerVHFClient->LinkLayerCircleMomentToCircle();
-                        ((CCE_VHFNodeDlg*)m_pMain)->m_pLayerVHFClient->m_nMeState = 0;
-
+                        CE_VHFNodeManage::getInstance()->m_pLayerVHFClient->m_nChain	= m_nRecvChain;
+                        CE_VHFNodeManage::getInstance()->m_pLayerVHFClient->SetAvailable(true);
+                        SetAvailable(false);
                         return true;
-                    }
-                    else
-                    {
-                        m_nChain = m_nRecvChain;
-                        m_nChainIDNow	= m_nChain.nChainId;
-                        m_nSeatNow = m_nRecvMsg.nSource;
-                        m_bSendOK  = false;
 
-                        LinkLayerCircleMomentToCircle();
-                        LinkLayerChainDealWithRecvMsg(m_nSeatNow);
-                    }
-
-                    if (m_bMainChange)
-                    {
-                        if (m_bMainCode == m_nRecvMsg.nSource)
-                        {
-
-                            if (m_pMain)
-                            {
-                                ((CCE_VHFNodeDlg*)m_pMain)->m_pLayerVHFClient->m_nChain	= m_nRecvChain;
-                                ((CCE_VHFNodeDlg*)m_pMain)->m_pLayerVHFClient->SetAvailable(true);
-                                SetAvailable(false);
-                                return TRUE;
-                            }
-
-                        }
                     }
                 }
-#endif
+
                 qDebug() << QString("%1=>LAYMSG_CONTROL").arg(m_nRecvMsg.nSource);
                 qDebug() << "Head LAYMSG_CONTROL";
             }
@@ -249,11 +242,9 @@ bool CSC_01LayerHead::DataLayerMessageAnalyze(char* pchar,const int nlength)
             {
                 // to Main Exchange Class do with the Data
                 // 处理接收到的广播报文
-//                if (m_pMain)
-//                {
-//                    ((CCE_VHFNodeDlg*)m_pMain)->PackToSendRMTtoRSCMessageData(m_nRecvMsg.nSource,m_nRecvMsg.nReceive,
-//                        m_pMsgRecvData,m_pMsgRecvLen,TRUE);
-//                }
+                CE_VHFNodeManage::getInstance()->PackToSendRMTtoRSCMessageData(m_nRecvMsg.nSource,m_nRecvMsg.nReceive,
+                                                                               (unsigned char*)m_pMsgRecvData,m_pMsgRecvLen,true);
+
                 qDebug() << QString("%1=>LAYMSG_MSGCAST").arg(m_nRecvMsg.nSource);
             }
         }
@@ -273,8 +264,8 @@ bool CSC_01LayerHead::DataLayerMessageAnalyze(char* pchar,const int nlength)
                 // to Main Exchange Class do with the Data
                 // 处理接收到的报文
 
-//                ((CCE_VHFNodeDlg*)m_pMain)->PackToSendRMTtoRSCMessageData(m_nRecvMsg.nSource,m_nRecvMsg.nReceive,
-//                                                                            m_pMsgRecvData,m_pMsgRecvLen,FALSE);
+                CE_VHFNodeManage::getInstance()->PackToSendRMTtoRSCMessageData(m_nRecvMsg.nSource,m_nRecvMsg.nReceive,
+                                                                               (unsigned char*)m_pMsgRecvData,m_pMsgRecvLen,false);
 
                 qDebug() << QString("%1=>LAYMSG_MSGONCE").arg(m_nRecvMsg.nSource);
             }
@@ -285,27 +276,12 @@ bool CSC_01LayerHead::DataLayerMessageAnalyze(char* pchar,const int nlength)
             qDebug() << "ActSenLAYMSG_MSGCALLUnpack " << m_nRecvMsg.nSerial;
             if (ActSenLAYMSG_MSGCALLUnpack(m_nRecvMsg.pData,m_nRecvMsg.nDataLen))
             {
-#if 0
-                // to Main Exchange Class do with the data
-                POSITION pos = m_nRecvCallList.GetHeadPosition();
-                while (pos)
+                for (int i = 0; i < m_nRecvCallList.length(); ++i)
                 {
-                    CSCObjRecall& msg = m_nRecvCallList.GetNext(pos);
-                    {
-                        TRACE(_T("LAYMSG_MSGCALL m_nRecvCallList %d\n\r"),msg.nSerial);
-                        if (m_pMain)
-                        {
-                            ((CCE_VHFNodeDlg*)m_pMain)->RMTtoRSCMessageSerial(msg.nSource,msg.nSerial);
-                        }
-                    }
+                    CE_VHFNodeManage::getInstance()->RMTtoRSCMessageSerial(m_nRecvCallList[i]->nSource,m_nRecvCallList[i]->nSerial);
                 }
 
-                if (m_pMain)
-                {
-
-                    ((CCE_VHFNodeDlg*)m_pMain)->ReSetListCountNum();
-                }
-#endif
+                CE_VHFNodeManage::getInstance()->ReSetListCountNum();
 
                 qDebug() << QString("%1=>LAYMSG_MSGCALL").arg(m_nRecvMsg.nSource);
             }
@@ -396,7 +372,7 @@ void CSC_01LayerHead::LinkLayerMainCircle()
             if (m_bChainChange)
             {
                 m_nChain = m_nChainTmp;
-                m_bChainChange = FALSE;
+                m_bChainChange = false;
             }
         }
         break;
@@ -406,8 +382,8 @@ void CSC_01LayerHead::LinkLayerMainCircle()
             m_nTOutCount++;
             if (m_nTOutCount >= m_nChain.nLimitDrift*m_nTimeFactor)
             {
-                m_bChainCircleFlag = FALSE;
-                m_bSendOK = FALSE;
+                m_bChainCircleFlag = false;
+                m_bSendOK = false;
                 LinkLayerCircleMomentToBegin();
 
                 qDebug() << "Head MOMENT_DRIFT LinkLayerCircleMomentToBegin";
@@ -486,25 +462,13 @@ void CSC_01LayerHead::LinkLayerComSendMemoryData()
     DataLayerMessageEncode(msg,m_pDataControl,m_pDataCtlLen);
 
     // 上报当前链表状态
-//    if(m_pMain)
-//    {
-//        ((CCE_VHFNodeDlg*)m_pMain)->RSCtoACCChainState();
-//    }
 
-//    if (m_pMain)
-//    {
-//        CString strDesc = L"";
-//        strDesc.Format(L"%d<=LAYAPP_CONTROL",m_nCodeMe);
-//        ((CCE_VHFNodeDlg*)m_pMain)->VHFLayerReportControlMessage(LAYMSG_CONTROL,strDesc);
-//    }
-
+    CE_VHFNodeManage::getInstance()->RSCtoACCChainState();
+    qDebug() << QString("%1<=LAYAPP_CONTROL").arg(m_nCodeMe);
 
     //////////////////////////////////////////////////////////////////////////
     // Send the Must to been Send's Information in the Send List
-//    if (m_pMain)
-//    {
-//        ((CCE_VHFNodeDlg*)m_pMain)->VHFLayerSendDataFromListWait(m_nDataMaxLen-m_pDataCtlLen);
-//    }
+    CE_VHFNodeManage::getInstance()->VHFLayerSendDataFromListWait(m_nDataMaxLen-m_pDataCtlLen);
 
     DataLayerSendMemoryGather(m_pDataControl,m_pDataCtlLen);
     // Send Data to the Layer

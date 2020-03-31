@@ -1,5 +1,6 @@
 #include "TCPDataDeal.h"
 #include <memory.h>
+#include <time.h>
 #include "VHFLayer/SC_01Layer.h"
 #include "VHFLayer/CE_VHFNodeManage.h"
 #include "socket/SocketManage.h"
@@ -9,18 +10,26 @@ QMutex TCPDataDeal::m_Mutex;
 
 TCPDataDeal::TCPDataDeal()
 {
-    m_pCMDRecv = new unsigned char[RADIORTCCMDLEN];
-    memset(m_pCMDRecv, 0, RADIORTCCMDLEN);
-    m_nCMDRecvLen = 0;
-    m_MRTPosData = new char[256];			//rodar of data
+    m_MRTPosData = new unsigned char[256];			//rodar of data
     memset(m_MRTPosData, 0, 256);
     m_MRTPosDataLen = 0;
-    m_pBufSend		= new char[RADIORTCCMDLEN];		// 发送数据缓存
+
+    m_pBufSend		= new unsigned char[RADIORTCCMDLEN];		// 发送数据缓存
     memset(m_pBufSend, 0, RADIORTCCMDLEN);
     m_nBufSendLen	= 0;	// 发送数据缓存长度
 
+    // --- Command Store --- //
+    m_pDataRecvBuf		= new  unsigned char[NETMSGPACK_LEN];		// Receive Data Buffer
+    m_nDataRecvBufLen	= 0;
+    m_pDataSendBuf		= new unsigned char[NETMSGPACK_LEN];
+    m_nDataSendBufLen	= 0;		// Buffer Size
+
     m_pCMDRecv			= new unsigned char[RADIORTCCMDLEN];
     m_nCMDRecvLen		= 0;
+
+
+    m_pCMDSend			= new unsigned char[RADIORTCCMDLEN];			// 发送指令缓存
+    m_nCMDSendLen		= 0;		// 发送指令长度
 
     m_nRSCID			= 0;
     m_strRSCDesc.clear();
@@ -34,13 +43,46 @@ TCPDataDeal::TCPDataDeal()
 TCPDataDeal::~TCPDataDeal()
 {
     if (m_TCPDataDeal != NULL)
+    {
         delete m_TCPDataDeal;
-    if (m_MRTPosData != NULL)
-        delete m_MRTPosData;
-    if (m_pCMDRecv != NULL)
-        delete m_pCMDRecv;
-    if (m_pBufSend != NULL)
-        delete m_pBufSend;
+        m_TCPDataDeal = NULL;
+    }
+
+    if (m_pDataRecvBuf)
+    {
+        delete []m_pDataRecvBuf;
+        m_pDataRecvBuf	= NULL;
+    }
+
+    if (m_pDataSendBuf)
+    {
+        delete []m_pDataSendBuf;
+        m_pDataSendBuf	= NULL;
+    }
+
+    if (m_pCMDRecv)
+    {
+        delete []m_pCMDRecv;
+        m_pCMDRecv	= NULL;
+    }
+
+    if (m_pCMDSend)
+    {
+        delete []m_pCMDSend;
+        m_pCMDSend	= NULL;
+    }
+
+    if (m_MRTPosData)
+    {
+        delete []m_MRTPosData;
+        m_MRTPosData	= NULL;
+    }
+
+    if (m_pBufSend)
+    {
+        delete []m_pCMDSend;
+        m_pBufSend	= NULL;
+    }
 }
 
 TCPDataDeal* TCPDataDeal::getInstance()
@@ -320,4 +362,64 @@ void TCPDataDeal::analyzeNetMsg(unsigned char* pData,const int nLen)
     default:
         break;
     }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// 上报Client状态基本信息
+//////////////////////////////////////////////////////////////////////////
+// 上报基本状态
+void TCPDataDeal::RSCtoACCUpdateBaseInfo()
+{
+    memset(m_pDataSendBuf,0,RADIORTCCMDLEN);
+    m_nDataSendBufLen	= sizeof(NET_MSG_HEADER);
+
+    NET_RSC_BASEINFO sBase;
+    memset(&sBase,0,sizeof(NET_RSC_BASEINFO));
+    sBase.RSCID	= m_nRSCID;
+    memcpy(sBase.Name,m_strRSCName.toStdString().c_str(),m_strRSCName.length());
+    memcpy(sBase.Describe,m_strRSCDesc.toStdString().c_str(),m_strRSCDesc.length());
+
+    memcpy(m_pDataSendBuf+m_nDataSendBufLen,&sBase,sizeof(NET_RSC_BASEINFO));
+    m_nDataSendBufLen	+= sizeof(NET_RSC_BASEINFO);
+
+    // Header Information
+    time_t ltime;
+    time(&ltime);
+    m_sSendHead.MessageLen		= m_nDataSendBufLen;
+    m_sSendHead.MessageSerial	= (unsigned long)(ltime);
+    m_sSendHead.MessageType		= VLNMSG_RSC_BASEINFO;
+    memcpy(m_pDataSendBuf,&m_sSendHead,sizeof(NET_MSG_HEADER));
+
+    PackDataToSlipFormat(m_pDataSendBuf,m_nDataSendBufLen);
+
+    SendData();
+}
+
+// 上报状态信息
+void TCPDataDeal::RSCtoACCUpdateStateInfo()
+{
+    memset(m_pDataSendBuf,0,RADIORTCCMDLEN);
+    m_nDataSendBufLen	= sizeof(NET_MSG_HEADER);
+
+    time_t ltime;
+    time(&ltime);
+
+    NET_RSC_STATE sState;
+    memset(&sState,0,sizeof(NET_RSC_STATE));
+    sState.RSCID	= m_nRSCID;
+    sState.Going	= m_nGoing;
+    sState.State	= m_nState;
+
+    memcpy(m_pDataSendBuf+m_nDataSendBufLen,&sState,sizeof(NET_RSC_STATE));
+    m_nDataSendBufLen	+= sizeof(NET_RSC_STATE);
+
+    // Header Information
+    m_sSendHead.MessageLen		= m_nDataSendBufLen;
+    m_sSendHead.MessageSerial	= (unsigned long)(ltime);
+    m_sSendHead.MessageType		= VLNMSG_RSC_STATE;
+    memcpy(m_pDataSendBuf,&m_sSendHead,sizeof(NET_MSG_HEADER));
+
+    PackDataToSlipFormat(m_pDataSendBuf,m_nDataSendBufLen);
+
+    SendData();
 }

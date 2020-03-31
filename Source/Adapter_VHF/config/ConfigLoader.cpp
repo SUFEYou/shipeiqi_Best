@@ -132,7 +132,7 @@ void ConfigLoader::createConfig()
     settings.endGroup();
 
     settings.beginGroup("Communicate");
-    settings.setValue("communicateIP",  "192.168.1.15");
+    settings.setValue("communicateIP",  "192.168.1.111");
     settings.setValue("dataTransPort", 12000);
     settings.setValue("ctlRevPort", 12201);
     settings.setValue("ctlSndPort", 12200);
