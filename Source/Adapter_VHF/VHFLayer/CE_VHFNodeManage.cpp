@@ -2,10 +2,10 @@
 #include "VHFLayer/CSC_01LayerHead.h"
 #include "VHFLayer/CSC_01LayerClient.h"
 #include "socket/TCPDataDeal.h"
-#include "Uart/UartManage.h"
 #include <time.h>
 #include <QTimer>
 #include <QDebug>
+#include <Radio/RadioManage.h>
 
 CE_VHFNodeManage* CE_VHFNodeManage::m_instance = NULL;
 QMutex CE_VHFNodeManage::m_mutex;
@@ -31,8 +31,9 @@ CE_VHFNodeManage::CE_VHFNodeManage()
     m_MRTPosDataLen = 0;
     memset(m_MRTPosData,0,256);
 
-    connect(UartManage::getInstance(), SIGNAL(comRecData(QByteArray)), this, SLOT(OnCommRecData(QByteArray)));
-    connect(this, SIGNAL(comSendData(char*,int)), UartManage::getInstance(), SLOT(comSendData(char*,int)));
+//    connect(UartManage::getInstance(), SIGNAL(comRecData(QByteArray)), this, SLOT(OnCommRecData(QByteArray)));
+//    connect(this, SIGNAL(comSendData(char*,int)), UartManage::getInstance(), SLOT(comSendData(char*,int)));
+
 
     connect(m_VHFLayerTimer, SIGNAL(timeout()), this, SLOT(dealVHFLayerTimer()));
 }
@@ -123,7 +124,8 @@ void CE_VHFNodeManage::OnCommRecData(const QByteArray &data)
 
 bool CE_VHFNodeManage::PortCommSendOutData(char* pChar,int nLen)
 {
-    emit comSendData(pChar, nLen);
+//    emit comSendData(pChar, nLen);
+    RadioManage::getInstance()->writeLinkData(pChar, nLen);
     return true;
 }
 

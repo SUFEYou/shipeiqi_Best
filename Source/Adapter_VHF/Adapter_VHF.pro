@@ -22,12 +22,19 @@ SOURCES += main.cpp \
     config/ConfigLoader.cpp \
     VHFLayer/SC_01Layer.cpp \
     Uart/qextserialport.cpp \
-    Uart/UartManage.cpp \
     VHFLayer/CSC_01LayerClient.cpp \
     VHFLayer/CSC_01LayerHead.cpp \
     socket/TCPDataDeal.cpp \
     VHFLayer/CE_VHFNodeManage.cpp \
-    VHFLayer/TerminalBase.cpp
+    VHFLayer/TerminalBase.cpp \
+    Radio/Radio181d.cpp \
+    Radio/RadioManage.cpp \
+    Radio/Radio212.cpp \
+    Radio/Radio171al.cpp \
+    socket/UdpRctrl.cpp \
+    socket/UdpVoice.cpp \
+    socket/TcpClient.cpp \
+    Uart/UartManage_bk.cpp
 
 HEADERS += \
     socket/SocketManage.h \
@@ -37,12 +44,19 @@ HEADERS += \
     Uart/qextserialport.h \
     Uart/qextserialport_global.h \
     Uart/qextserialport_p.h \
-    Uart/UartManage.h \
     VHFLayer/CSC_01LayerClient.h \
     VHFLayer/CSC_01LayerHead.h \
     socket/TCPDataDeal.h \
     VHFLayer/CE_VHFNodeManage.h \
-    VHFLayer/TerminalBase.h
+    VHFLayer/TerminalBase.h \
+    Radio/Radio181d.h \
+    Radio/RadioManage.h \
+    Radio/Radio212.h \
+    Radio/Radio171al.h \
+    socket/UdpRctrl.h \
+    socket/UdpVoice.h \
+    socket/TcpClient.h \
+    Uart/UartManage_bk.h
 
 win32:{
     SOURCES += Uart/qextserialport_win.cpp

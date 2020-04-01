@@ -114,11 +114,13 @@ void TCPDataDeal::SendData(unsigned char* pData,int nLen)
 {
     if (nLen <= 0)
     {
-        SocketManage::getInstance()->tcpSendData(m_pCMDSend, m_nCMDSendLen);
+//        SocketManage::getInstance()->tcpSendData(m_pCMDSend, m_nCMDSendLen);
+        SocketManage::getInstance()->getTcpClient()->sendData(m_pCMDSend, m_nCMDSendLen);
     }
     else
     {
-        SocketManage::getInstance()->tcpSendData(pData,nLen);
+//        SocketManage::getInstance()->tcpSendData(pData,nLen);
+        SocketManage::getInstance()->getTcpClient()->sendData(pData,nLen);
     }
 }
 

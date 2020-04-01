@@ -1,4 +1,4 @@
-#include "UartManage.h"
+#include "UartManage_bk.h"
 #include <QDebug>
 #include "Uart/qextserialport.h"
 

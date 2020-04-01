@@ -81,7 +81,7 @@ public:
     bool PortCommSendOutData(char* pChar,int nLen);
 
 
-
+    void OnCommRecData(const QByteArray &data);
 
 
 private:
@@ -92,7 +92,7 @@ signals:
     void comSendData(char* pChar,int nLen);
 
 private slots:
-    void OnCommRecData(const QByteArray &data);
+
 
     void dealVHFLayerTimer();
 

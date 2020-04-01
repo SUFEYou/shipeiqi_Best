@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QMutex>
+#include <stdint.h>
 
 class ConfigLoader
 {
@@ -10,25 +11,22 @@ public:
     static ConfigLoader* getInstance();
     bool load();
 
+    uint16_t getProgramType() const;
+    uint16_t getProgramID()   const;
+    uint32_t getRadioTyp()    const;
+    uint32_t getRadioID()     const;
 
-    QString getSndToIP() const;
-    int getCtrlOnRevPort() const;
-    int getCtrlSndToPort() const;
-    int getVoicOnRevPort() const;
-    int getVoicSndToPort() const;
+    inline QString getCtrlSndToIP() const { return ctrlSndToIP; }
+    inline int getCtrlOnRevPort() const { return ctrlOnRevPort; }
+    inline int getCtrlSndToPort() const { return ctrlSndToPort; }
 
-    int getRadioID() const;
-    QString getName() const;
-    int getPosRevPort() const;
-    QString getPosFromIP() const;
-    int getPosFromPort() const;
-    int getProgramType() const;
-    int getProgramID() const;
+    inline QString getVoicSndToIP() const { return voicSndToIP; }
+    inline int getVoicOnRevPort() const { return voicOnRevPort; }
+    inline int getVoicSndToPort() const { return voicSndToPort; }
 
-    inline QString getCommunicateIP() const { return communicateIP; }
-    inline int getDataTransPort() const { return dataTransPort; }
-    inline int getCtlRevPort() const { return ctlRevPort; }
-    inline int getCtlSndPort() const { return ctlSndPort; }
+    inline QString getTcpIP()  const { return TcpIP; }
+    inline int getTcpPort()    const { return TcpPort; }
+
 
 private:
     ConfigLoader();
@@ -42,23 +40,23 @@ private:
     static ConfigLoader    *m_instance;
     static QMutex          m_Mutex;
 
-    QString     sndToIP;
+    uint16_t   programType;
+    uint16_t   programID;
+    uint32_t   radioTyp;
+    uint32_t   radioID;
+
+    QString     ctrlSndToIP;
     int         ctrlOnRevPort;
     int         ctrlSndToPort;
+
+    QString     voicSndToIP;
     int         voicOnRevPort;
     int         voicSndToPort;
-    int         radioID;
-    QString     name;
-    int         posRevPort;
-    QString     posFromIP;
-    int         posFromPort;
-    int         programType;
-    int         programID;
+
     //与通信平台通信配置信息
-    QString     communicateIP;
-    int         dataTransPort;
-    int         ctlRevPort;
-    int         ctlSndPort;
+    QString     TcpIP;
+    int         TcpPort;
+
 
 };
 
