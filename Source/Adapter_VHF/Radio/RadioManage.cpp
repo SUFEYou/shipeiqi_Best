@@ -66,14 +66,10 @@ void RadioManage::writeCtrlData(char* pChar,int nLen)
 {
 
     if(curRadioTyp == RADIO_181D){
-
-        radio181D = new Radio181D();
         radio181D->writeCtrlData(pChar, nLen);
     }
 
     if(curRadioTyp == RADIO_171AL){
-
-        radio171AL = new Radio171AL();
         radio171AL->ctrlRadio(pChar, nLen);
 
     };

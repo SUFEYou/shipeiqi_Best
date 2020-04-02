@@ -945,7 +945,8 @@ bool CSC_01Layer::ActSenLAYMSG_MSGONCEUnpack(char* pchar,const int nlength)
 
     // Serial
     //m_pMsgRecvSn = pchar[1];
-    m_pMsgRecvSn = pchar[1] * 256 + pchar[2];
+    //m_pMsgRecvSn = pchar[1] * 256 + pchar[2];
+    m_pMsgRecvSn = (((unsigned char)pchar[1])<<8) | ((unsigned char)pchar[2]);
 
 // 	memcpy(m_pMsgRecvData,pchar+2,nlength-2);
 // 	m_pMsgRecvLen = nlength-2;

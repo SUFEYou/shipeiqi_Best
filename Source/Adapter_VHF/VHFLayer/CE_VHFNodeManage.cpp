@@ -85,10 +85,10 @@ void CE_VHFNodeManage::init()
     //////////////////////////////////////////////////////////////////////////
         // 链路基本信息
     m_sSendHead.ProgramType	= 13;
-    m_sSendHead.ProgramID	= 6002;
+    m_sSendHead.ProgramID	= 7997;
 
-    m_pLayerVHFHead->m_nCodeMe = 10002;
-    m_pLayerVHFClient->m_nCodeMe = 10002;
+    m_pLayerVHFHead->m_nCodeMe = 11997;
+    m_pLayerVHFClient->m_nCodeMe = 11997;
 
     m_pLayerVHFClient->m_nDataMaxLen = 1020;
     m_pLayerVHFHead->m_nDataMaxLen = 1020;
@@ -208,17 +208,17 @@ void CE_VHFNodeManage::ACCtoRSCMessageData(const int nSendID, const int nRecvID,
     Newmsg->nTimeCount	= 0;
     Newmsg->nSendtimes	= 0;
 
+    qDebug() << "Recv ACC Message, Message Serial: " << Newmsg->nSerial;
+
     bool bInsert = false;
-    QList<pVHFMsg>::iterator iter = m_lVHFMsgList.begin();
-    while (iter != m_lVHFMsgList.end())
+    for (int i = 0; i < m_lVHFMsgList.length(); ++i)
     {
-        if (iter->data()->nDegree < Newmsg->nDegree)
+        if (m_lVHFMsgList[i]->nDegree > Newmsg->nDegree)
         {
-            m_lVHFMsgList.insert(iter, Newmsg);
+            m_lVHFMsgList.insert(i, Newmsg);
             bInsert = true;
             break;
         }
-        ++iter;
     }
     if (!bInsert)
     {
