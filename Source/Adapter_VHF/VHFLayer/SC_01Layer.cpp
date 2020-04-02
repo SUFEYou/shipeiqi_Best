@@ -542,7 +542,7 @@ bool CSC_01Layer::DataLayerMessageParse(char* pchar,const int nlength,CSCRSC_Obj
     }
 
     // Message Length
-    if (pchar[3] != nlength)
+    if (((unsigned char)pchar[3]) != nlength)
     {
         return false;
     }
@@ -1036,25 +1036,6 @@ bool CSC_01Layer::ActSenLAYMSG_MSGCALLUnpack(char* pchar,const int nlength)
 
     return true;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //////////////////////////////////////////////////////////////////////////
 // Encrypt the Message

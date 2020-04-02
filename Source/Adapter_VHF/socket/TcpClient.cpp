@@ -3,8 +3,9 @@
 #include <QUdpSocket>
 #include "config/ConfigLoader.h"
 #include "TCPDataDeal.h"
-#include <QDebug>
 #include <QTimer>
+#include <QTime>
+#include <QDebug>
 
 
 TcpClient::TcpClient()
@@ -42,6 +43,7 @@ void TcpClient::init()
 void TcpClient::sendData(unsigned char* pData,int nLen)
 {
     if(m_bACCLinkOk){
+        qDebug() << QTime::currentTime().toString() << ": In TcpClient::sendData() Len: " << nLen;
         m_tcpSocket->write((char*)(pData), nLen);
     }
 
@@ -94,6 +96,7 @@ void TcpClient::dealTimer()
         m_nACCCloseCt++;
         if (m_nACCCloseCt >= m_nACCCloseCtLmt)
         {
+            m_nACCCloseCt	= 0;
             QString serIP = ConfigLoader::getInstance()->getTcpIP();
             int serPort   = ConfigLoader::getInstance()->getTcpPort();
             m_tcpSocket->abort();
