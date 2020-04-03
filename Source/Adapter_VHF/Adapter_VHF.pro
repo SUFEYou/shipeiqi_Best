@@ -17,6 +17,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 QMAKE_CXXFLAGS += -fpermissive
 
+
 SOURCES += main.cpp \
     socket/SocketManage.cpp \
     config/ConfigLoader.cpp \
@@ -56,7 +57,8 @@ HEADERS += \
     socket/UdpRctrl.h \
     socket/UdpVoice.h \
     socket/TcpClient.h \
-    Uart/UartManage_bk.h
+    Uart/UartManage_bk.h \
+    socket/socketcommon.h
 
 win32:{
     SOURCES += Uart/qextserialport_win.cpp

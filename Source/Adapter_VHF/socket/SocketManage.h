@@ -19,6 +19,8 @@ public:
     void init();
 
     inline TcpClient *getTcpClient() const { return tcpClient; }
+    inline UDPRctrl  *getCtrlUdp()   const { return rctrlUdp;  }
+    inline UDPVoice  *getVoicUdp()   const { return voiceUdp;  }
 
 private:
     SocketManage();

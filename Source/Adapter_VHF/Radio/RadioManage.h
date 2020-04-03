@@ -6,23 +6,15 @@
 #include "Radio/Radio181d.h"
 #include "Radio/Radio171al.h"
 #include "Radio/Radio212.h"
+#include <stdint.h>
 
+#pragma pack(1)
 typedef enum Radio_Type	{
     RADIO_181D	= 1814,                 //
     RADIO_171D	= 1714,
     RADIO_171AL	= 1716,
 
 }RadioTyp;
-
-typedef enum Radio_Ctrl	{
-    Channel_Set	 = 0x01,                 //
-    SND_Freq_Set = 0x02,
-    REV_Freq_Set = 0x03,
-    Work_Mod_Set = 0x04,
-    Work_Typ_Set = 0x05,
-    Sque_Lev_Set = 0x06,
-    Powr_Lev_Set = 0x07
-}RadioCtrl;
 
 
 
@@ -32,10 +24,11 @@ class RadioManage : public QObject
 public:
     static RadioManage* getInstance();
     void init();
-    void writeCtrlData(char* pChar,int nLen);
-    void writeLinkData(char* pChar,int nLen);
 
-    void onResponseCtrl(char* pChar,int nLen);
+    void writeCtrlData(uint16_t ctrlTyp, char* pChar,int nLen);
+    void onCtrlAck(uint16_t ackTyp, char* pChar,int nLen);
+
+    void writeLinkData(char* pChar,int nLen);  
     void onRecvLinkData(QByteArray data);
 
 private:

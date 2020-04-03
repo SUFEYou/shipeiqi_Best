@@ -47,13 +47,13 @@ void Radio171AL::readCom()
 }
 
 
-int Radio171AL::ctrlRadio(char* data, int len)
+int Radio171AL::writeCtrlData(uint16_t ctrlTyp, char* data, int len)
 {
 
     return 0;
 }
 
-int Radio171AL::sendData(char* data, int len)
+int Radio171AL::writeLinkData(char* data, int len)
 {
 
     return 0;

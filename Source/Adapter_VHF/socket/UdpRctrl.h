@@ -3,6 +3,9 @@
 
 #include <QUdpSocket>
 #include <QAbstractSocket>
+#include <QMutex>
+#include <common.h>
+#include <socket/socketcommon.h>
 
 class UDPRctrl: public QObject
 {
@@ -11,9 +14,10 @@ public:
     UDPRctrl();
     void init(int recivPort, QString sndToIP, int sndToPort);
     void sendData(char* pData,int nLen);
-
+    void sendCtrlAck(uint16_t ackTyp, char* pData,int nLen);
 
 private:
+    void registPipe(REGIST_PIPE pipe);
 
 private slots:
     void onRev();
@@ -25,6 +29,9 @@ private:
     quint16             m_recivPort;
     quint16             m_sndToPort;
     quint8              m_id;
+
+
+    QList<REGIST_PIPE>   regPipeList;
 
 };
 
