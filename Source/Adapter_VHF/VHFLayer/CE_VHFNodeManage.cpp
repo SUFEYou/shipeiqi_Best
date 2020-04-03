@@ -541,7 +541,10 @@ bool CE_VHFNodeManage::DeleteACCtoRSCMessageData(const int nSendID, const int nS
                 iter = m_lVHFMsgList.erase(iter);
             }
         }
-        ++iter;
+        else
+        {
+            ++iter;
+        }
     }
     return bFinder;
 }
