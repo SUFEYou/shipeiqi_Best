@@ -522,20 +522,26 @@ bool CE_VHFNodeManage::DeleteACCtoRSCMessageData(const int nSendID, const int nS
 {
     QMutexLocker locker(&m_listMutex);
     bool bFinder = false;
-    for (int i = 0; i < m_lVHFMsgList.length(); ++i)
+
+    QList<pVHFMsg>::iterator iter = m_lVHFMsgList.begin();
+    while (iter != m_lVHFMsgList.end())
     {
-        if ((m_lVHFMsgList[i]->nSource == nSendID) && \
-            (m_lVHFMsgList[i]->nSerial >= nSerialBegin) && \
-            (m_lVHFMsgList[i]->nSerial <= nSerialEnd) )
+        if (((*iter)->nSource == nSendID) && \
+            ((*iter)->nSerial >= nSerialBegin) && \
+            ((*iter)->nSerial <= nSerialEnd) )
         {
             bFinder = true;
-            m_lVHFMsgList.removeAt(i);
-            if (m_lVHFMsgList[i]->nSerial == nSerialEnd)
+            if ((*iter)->nSerial == nSerialEnd)
             {
+                m_lVHFMsgList.erase(iter);
                 break;
             }
+            else
+            {
+                iter = m_lVHFMsgList.erase(iter);
+            }
         }
+        ++iter;
     }
-
     return bFinder;
 }
