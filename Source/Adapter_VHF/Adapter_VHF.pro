@@ -25,7 +25,6 @@ SOURCES += main.cpp \
     Uart/qextserialport.cpp \
     VHFLayer/CSC_01LayerClient.cpp \
     VHFLayer/CSC_01LayerHead.cpp \
-    socket/TCPDataDeal.cpp \
     VHFLayer/CE_VHFNodeManage.cpp \
     VHFLayer/TerminalBase.cpp \
     Radio/Radio181d.cpp \
@@ -35,6 +34,7 @@ SOURCES += main.cpp \
     socket/UdpRctrl.cpp \
     socket/UdpVoice.cpp \
     socket/TcpClient.cpp \
+    socket/TCPDataProcess.cpp\
     Uart/UartManage_bk.cpp
 
 HEADERS += \
@@ -47,7 +47,6 @@ HEADERS += \
     Uart/qextserialport_p.h \
     VHFLayer/CSC_01LayerClient.h \
     VHFLayer/CSC_01LayerHead.h \
-    socket/TCPDataDeal.h \
     VHFLayer/CE_VHFNodeManage.h \
     VHFLayer/TerminalBase.h \
     Radio/Radio181d.h \
@@ -57,8 +56,9 @@ HEADERS += \
     socket/UdpRctrl.h \
     socket/UdpVoice.h \
     socket/TcpClient.h \
+    socket/socketcommon.h \
+    socket/TCPDataProcess.h \
     Uart/UartManage_bk.h \
-    socket/socketcommon.h
 
 win32:{
     SOURCES += Uart/qextserialport_win.cpp

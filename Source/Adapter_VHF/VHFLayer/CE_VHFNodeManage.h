@@ -33,7 +33,7 @@ public:
 
     // 向上反馈 ==>>
     // 上报当前接收到的报文
-    void PackToSendRMTtoRSCMessageData(const int nSendID,const int nRecvID,unsigned char* pChar,const int nLen,bool bEncrypt);
+    void PackToSendRMTtoRSCMessageData(const int nSendID,const int nRecvID,char* pChar,const int nLen,bool bEncrypt);
     // 上报用户报文发送完成
     void PackToSendRMTtoRSCMessageSerial(const int nSendID,const int nSerial);
     // 上报当前链表状态
@@ -68,7 +68,7 @@ public:
     int XSetVHFDataAppend(CSCRSC_ObjVHFMsg& stumsg,int maxlength);
 
 
-    int XSetVHFMRTPosDataAppend(unsigned char* pPosData,int PosDataLen,int sendId,int recvID,int serial,int maxlength);
+    int XSetVHFMRTPosDataAppend(char* pPosData,int PosDataLen,int sendId,int recvID,int serial,int maxlength);
 
     bool DeleteACCtoRSCMessageData(const int nSendID, const int nSerialBegin, const int nSerialEnd);
     void ReSetListCountNum();
@@ -79,8 +79,6 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // 数据输出
     bool PortCommSendOutData(char* pChar,int nLen);
-
-
     void OnCommRecData(const QByteArray &data);
 
 
@@ -100,14 +98,14 @@ public:
     CSC_01LayerHead*            m_pLayerVHFHead;        // VHF Layer head
     CSC_01LayerClient*          m_pLayerVHFClient;      // VHF Layer Client
 
-    unsigned char*				m_pExDataSend;          // VHF Layer Send Data buffer
+    char*                       m_pExDataSend;          // VHF Layer Send Data buffer
     int                         m_nExDataSLen;          // VHF Layer Send Data Buffer Length
     // Send Messge Buffer
     NET_MSG_HEADER              m_sSendHead;			// Send header STRUCT
-    unsigned char*              m_pBufSend;				// 发送数据缓存
+    char*                       m_pBufSend;				// 发送数据缓存
     int                         m_nBufSendLen;			// 发送数据缓存长度
 
-    unsigned char*              m_MRTPosData;
+    char*                       m_MRTPosData;
     int                         m_MRTPosDataLen;
 
     int                         m_nVHFIDMe;				// VHF ID Me

@@ -1,7 +1,7 @@
 #include "CE_VHFNodeManage.h"
 #include "VHFLayer/CSC_01LayerHead.h"
 #include "VHFLayer/CSC_01LayerClient.h"
-#include "socket/TCPDataDeal.h"
+#include "socket/TCPDataProcess.h"
 #include <time.h>
 #include <QTimer>
 #include <QDebug>
@@ -18,22 +18,18 @@ CE_VHFNodeManage::CE_VHFNodeManage()
     m_pLayerVHFClient->UseSetTerminalTag(CTerminalBase::TERM_VHFLAYER);
     m_pLayerVHFHead->UseSetTerminalTag(CTerminalBase::TERM_VHFLAYER);
 
-    m_pBufSend		= new unsigned char[RADIORTCCMDLEN];		// 发送数据缓存
+    m_pBufSend		= new char[RADIORTCCMDLEN];		// 发送数据缓存
     m_nBufSendLen	= 0;	// 发送数据缓存长度
-    m_pExDataSend   = new unsigned char[RADIORTCCMDLEN];		// 发送数据缓存
+    m_pExDataSend   = new char[RADIORTCCMDLEN];		// 发送数据缓存
     m_nExDataSLen	= 0;	// 发送数据缓存长度
 
     memset(&m_sSendHead,0,sizeof(NET_MSG_HEADER));
     m_sSendHead.MessageModel	= A01VLN_MSGMODEL_STATION_EX;
     m_nVHFIDMe		= 0;
 
-    m_MRTPosData = new unsigned char[256];			//rodar of data
+    m_MRTPosData = new char[256];			//rodar of data
     m_MRTPosDataLen = 0;
     memset(m_MRTPosData,0,256);
-
-//    connect(UartManage::getInstance(), SIGNAL(comRecData(QByteArray)), this, SLOT(OnCommRecData(QByteArray)));
-//    connect(this, SIGNAL(comSendData(char*,int)), UartManage::getInstance(), SLOT(comSendData(char*,int)));
-
 
     connect(m_VHFLayerTimer, SIGNAL(timeout()), this, SLOT(dealVHFLayerTimer()));
 }
@@ -229,7 +225,7 @@ void CE_VHFNodeManage::ACCtoRSCMessageData(const int nSendID, const int nRecvID,
 
 // 向上反馈 ==>>
 // 上报当前接收到的报文
-void CE_VHFNodeManage::PackToSendRMTtoRSCMessageData(const int nSendID,const int nRecvID,unsigned char* pChar,const int nLen,bool bEncrypt)
+void CE_VHFNodeManage::PackToSendRMTtoRSCMessageData(const int nSendID,const int nRecvID,char* pChar,const int nLen,bool bEncrypt)
 {
     // 向ACC汇报当前所到的报文
     memset(m_pBufSend,0,RADIORTCCMDLEN);
@@ -257,8 +253,7 @@ void CE_VHFNodeManage::PackToSendRMTtoRSCMessageData(const int nSendID,const int
     m_sSendHead.MessageType		= VLNMSG_MSGEX_TEXT;
     memcpy(m_pBufSend,&m_sSendHead,sizeof(NET_MSG_HEADER));
 
-    TCPDataDeal::getInstance()->PackDataToSlipFormat(m_pBufSend,m_nBufSendLen);
-    TCPDataDeal::getInstance()->SendData();
+    TCPDataProcess::getInstance()->packageAndSendData(m_pBufSend, m_nBufSendLen);
 
 }
 
@@ -286,8 +281,7 @@ void CE_VHFNodeManage::PackToSendRMTtoRSCMessageSerial(const int nSendID,const i
         m_sSendHead.MessageType		= VLNMSG_MSGEX_RECALLCODE;
         memcpy(m_pBufSend,&m_sSendHead,sizeof(NET_MSG_HEADER));
 
-        TCPDataDeal::getInstance()->PackDataToSlipFormat(m_pBufSend,m_nBufSendLen);
-        TCPDataDeal::getInstance()->SendData();
+        TCPDataProcess::getInstance()->packageAndSendData(m_pBufSend, m_nBufSendLen);
     }
 }
 
@@ -309,7 +303,7 @@ void CE_VHFNodeManage::RSCtoACCChainState()
     m_nBufSendLen	= sizeof(NET_MSG_HEADER);
 
     NET_RSC_UPDATEMRT sChain;
-    sChain.RSCID	=TCPDataDeal::getInstance()->m_nRSCID;
+    sChain.RSCID	=TCPDataProcess::getInstance()->getRSCID();
     sChain.Count	= (unsigned short)(cChain.nListMember.length());
     memcpy(m_pBufSend+m_nBufSendLen, &sChain, sizeof(NET_RSC_UPDATEMRT));
     m_nBufSendLen	+= sizeof(NET_RSC_UPDATEMRT);
@@ -337,8 +331,7 @@ void CE_VHFNodeManage::RSCtoACCChainState()
     m_sSendHead.MessageType		= VLNMSG_RSC_UPDATEMRT;
     memcpy(m_pBufSend,&m_sSendHead,sizeof(NET_MSG_HEADER));
 
-    TCPDataDeal::getInstance()->PackDataToSlipFormat(m_pBufSend,m_nBufSendLen);
-    TCPDataDeal::getInstance()->SendData();
+    TCPDataProcess::getInstance()->packageAndSendData(m_pBufSend, m_nBufSendLen);
 }
 
 // <==接收到链锯回馈的处理
@@ -459,7 +452,7 @@ int CE_VHFNodeManage::XSetVHFDataAppend(CSCRSC_ObjVHFMsg& stumsg,int maxlength)
 
 
 
-int CE_VHFNodeManage::XSetVHFMRTPosDataAppend(unsigned char* pPosData,int PosDataLen,int sendId,int recvID,int serial,int maxlength)
+int CE_VHFNodeManage::XSetVHFMRTPosDataAppend(char* pPosData,int PosDataLen,int sendId,int recvID,int serial,int maxlength)
 {
 
     CSC_01Layer* m_pVHFLayer = GetLayerVHF();

@@ -2,7 +2,7 @@
 #include <QTcpSocket>
 #include <QUdpSocket>
 #include "config/ConfigLoader.h"
-#include "TCPDataDeal.h"
+#include "TCPDataProcess.h"
 #include <QDebug>
 #include <QTimer>
 
@@ -39,10 +39,10 @@ void TcpClient::init()
 
 }
 
-void TcpClient::sendData(unsigned char* pData,int nLen)
+void TcpClient::sendData(const char* pData,const int nLen)
 {
     if(m_bACCLinkOk){
-        m_tcpSocket->write((char*)(pData), nLen);
+        m_tcpSocket->write(pData, nLen);
     }
 
 }
@@ -72,7 +72,7 @@ void TcpClient::tcpReadData()
     array = m_tcpSocket->readAll();
     if (array.length() > 0)
     {
-        TCPDataDeal::getInstance()->recvTCPData(array.data(), array.length());
+        TCPDataProcess::getInstance()->recvData(array.data(), array.length());
     }
 }
 
@@ -85,7 +85,7 @@ void TcpClient::dealTimer()
         if (m_nACCUpdateCt > m_nACCUpdateCtLmt)
         {
             m_nACCUpdateCt = 0;
-            TCPDataDeal::getInstance()->RSCtoACCUpdateStateInfo();
+            TCPDataProcess::getInstance()->RSCtoACCUpdateStateInfo();
         }
 
     }

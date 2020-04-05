@@ -14,7 +14,7 @@ public:
     TcpClient();
     void init();
 
-    void sendData(unsigned char* pData = NULL,int nLen = 0);
+    void sendData(const char* pData,const int nLen);
 
 private slots:
     void tcpConnected();

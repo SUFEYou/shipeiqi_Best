@@ -216,7 +216,7 @@ bool CSC_01LayerClient::DataLayerMessageAnalyze(char* pchar,const int nlength)
                 // to Main Exchange Class do with the Data
                 // 处理接收到的广播报文
                 CE_VHFNodeManage::getInstance()->PackToSendRMTtoRSCMessageData(m_nRecvMsg.nSource,m_nRecvMsg.nReceive, \
-                                                                               (unsigned char*)m_pMsgRecvData,m_pMsgRecvLen,true);
+                                                                               m_pMsgRecvData,m_pMsgRecvLen,true);
 
                 strDesc = QString("%1=>LAYMSG_MSGCAST").arg(m_nRecvMsg.nSource);
             }
@@ -236,7 +236,7 @@ bool CSC_01LayerClient::DataLayerMessageAnalyze(char* pchar,const int nlength)
                 // to Main Exchange Class do with the Data
                 // 处理接收到的报文
                 CE_VHFNodeManage::getInstance()->PackToSendRMTtoRSCMessageData(m_nRecvMsg.nSource,m_nRecvMsg.nReceive,\
-                                                                               (unsigned char*)m_pMsgRecvData,m_pMsgRecvLen,false);
+                                                                               m_pMsgRecvData,m_pMsgRecvLen,false);
 
                 strDesc = QString("%1=>LAYMSG_MSGONCE").arg(m_nRecvMsg.nSource);
 
