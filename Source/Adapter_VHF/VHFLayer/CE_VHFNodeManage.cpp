@@ -120,7 +120,6 @@ void CE_VHFNodeManage::OnCommRecData(const QByteArray &data)
 
 bool CE_VHFNodeManage::PortCommSendOutData(char* pChar,int nLen)
 {
-//    emit comSendData(pChar, nLen);
     RadioManage::getInstance()->writeLinkData(pChar, nLen);
     return true;
 }

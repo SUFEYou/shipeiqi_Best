@@ -35,7 +35,12 @@ SOURCES += main.cpp \
     socket/UdpVoice.cpp \
     socket/TcpClient.cpp \
     socket/TCPDataProcess.cpp\
-    Uart/UartManage_bk.cpp
+    Uart/UartManage_bk.cpp \
+    RadioLink/RadioLink.cpp \
+    RadioLink/LinkCommon.cpp \
+    RadioLink/RadioLinkManage.cpp \
+    RadioLink/RadioLinkClient.cpp \
+    RadioLink/RadioLinkMaster.cpp
 
 HEADERS += \
     socket/SocketManage.h \
@@ -59,6 +64,11 @@ HEADERS += \
     socket/socketcommon.h \
     socket/TCPDataProcess.h \
     Uart/UartManage_bk.h \
+    RadioLink/RadioLink.h \
+    RadioLink/LinkCommon.h \
+    RadioLink/RadioLinkManage.h \
+    RadioLink/RadioLinkClient.h \
+    RadioLink/RadioLinkMaster.h
 
 win32:{
     SOURCES += Uart/qextserialport_win.cpp
