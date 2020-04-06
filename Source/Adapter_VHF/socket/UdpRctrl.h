@@ -4,7 +4,7 @@
 #include <QUdpSocket>
 #include <QAbstractSocket>
 #include <QMutex>
-#include <common.h>
+#include "RadioLink/LinkCommon.h"
 #include <socket/socketcommon.h>
 
 class UDPRctrl: public QObject

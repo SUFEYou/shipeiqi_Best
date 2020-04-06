@@ -2,7 +2,7 @@
 #include "config/ConfigLoader.h"
 #include "socket/SocketManage.h"
 #include "Radio/RadioManage.h"
-#include "VHFLayer/CE_VHFNodeManage.h"
+#include "RadioLink/RadioLinkManage.h"
 
 int main(int argc, char *argv[])
 {
@@ -10,7 +10,6 @@ int main(int argc, char *argv[])
     ConfigLoader::getInstance()->load();
     SocketManage::getInstance()->init();
     RadioManage ::getInstance()->init();
-//    UartManage::getInstance()->init();
-    CE_VHFNodeManage::getInstance()->init();
+    RadioLinkManage::getInstance()->init();
     return a.exec();
 }

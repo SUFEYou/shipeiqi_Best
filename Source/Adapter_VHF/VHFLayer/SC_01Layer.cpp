@@ -1,6 +1,6 @@
 #include "VHFLayer/SC_01Layer.h"
 #include <memory.h>
-#include "common.h"
+#include "RadioLink/LinkCommon.h"
 #include "VHFLayer/CE_VHFNodeManage.h"
 
 //////////////////////////////////////////////////////////////////////////

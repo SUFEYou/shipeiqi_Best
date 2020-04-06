@@ -1,8 +1,8 @@
 #include "RadioManage.h"
 #include "config/ConfigLoader.h"
-#include <QDebug>
-#include <VHFLayer/CE_VHFNodeManage.h>
 #include "socket/SocketManage.h"
+#include "RadioLink/RadioLinkManage.h"
+#include <QDebug>
 
 RadioManage* RadioManage::m_instance = NULL;
 QMutex RadioManage::m_mutex;
@@ -85,7 +85,5 @@ void RadioManage::onCtrlAck(uint16_t ackTyp, char* pChar,int nLen){
 
 void RadioManage::onRecvLinkData(QByteArray data)
 {
-
-    CE_VHFNodeManage::getInstance()->OnCommRecData(data);
-
+    RadioLinkManage::getInstance()->OnCommRecData(data);
 }

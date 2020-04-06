@@ -38,7 +38,7 @@ void Radio181D::serialInit()
     }
 
 #if WIN32
-    ctrlCom = new QextSerialPort("COM2");
+    ctrlCom = new QextSerialPort("COM7");
 #else
     ctrlCom = new QextSerialPort("/dev/ttymxc2");
 #endif

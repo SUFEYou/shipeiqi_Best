@@ -21,12 +21,7 @@ QMAKE_CXXFLAGS += -fpermissive
 SOURCES += main.cpp \
     socket/SocketManage.cpp \
     config/ConfigLoader.cpp \
-    VHFLayer/SC_01Layer.cpp \
     Uart/qextserialport.cpp \
-    VHFLayer/CSC_01LayerClient.cpp \
-    VHFLayer/CSC_01LayerHead.cpp \
-    VHFLayer/CE_VHFNodeManage.cpp \
-    VHFLayer/TerminalBase.cpp \
     Radio/Radio181d.cpp \
     Radio/RadioManage.cpp \
     Radio/Radio212.cpp \
@@ -35,7 +30,6 @@ SOURCES += main.cpp \
     socket/UdpVoice.cpp \
     socket/TcpClient.cpp \
     socket/TCPDataProcess.cpp\
-    Uart/UartManage_bk.cpp \
     RadioLink/RadioLink.cpp \
     RadioLink/LinkCommon.cpp \
     RadioLink/RadioLinkManage.cpp \
@@ -45,15 +39,9 @@ SOURCES += main.cpp \
 HEADERS += \
     socket/SocketManage.h \
     config/ConfigLoader.h \
-    common.h \
-    VHFLayer/SC_01Layer.h \
     Uart/qextserialport.h \
     Uart/qextserialport_global.h \
     Uart/qextserialport_p.h \
-    VHFLayer/CSC_01LayerClient.h \
-    VHFLayer/CSC_01LayerHead.h \
-    VHFLayer/CE_VHFNodeManage.h \
-    VHFLayer/TerminalBase.h \
     Radio/Radio181d.h \
     Radio/RadioManage.h \
     Radio/Radio212.h \
@@ -63,7 +51,6 @@ HEADERS += \
     socket/TcpClient.h \
     socket/socketcommon.h \
     socket/TCPDataProcess.h \
-    Uart/UartManage_bk.h \
     RadioLink/RadioLink.h \
     RadioLink/LinkCommon.h \
     RadioLink/RadioLinkManage.h \

@@ -1,6 +1,6 @@
 #include "TCPDataProcess.h"
-#include "VHFLayer/CE_VHFNodeManage.h"
 #include "socket/SocketManage.h"
+#include "RadioLink/RadioLinkManage.h"
 #include <time.h>
 #include <QDebug>
 
@@ -267,6 +267,7 @@ void TCPDataProcess::analyzeNetMsg(char* pData,const int nLen)
                 memset(m_MRTPosData,0,256);
                 memcpy(m_MRTPosData,pData+nCurLen-1,sText.TextLength);
                 m_MRTPosDataLen = sText.TextLength;
+                RadioLinkManage::getInstance()->ACCtoRSCPosData(m_MRTPosData, m_MRTPosDataLen);
             }
         }
         break;
@@ -278,7 +279,7 @@ void TCPDataProcess::analyzeNetMsg(char* pData,const int nLen)
             memcpy(&sText, pData+nCurLen, sizeof(NET_MSGEX_TEXT));
             nCurLen += sizeof(NET_MSGEX_TEXT);
 
-            CE_VHFNodeManage::getInstance()->ACCtoRSCMessageData(sText.SendID, sText.RecvID, pData+nCurLen-1, sText.TextLength, sText.Encrypt, sText.Degree, sText.Serial);
+            RadioLinkManage::getInstance()->ACCtoRSCMessageData(sText.SendID, sText.RecvID, pData+nCurLen-1, sText.TextLength, sText.Encrypt, sText.Degree, sText.Serial);
 
         }
         break;
@@ -290,7 +291,7 @@ void TCPDataProcess::analyzeNetMsg(char* pData,const int nLen)
 
             nCurLen += sizeof(NET_MSGEX_MSGDELETED);
 
-            CE_VHFNodeManage::getInstance()->DeleteACCtoRSCMessageData(dObject.SendID, dObject.SerialBegin, dObject.SerialEnd);
+            RadioLinkManage::getInstance()->DeleteACCtoRSCMessageData(dObject.SendID, dObject.SerialBegin, dObject.SerialEnd);
         }
         break;
     case VLNMSG_MSGEX_RECALLCODE:			// 二进制短报文回馈序号

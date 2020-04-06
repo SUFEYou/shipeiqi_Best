@@ -5,7 +5,7 @@
 #include <QList>
 #include <QByteArray>
 #include <QString>
-#include "common.h"
+#include "RadioLink/LinkCommon.h"
 
 class TCPDataProcess
 {

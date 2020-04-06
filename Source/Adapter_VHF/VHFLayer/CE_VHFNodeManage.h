@@ -5,7 +5,7 @@
 #include <QSharedPointer>
 #include <QList>
 #include <QMutex>
-#include "common.h"
+#include "RadioLink/LinkCommon.h"
 
 #define RADIORTCCMDLENGTH 2048
 

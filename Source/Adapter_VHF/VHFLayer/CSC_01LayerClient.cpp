@@ -1,5 +1,5 @@
 #include "CSC_01LayerClient.h"
-#include "common.h"
+#include "RadioLink/LinkCommon.h"
 #include "VHFLayer/CE_VHFNodeManage.h"
 #include <QTime>
 #include <QDebug>
