@@ -936,12 +936,12 @@ void RadioLink::ActEncrypt_CodeCreate(char A,char B,char C)
 void RadioLink::ActEncrypt_CharClear(char* pchar,const int nlength,char& nEmp,const char fix)
 {
     //求取nEmp,去0x0A标记
-    quint8 tmp[256];
+    char tmp[256];
     unsigned char d=0;
     memset(tmp,0,256);
     for(int i=0;i<nlength;i++)
     {
-        d=pchar[i];
+        d = (unsigned char)pchar[i];
         tmp[d] = 1;
     }
 
@@ -972,10 +972,15 @@ void RadioLink::ActEncrypt_CharClear(char* pchar,const int nlength,char& nEmp,co
 // 恢复数据中的指定字符fix
 void RadioLink::ActEncrypt_CharAdd(char* pchar,const int nlength,const char nEmp)
 {
+    int a = 0;
     for(int i=0;i<nlength;i++)
     {
-        pchar[i]-=nEmp;
-        if(pchar[i]<0)
-            pchar[i] += char(256);
+//        pchar[i]-=nEmp;
+//        if(pchar[i]<0)
+//            pchar[i] += char(256);
+        a = pchar[i] - nEmp;
+        if (a < 0)
+            a += 256;
+        pchar[i] = a;
     }
 }

@@ -77,9 +77,9 @@ void RadioLinkManage::init()
     //////////////////////////////////////////////////////////////////////////
         // 链路基本信息
     m_sSendHead.ProgramType	= 13;
-    m_sSendHead.ProgramID	= 7997;
+    m_sSendHead.ProgramID	= 7001;
 
-    m_nIDMe = 11997;
+    m_nIDMe = 10001;
     m_radioLinkClient->setCodeMe(m_nIDMe);
     m_radioLinkMaster->setCodeMe(m_nIDMe);
 

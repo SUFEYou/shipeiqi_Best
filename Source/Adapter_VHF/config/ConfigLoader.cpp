@@ -100,7 +100,7 @@ void ConfigLoader::createConfig()
     settings.endGroup();
 
     settings.beginGroup("Commu-TCP");
-    settings.setValue("TcpIP",  "192.168.1.13");
+    settings.setValue("TcpIP",  "192.168.1.52");
     settings.setValue("TcpPort", 12000);
     settings.endGroup();
 
