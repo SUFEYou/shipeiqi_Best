@@ -337,22 +337,20 @@ void RadioLinkMaster::LinkLayerComSendMemoryData()
     m_pDataCtlLen = 0;
 
     QList<pObjStage>::iterator iter = m_nChain.nListMember.begin();
-    QList<pObjStage>::iterator deletePos;
-    while (iter != m_nChain.nListMember.end())
+
+    while(iter != m_nChain.nListMember.end())
     {
-        deletePos = iter;
-        pObjStage stg = *iter;
-        ++iter;
-        if (LAYSTA_OFFLINE == stg->state)
+        if (LAYSTA_OFFLINE == (*iter)->state)
         {
-            if (deletePos != m_nChain.nListMember.end())
+            iter = m_nChain.nListMember.erase(iter);
+            if(m_nChain.nMemNum > 0)
             {
-                m_nChain.nListMember.erase(deletePos);
-                if(m_nChain.nMemNum > 0)
-                {
-                    --m_nChain.nMemNum;
-                }
+                --m_nChain.nMemNum;
             }
+        }
+        else
+        {
+            ++iter;
         }
     }
 

@@ -339,7 +339,7 @@ void RadioLink::recvDataParse()
         ActEncrypt_CharAdd(tmp+2, tmpArray.length()-3, tmp[1]);
         // Check Number
         char a = tmp[3];
-        for (int i = 4; i < tmpArray.length(); ++i)
+        for (int i = 4; i < tmpArray.length()-1; ++i)
         {
             a ^= tmp[i];
         }

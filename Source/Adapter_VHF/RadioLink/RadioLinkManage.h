@@ -106,7 +106,7 @@ private:
     char*                           m_MRTPosData;
     int                             m_MRTPosDataLen;
 
-    int                             m_nIDMe;				// VHF ID Me
+    int                             m_nIDMe;				//ID Me
 
     QList<pVHFMsg>                  m_lMsgList;
 };

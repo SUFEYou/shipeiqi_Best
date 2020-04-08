@@ -79,8 +79,9 @@ void RadioLinkManage::init()
     m_sSendHead.ProgramType	= 13;
     m_sSendHead.ProgramID	= 7997;
 
-    m_radioLinkClient->setCodeMe(11997);
-    m_radioLinkMaster->setCodeMe(11997);
+    m_nIDMe = 11997;
+    m_radioLinkClient->setCodeMe(m_nIDMe);
+    m_radioLinkMaster->setCodeMe(m_nIDMe);
 
     m_radioLinkClient->setDataMaxLen(1020);
     m_radioLinkMaster->setDataMaxLen(1020);
