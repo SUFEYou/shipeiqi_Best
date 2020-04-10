@@ -3,7 +3,7 @@
 #include <QDebug>
 #include <QLatin1String>
 #include "config/ConfigLoader.h"
-#include "Socket/SocketManage.h"
+#include "socket/SocketManage.h"
 #include "Radio/RadioManage.h"
 #include <socket/socketcommon.h>
 #include <time.h>

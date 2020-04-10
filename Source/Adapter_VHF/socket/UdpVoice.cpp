@@ -2,7 +2,7 @@
 #include <QDebug>
 #include <QTime>
 #include <QWaitCondition>
-#include "Socket/SocketManage.h"
+#include "socket/SocketManage.h"
 #include "config/ConfigLoader.h"
 
 QMutex wmutex;

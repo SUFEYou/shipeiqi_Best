@@ -221,7 +221,7 @@ public:
     // Parameter
     int		id;			// Stage ID
     int		state;		// Stage State, Online or Offline
-    bool	signal;		// signal is or Not can be Received
+    int8_t	signal;		// signal is or Not can be Received
     int		degree;		// Degree,  1 = Main/2 = Assistant
     int		sequence;	// Sequence
     int		errcount;	// Error Count,Master Stage Use it
