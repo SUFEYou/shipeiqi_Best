@@ -3,16 +3,21 @@
 
 #include <QUdpSocket>
 #include <QAbstractSocket>
+#include <stdint.h>
+#include "socket/socketcommon.h"
+#include "Audio/AudioControl.h"
 
 class UDPVoice: public QObject
 {
     Q_OBJECT
 public:
     UDPVoice();
-    void init(int recivPort, QString sndToIP, int sndToPort);
+    void init(int port);
     void sendData(char* pData,int nLen);
+    void sendVoiceData(AudioData audioData);
 
 private:
+    int registVoice(QString sessionKey, VOICE_REGIST_VO regPipe);
 
 private slots:
     void onRev();
@@ -20,10 +25,11 @@ private slots:
 
 private:
     QUdpSocket          *m_udpSocket;
-    QHostAddress        m_sndToIP;
-    quint16             m_recivPort;
-    quint16             m_sndToPort;
-    quint8              m_id;
+    quint16             m_Port;
+
+    uint8_t             FrameSN;
+
+    VOICE_REGIST_VO     regArray[4];
 
 };
 

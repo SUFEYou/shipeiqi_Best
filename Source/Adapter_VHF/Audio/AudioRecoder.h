@@ -1,0 +1,25 @@
+#ifndef AUDIOCAPTURE_H
+#define AUDIOCAPTURE_H
+
+#include <QThread>
+#include "alsa/asoundlib.h"
+
+class AudioRecoder: public QThread
+{
+    Q_OBJECT
+public:
+    AudioRecoder();
+    bool init(QString& status);
+    inline unsigned int getFrameSize() { return m_frameSize; }
+
+protected:
+    virtual void run();
+
+private:
+    bool                    m_stop;
+    snd_pcm_t               *m_handle;//pcm句柄
+    snd_pcm_hw_params_t     *m_params;//pcm属性
+    unsigned int            m_frameSize;
+};
+
+#endif // AUDIOCAPTURE_H

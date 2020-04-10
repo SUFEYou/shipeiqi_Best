@@ -48,6 +48,18 @@ typedef enum _MESSAGETYPE
 
 }MESSAGETYPE;
 
+
+#pragma pack(1)
+typedef enum _VOICE_MESSAGE {               // Radio Voice Message Type
+    Voice_Message_Data        = 1,          // Voice Data
+    Voice_Message_DataQuery   = 2,          // Query Data
+    Voice_Message_Apply       = 3,          // Apply Voice
+    Voice_Message_PttSet      = 4,          // Set Radio PTT Station
+    Voice_Message_PlyaState   = 5,          // Radio Play Voice State
+    Voice_Message_SourceData  = 6,          // Voice Source Data
+}VOICE_MESSAGETYPE;
+
+
 #pragma pack(1)
 typedef struct _NET_REGIST
 {
@@ -56,14 +68,20 @@ typedef struct _NET_REGIST
     uint32_t	    NetPort;			// 注册Port
 }NET_REGIST;
 
+
 #pragma pack(1)
-typedef struct _REGIST_PIPE
+typedef struct _CTRL_REGIST_INFO
 {
     uint16_t	    RadioID;			// Radio ID
     QString 	    NetIPAddr;		    // 注册IP
     uint32_t	    NetPort;			// 注册Port
     uint32_t        uptTime;            // 更新时间戳
-}REGIST_PIPE;
+
+    bool operator==(const _CTRL_REGIST_INFO &other) const {
+        return (this->NetIPAddr == other.NetIPAddr && this->NetPort == other.NetPort);
+    }
+
+}CTRL_REGIST_VO;
 
 
 #pragma pack(1)
@@ -106,5 +124,47 @@ typedef struct _VHF_ACK_STATE
     unsigned char	radioPro;           //
 
 }VHF_ACK_STATE;
+
+
+#pragma pack(1)
+typedef struct _VOICE_APPLY
+{
+    unsigned char	ApplyType;			// None use (为兼容以前)
+    uint16_t        RadioID;			// Radio ID
+    unsigned char	NetIPAddr[16];		// IP Address
+    uint32_t        NetPort;			// Port
+}VOICE_APPLY;
+
+
+#pragma pack(1)
+typedef struct _VOICE_REGIST_INFO
+{
+    QString         regKey;
+    int	            DevID;			    // Regist Device ID
+    QString 	    NetIPAddr;		    // 注册IP
+    int	            NetPort;			// 注册Port
+    int             PlayID;             // 播放ID
+    uint32_t        uptTime;            // 更新时间戳
+}VOICE_REGIST_VO;
+
+
+#pragma pack(1)
+typedef struct _VOICE_PTTSET
+{
+    uint16_t    	RadioID;			// Radio ID
+    unsigned char	PTTClose;			// Radio PTT Close, 0:On; 1:Off;
+}VOICE_PTTSET;
+
+
+#pragma pack(1)
+typedef struct _VOICE_DATA_HEAD
+{
+    uint16_t        RadioID;			// Radio ID
+    unsigned char	Attribute;			// 属性：优先级/类型（G729a/Source/G711）
+    unsigned char	FrameSN;			// Frame Serial Number
+    uint32_t		SignalValue;        // Ptt复用(0:PTT-Off 1:PTT-On)
+
+}VOICE_DATA_HEAD;
+
 
 #endif // SOCKETCOMMON_H

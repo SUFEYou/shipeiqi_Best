@@ -1,19 +1,20 @@
-#ifndef RADIO171AL_H
-#define RADIO171AL_H
+#ifndef RADIO171D_H
+#define RADIO171D_H
 
 #include <QObject>
 #include <QMutex>
 #include <stdint.h>
+#include <QTimer>
 #include "Uart/qextserialport.h"
 #include "socket/socketcommon.h"
 
-class Radio171AL: public QObject
+class Radio171D: public QObject
 {
     Q_OBJECT
 
 public:
-    Radio171AL();
-    ~Radio171AL();
+    Radio171D();
+    ~Radio171D();
     void serialInit();
     int writeCtrlData(uint16_t ctrlTyp, char* data, int len);
     int writeLinkData(char* data, int len);
@@ -35,4 +36,4 @@ private:
 
 };
 
-#endif // RADIO171AL_H
+#endif // RADIO171D_H

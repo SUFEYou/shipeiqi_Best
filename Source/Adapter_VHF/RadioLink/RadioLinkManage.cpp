@@ -3,6 +3,7 @@
 #include "RadioLinkClient.h"
 #include "Radio/RadioManage.h"
 #include "socket/TCPDataProcess.h"
+#include "config/ConfigLoader.h"
 #include <time.h>
 #include <QDebug>
 
@@ -78,11 +79,10 @@ void RadioLinkManage::init()
 {
     //////////////////////////////////////////////////////////////////////////
         // 链路基本信息
-    m_sSendHead.ProgramType	= 13;
-    m_sSendHead.ProgramID	= 7998;
+    m_sSendHead.ProgramType	= ConfigLoader::getInstance()->getProgramType();
+    m_sSendHead.ProgramID	= ConfigLoader::getInstance()->getProgramID();
 
-    m_nIDMe = 12998;
-    //m_nIDMe = 10002;
+    m_nIDMe = ConfigLoader::getInstance()->getRadioID();
     m_radioLinkClient->setCodeMe(m_nIDMe);
     m_radioLinkMaster->setCodeMe(m_nIDMe);
 

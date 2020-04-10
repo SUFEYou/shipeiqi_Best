@@ -4,9 +4,10 @@
 #include <QWaitCondition>
 #include "socket/SocketManage.h"
 #include "config/ConfigLoader.h"
+#include "Audio/AudioPlayer.h"
+#include "Audio/AudioPtt.h"
 
-QMutex wmutex;
-quint8 FrameSN = -1;
+
 
 UDPVoice::UDPVoice()
 {
@@ -14,18 +15,30 @@ UDPVoice::UDPVoice()
 }
 
 
-void UDPVoice::init(int recivPort, QString sndToIP, int sndToPort)
+void UDPVoice::init(int port)
 {
-    this->m_sndToIP   = sndToIP;
-    this->m_recivPort = recivPort;
-    this->m_sndToPort = sndToPort;
+//    this->m_sndToIP   = sndToIP;
+    this->m_Port = port;
+//    this->m_sndToPort = sndToPort;
+
+    for(int i=0; i<4; i++){
+        VOICE_REGIST_VO regVO = regArray[i];
+        regVO.regKey= "";
+        regVO.DevID = -1;
+        regVO.NetIPAddr = "";
+        regVO.NetPort   = -1;
+        regVO.PlayID    = -1;
+        regArray[i] = regVO;
+    }
 
     m_udpSocket = new QUdpSocket(this);
 
     connect(m_udpSocket, SIGNAL(readyRead()), this, SLOT(onRev()));
     connect(m_udpSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
 
-    m_udpSocket->bind(QHostAddress::Any, m_recivPort, QUdpSocket::ShareAddress);
+    qDebug()<<"Voice RevPort   =" << m_Port;
+
+    m_udpSocket->bind(QHostAddress::Any, m_Port, QUdpSocket::ShareAddress);
 
 }
 
@@ -34,22 +47,146 @@ void UDPVoice::onRev()
     while (m_udpSocket->hasPendingDatagrams())
     {
        QByteArray datagram;
+       QHostAddress sndAdd;                                     //发送IP地址
+       quint16 sndPort;                                         //发送端口
+
        datagram.resize(m_udpSocket->pendingDatagramSize());
-       m_udpSocket->readDatagram(datagram.data(), datagram.size());
+       m_udpSocket->readDatagram(datagram.data(), datagram.size(), &sndAdd, &sndPort);
 
        char* data = datagram.data();
        int nLen   = datagram.size();
-       int nCurLen= 0;
+       QString sessionKey = sndAdd.toString().append(":").append(QString::number(sndPort));
 
-//       qDebug() << QTime::currentTime().msec() << " Recv UDP Data :" << datagram.size();
+       NET_MSG_HEADER netHeader;
+       memcpy(&netHeader,data,sizeof(NET_MSG_HEADER));
+       int currLen = sizeof(NET_MSG_HEADER);
+
+//       qDebug()<<"Recv Voice Data   1111111111111111111111111111--------------!!!" << nLen;
 
 
+       if (netHeader.MessageModel == MessageModel_VoicData)
+       {
+            if(netHeader.MessageType == Voice_Message_Apply){
+
+                qDebug()<<"Recv Voice Apply--------------!!!";
+
+                VOICE_APPLY voiceApply;
+                memcpy(&voiceApply,data + currLen, sizeof(VOICE_APPLY));
+
+                int timestamp = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
+//                qDebug()<<"Voice Regist --------------timestamp"   << timestamp;
+//                qDebug()<<"Voice Regist --------------Session Key" << sessionKey;
+
+                VOICE_REGIST_VO registVO;
+                registVO.DevID   = voiceApply.RadioID;                                        //
+
+                registVO.NetIPAddr = QString(QLatin1String(voiceApply.NetIPAddr));              //注册IP
+                registVO.NetPort   = voiceApply.NetPort;                                        //注册Port
+                registVO.uptTime   = timestamp;                                                 //跟新时间戳(秒级)
+                registVO.PlayID    = 0;
+
+                registVoice(sessionKey, registVO);
+
+            }
+
+        }
+
+       if(nLen == 183) {
+
+//           qDebug()<<"Recv Voice Data Package--------------!!!";
+
+           VOICE_DATA_HEAD vDataHead;
+           memcpy(&vDataHead,data + currLen, sizeof(VOICE_DATA_HEAD));
+           currLen += sizeof(VOICE_DATA_HEAD);
+
+           uint8_t priority = vDataHead.Attribute;      //优先级复用:1-255 优先级越大越高
+           uint32_t pttOn   = vDataHead.SignalValue;    //Ptt复用(0:PTT-Off 1:PTT-On)
+
+           char voiceData[160];
+           memcpy(voiceData, data + currLen, 160);
+
+           for(int i=0; i<4; i++){
+               VOICE_REGIST_VO regVO = regArray[i];
+
+               if(regVO.regKey == sessionKey){
+
+                  AudioPlayer* player = AudioControl::getInstance()->getPlayer(regVO.PlayID);
+                  if(player != NULL && player->isBind()){
+//                      qDebug()<<"-------------------------priority_pttOn" << priority << "_" <<pttOn;
+                      AudioControl::getInstance()->getPtt()->setPriority_PttOn(regVO.PlayID, priority, pttOn);
+                      player->addPlayData(voiceData, 160);
+                  }
+                  break;
+               }
+           }
+       }
     }
 }
 
+
 void UDPVoice::sendData(char* pData,int nLen)
 {
-    m_udpSocket->writeDatagram(pData, nLen, m_sndToIP, m_sndToPort);
+//    // 固定发送
+//    m_udpSocket->writeDatagram(pData, nLen, m_sndToIP, m_sndToPort);
+
+    // 注册通道发送
+    int curTime = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
+    for(int i=0; i<4; i++){
+        VOICE_REGIST_VO regVO = regArray[i];
+
+        if(regVO.DevID >= 0){
+
+            int diffS = curTime - regVO.uptTime;
+            if(diffS <= 30){
+
+              m_udpSocket->writeDatagram(pData, nLen, QHostAddress(regVO.NetIPAddr), regVO.NetPort);
+//              qDebug()<<"Voice Data Send -----------------------------" << regVO.NetIPAddr << ":" << regVO.NetPort;
+
+            } else {
+
+                AudioControl::getInstance()->unbindPlayID(regVO.PlayID);
+                regVO.regKey = "";
+                regVO.DevID  = -1;
+                regVO.NetIPAddr = "";
+                regVO.NetPort   = -1;
+                regVO.PlayID    = -1;
+                regArray[i] = regVO;
+
+            }
+        }
+    }
+}
+
+
+void UDPVoice::sendVoiceData(AudioData audioData)
+{
+    int dataLen = sizeof(NET_MSG_HEADER) + sizeof(VOICE_DATA_HEAD) + audioData.dataLen;
+
+    time_t ltime;
+    time( &ltime );
+
+    NET_MSG_HEADER netHeader;
+    netHeader.MessageLen   = dataLen;
+    netHeader.MessageModel = MessageModel_VoicData;
+    netHeader.MessageSerial= (unsigned long)ltime;
+    netHeader.MessageType  = Voice_Message_Data;
+//    netHeader.MessageVer;
+    netHeader.ProgramID    = ConfigLoader::getInstance()->getProgramID();
+    netHeader.ProgramType  = ConfigLoader::getInstance()->getProgramType();
+
+    FrameSN ++;
+
+    VOICE_DATA_HEAD vDataHead;
+    vDataHead.RadioID    = ConfigLoader::getInstance()->getRadioID();
+    vDataHead.FrameSN    = FrameSN;
+
+    char voicData[dataLen];
+    memcpy(voicData, &netHeader, sizeof(NET_MSG_HEADER));
+    memcpy(voicData + sizeof(NET_MSG_HEADER), &vDataHead, sizeof(VOICE_DATA_HEAD));
+    memcpy(voicData + sizeof(NET_MSG_HEADER) + sizeof(VOICE_DATA_HEAD), audioData.data, audioData.dataLen);
+
+    sendData(voicData, dataLen);
+
 }
 
 
@@ -58,3 +195,65 @@ void UDPVoice::onError(QAbstractSocket::SocketError socketError)
     Q_UNUSED(socketError);
     qDebug() << m_udpSocket->errorString();
 }
+
+
+int UDPVoice::registVoice(QString sessionKey, VOICE_REGIST_VO registVO){
+
+    /////////////////////////////////////////////////////////////////////////
+
+    bool registOK = false;
+    bool haveReg  = false;
+    for(int i=0; i<4; i++){
+        VOICE_REGIST_VO regVO = regArray[i];
+
+        if(regVO.regKey == sessionKey){
+            regVO.uptTime = registVO.uptTime;
+            regArray[i] = regVO;
+            haveReg  = true;
+            registOK = true;
+
+//            qDebug()<<"Voice Regist Update--------------ID"     << regArray[i].DevID;
+//            qDebug()<<"Voice Regist Update--------------IP"     << regArray[i].NetIPAddr;
+//            qDebug()<<"Voice Regist Update--------------Port"   << regArray[i].NetPort;
+//            qDebug()<<"Voice Regist Update--------------UptTim" << regArray[i].uptTime;
+
+            break;
+        }
+    }
+
+    if(!haveReg){
+        for(int i=0; i<4; i++){
+            VOICE_REGIST_VO regVO = regArray[i];
+
+            if(regVO.DevID < 0){
+                int playID = AudioControl::getInstance()->bindPlayID();
+
+                if(playID > 0){
+                    registVO.regKey = sessionKey;
+                    registVO.PlayID = playID;
+                    regArray[i] = registVO;
+                    registOK = true;
+
+//                    qDebug()<<"Voice Regist Add--------------ID"     << regArray[i].DevID;
+//                    qDebug()<<"Voice Regist Add--------------IP"     << regArray[i].NetIPAddr;
+//                    qDebug()<<"Voice Regist Add--------------Port"   << regArray[i].NetPort;
+//                    qDebug()<<"Voice Regist Add--------------UptTim" << regArray[i].uptTime;
+
+                    break;
+                }
+            }
+        }
+    }
+
+    if(!registOK){
+        return 1;
+    }
+    return 0;
+
+    /////////////////////////////////////////////////////////////////////////
+
+}
+
+
+
+

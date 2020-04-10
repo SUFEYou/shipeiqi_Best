@@ -1,5 +1,5 @@
-#ifndef RADIO181D_H
-#define RADIO181D_H
+#ifndef RADIO781TCP_H
+#define RADIO781TCP_H
 
 #include <QObject>
 #include <QMutex>
@@ -8,13 +8,13 @@
 #include "Uart/qextserialport.h"
 #include "socket/socketcommon.h"
 
-class Radio181D: public QObject
+class Radio781TCP:public QObject
 {
     Q_OBJECT
 
 public:
-    Radio181D();
-    ~Radio181D();
+    Radio781TCP();
+    ~Radio781TCP();
     void serialInit();
     int writeCtrlData(uint16_t ctrlTyp, char* data, int len);
     int writeLinkData(char* data, int len);
@@ -37,20 +37,10 @@ private:
     QMutex                   m_dataMutex;
     QextSerialPort          *dataCom;
 
-    QByteArray              dataArray;
-
-    //////////////////////////////////////////////////////////
-    int                     Protocol;           //0:非集群协议   1:集群协议
-    int                     sChannel;           //初始频道
-    //////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////
-    QTimer                  *timer;    
+    QTimer                  *timer;
     VHF_ACK_STATE           radioState;
     long                    updTim;
-    //////////////////////////////////////////////////////////
-
 
 };
 
-#endif // RADIO181D_H
+#endif // RADIO781TCP_H

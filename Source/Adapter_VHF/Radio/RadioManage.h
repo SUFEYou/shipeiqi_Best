@@ -5,7 +5,9 @@
 #include <QMutex>
 #include "Radio/Radio181d.h"
 #include "Radio/Radio171al.h"
-#include "Radio/Radio212.h"
+#include "Radio/Radio171d.h"
+#include "Radio/Radio781tcp.h"
+#include "Radio/Radio212tcr.h"
 #include <stdint.h>
 
 #pragma pack(1)
@@ -13,6 +15,10 @@ typedef enum Radio_Type	{
     RADIO_181D	= 1814,                 //
     RADIO_171D	= 1714,
     RADIO_171AL	= 1716,
+    RADIO_781TCP= 7814,
+    RADIO_212TCR= 2124,
+    RADIO_220   = 2204,
+    RADIO_230   = 2304,
 
 }RadioTyp;
 
@@ -41,8 +47,10 @@ private:
 
     int                      curRadioTyp;
     Radio181D                *radio181D;
+    Radio171D                *radio171D;
     Radio171AL               *radio171AL;
-    Radio212                 *radio212;
+    Radio781TCP              *radio781TCP;
+    Radio212TCR              *radio212TCR;
 
 };
 

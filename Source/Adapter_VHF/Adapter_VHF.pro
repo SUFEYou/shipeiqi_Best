@@ -17,15 +17,23 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 QMAKE_CXXFLAGS += -fpermissive
 
+INCLUDEPATH += /usr/local/arm/alsa_4.6.2/include
+LIBS += -L/usr/local/arm/alsa_4.6.2/lib -lasound
+
 
 SOURCES += main.cpp \
+    Audio/AudioControl.cpp \
+    Audio/AudioMixer.cpp \
+    Audio/AudioPlayer.cpp \
+    Audio/AudioRecoder.cpp \
     socket/SocketManage.cpp \
     config/ConfigLoader.cpp \
     Uart/qextserialport.cpp \
     Radio/Radio181d.cpp \
     Radio/RadioManage.cpp \
-    Radio/Radio212.cpp \
     Radio/Radio171al.cpp \
+    Radio/Radio171d.cpp \
+    Radio/Radio781tcp.cpp \
     socket/UdpRctrl.cpp \
     socket/UdpVoice.cpp \
     socket/TcpClient.cpp \
@@ -34,9 +42,16 @@ SOURCES += main.cpp \
     RadioLink/LinkCommon.cpp \
     RadioLink/RadioLinkManage.cpp \
     RadioLink/RadioLinkClient.cpp \
-    RadioLink/RadioLinkMaster.cpp
+    RadioLink/RadioLinkMaster.cpp \
+    Audio/AudioPtt.cpp\
+    Radio/Radio212tcr.cpp \
+
 
 HEADERS += \
+    Audio/AudioControl.h \
+    Audio/AudioMixer.h \
+    Audio/AudioPlayer.h \
+    Audio/AudioRecoder.h \
     socket/SocketManage.h \
     config/ConfigLoader.h \
     Uart/qextserialport.h \
@@ -44,8 +59,9 @@ HEADERS += \
     Uart/qextserialport_p.h \
     Radio/Radio181d.h \
     Radio/RadioManage.h \
-    Radio/Radio212.h \
     Radio/Radio171al.h \
+    Radio/Radio171d.h \
+    Radio/Radio781tcp.h \
     socket/UdpRctrl.h \
     socket/UdpVoice.h \
     socket/TcpClient.h \
@@ -55,7 +71,9 @@ HEADERS += \
     RadioLink/LinkCommon.h \
     RadioLink/RadioLinkManage.h \
     RadioLink/RadioLinkClient.h \
-    RadioLink/RadioLinkMaster.h
+    RadioLink/RadioLinkMaster.h \
+    Audio/AudioPtt.h \
+    Radio/Radio212tcr.h
 
 win32:{
     SOURCES += Uart/qextserialport_win.cpp

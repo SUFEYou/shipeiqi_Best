@@ -18,7 +18,7 @@ Radio181D::~Radio181D()
 void Radio181D::serialInit()
 {
 #if WIN32
-    dataCom = new QextSerialPort("COM10");
+    dataCom = new QextSerialPort("COM1");
 #else
     dataCom = new QextSerialPort("/dev/ttymxc1");
 #endif
@@ -38,7 +38,7 @@ void Radio181D::serialInit()
     }
 
 #if WIN32
-    ctrlCom = new QextSerialPort("COM7");
+    ctrlCom = new QextSerialPort("COM2");
 #else
     ctrlCom = new QextSerialPort("/dev/ttymxc2");
 #endif
@@ -73,7 +73,7 @@ void Radio181D::readDataCom()
     if(!data.isEmpty())
     {
 
-        qDebug() << "181D DataCom Recv size: " << data.size();
+        //qDebug() << "181D DataCom Recv size: " << data.size();
         //emit comRecData(temp);
         RadioManage::getInstance()->onRecvLinkData(data);
     }
@@ -85,7 +85,7 @@ void Radio181D::readCtrlCom()
 
     if (dataArray.length() < 7)
     {
-        qDebug() << "Recv data length too short! ";
+//        qDebug() << "Recv data length too short! ";
         return;
     }
     else
@@ -127,7 +127,7 @@ void Radio181D::readCtrlCom()
                     //判断数据包剩余长度是否满足校验占位
                     if ((dataArray.length()-3-contLen) < 2)
                     {
-                        qDebug() << "Package end length too short!";
+//                        qDebug() << "Package end length too short!";
                         return;
                     }
                     step = 2;
@@ -163,7 +163,7 @@ void Radio181D::readCtrlCom()
                         }
                         else
                         {
-                            qDebug() << "Recv data content Err!";
+//                            qDebug() << "Recv data content Err!";
                             memset(state, 0, sizeof(state));
                             stateLen = 0;
                             break;

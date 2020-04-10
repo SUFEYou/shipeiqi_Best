@@ -7,9 +7,16 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
+
+    system("amixer sset 'MIXINR IN3R' on");
+    system("amixer sset 'INPGAR IN3R' on");
+    system("amixer cset name='Headphone Volume' 127,127");
+
+    QString status;
     ConfigLoader::getInstance()->load();
     SocketManage::getInstance()->init();
     RadioManage ::getInstance()->init();
-    RadioLinkManage::getInstance()->init();
+    AudioControl::getInstance()->init(status);
+	RadioLinkManage::getInstance()->init();
     return a.exec();
 }

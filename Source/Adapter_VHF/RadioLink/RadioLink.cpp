@@ -336,13 +336,13 @@ void RadioLink::recvDataParse()
         memset(tmp, 0, MAXDATALENGTH);
         memcpy(tmp, tmpArray.data(), tmpArray.length());
 
-        printf("\n>>>>>>>>>>>>>>>>>>>>>> Recv Data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+//        printf("\n>>>>>>>>>>>>>>>>>>>>>> Recv Data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 
-        for(int i = 0; i < tmpArray.size(); ++i)
-            printf("%02x ", tmp[i]);
+//        for(int i = 0; i < tmpArray.size(); ++i)
+//            printf("%02x ", tmp[i]);
 
-        printf("\n>>>>>>>>>>>>>>>>>>>>>>> Recv Data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-        fflush(stdout);
+//        printf("\n>>>>>>>>>>>>>>>>>>>>>>> Recv Data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+//        fflush(stdout);
 
         // Clear the 0xAA Empty Num
         ActEncrypt_CharAdd(tmp+2, tmpArray.length()-3, tmp[1]);
@@ -357,13 +357,13 @@ void RadioLink::recvDataParse()
         {
             qDebug() << "In RadioLink::recvDataParse() CRC Err";
 
-            printf("\n>>>>>>>>>>>>>>>>>>>>>> CRC Err >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+//            printf("\n>>>>>>>>>>>>>>>>>>>>>> CRC Err >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 
-            for(int i = 0; i < tmpArray.size(); ++i)
-                printf("%02x ", tmp[i]);
+//            for(int i = 0; i < tmpArray.size(); ++i)
+//                printf("%02x ", tmp[i]);
 
-            printf("\n>>>>>>>>>>>>>>>>>>>>>>> CRC Err >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-            fflush(stdout);
+//            printf("\n>>>>>>>>>>>>>>>>>>>>>>> CRC Err >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+//            fflush(stdout);
 
             continue;
         }
@@ -372,13 +372,13 @@ void RadioLink::recvDataParse()
         {
             qDebug() << "In RadioLink::recvDataParse() Length Err";
 
-            printf("\n>>>>>>>>>>>>>>>>>>>>>> Length Err >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+//            printf("\n>>>>>>>>>>>>>>>>>>>>>> Length Err >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 
-            for(int i = 0; i < tmpArray.size(); ++i)
-                printf("%02x ", tmp[i]);
+//            for(int i = 0; i < tmpArray.size(); ++i)
+//                printf("%02x ", tmp[i]);
 
-            printf("\n>>>>>>>>>>>>>>>>>>>>>>> Length Err >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
-            fflush(stdout);
+//            printf("\n>>>>>>>>>>>>>>>>>>>>>>> Length Err >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+//            fflush(stdout);
 
             continue;
         }

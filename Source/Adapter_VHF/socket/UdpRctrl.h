@@ -4,7 +4,7 @@
 #include <QUdpSocket>
 #include <QAbstractSocket>
 #include <QMutex>
-#include "RadioLink/LinkCommon.h"
+#include <RadioLink/LinkCommon.h>
 #include <socket/socketcommon.h>
 
 class UDPRctrl: public QObject
@@ -12,12 +12,12 @@ class UDPRctrl: public QObject
     Q_OBJECT
 public:
     UDPRctrl();
-    void init(int recivPort, QString sndToIP, int sndToPort);
+    void init(int port);
     void sendData(char* pData,int nLen);
     void sendCtrlAck(uint16_t ackTyp, char* pData,int nLen);
 
 private:
-    void registPipe(REGIST_PIPE pipe);
+    void registCtrl(CTRL_REGIST_VO pipe);
 
 private slots:
     void onRev();
@@ -25,13 +25,10 @@ private slots:
 
 private:
     QUdpSocket          *m_udpSocket;
-    QHostAddress        m_sndToIP;
-    quint16             m_recivPort;
-    quint16             m_sndToPort;
-    quint8              m_id;
+    quint16             m_Port;
 
-
-    QList<REGIST_PIPE>   regPipeList;
+    QMutex               regMutex;
+    QList<CTRL_REGIST_VO>   regList;
 
 };
 

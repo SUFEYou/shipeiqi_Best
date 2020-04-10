@@ -16,13 +16,9 @@ public:
     uint32_t getRadioTyp()    const;
     uint32_t getRadioID()     const;
 
-    inline QString getCtrlSndToIP() const { return ctrlSndToIP; }
-    inline int getCtrlOnRevPort() const { return ctrlOnRevPort; }
-    inline int getCtrlSndToPort() const { return ctrlSndToPort; }
 
-    inline QString getVoicSndToIP() const { return voicSndToIP; }
-    inline int getVoicOnRevPort() const { return voicOnRevPort; }
-    inline int getVoicSndToPort() const { return voicSndToPort; }
+    inline int getCtrlPort() const { return ctrlPort; }
+    inline int getVoicPort() const { return voicPort; }
 
     inline QString getTcpIP()  const { return TcpIP; }
     inline int getTcpPort()    const { return TcpPort; }
@@ -45,13 +41,8 @@ private:
     uint32_t   radioTyp;
     uint32_t   radioID;
 
-    QString     ctrlSndToIP;
-    int         ctrlOnRevPort;
-    int         ctrlSndToPort;
-
-    QString     voicSndToIP;
-    int         voicOnRevPort;
-    int         voicSndToPort;
+    int         ctrlPort;
+    int         voicPort;
 
     //与通信平台通信配置信息
     QString     TcpIP;

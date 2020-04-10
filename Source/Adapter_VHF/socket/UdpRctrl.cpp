@@ -8,25 +8,23 @@
 #include <socket/socketcommon.h>
 #include <time.h>
 
-QMutex               pipeMutex;
+
 
 UDPRctrl::UDPRctrl()
 {
 
 }
 
-void UDPRctrl::init(int recivPort, QString sndToIP, int sndToPort)
+void UDPRctrl::init(int port)
 {
-    this->m_sndToIP   = sndToIP;
-    this->m_recivPort = recivPort;
-    this->m_sndToPort = sndToPort;
+    this->m_Port = port;
 
     m_udpSocket = new QUdpSocket(this);
 
     connect(m_udpSocket, SIGNAL(readyRead()), this, SLOT(onRev()));
     connect(m_udpSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
 
-    m_udpSocket->bind(QHostAddress::Any, m_recivPort, QUdpSocket::ShareAddress);
+    m_udpSocket->bind(QHostAddress::Any, m_Port, QUdpSocket::ShareAddress);
 
 }
 
@@ -66,14 +64,14 @@ void UDPRctrl::onRev()
                 int timestamp = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
 //                qDebug()<<"Recv Regist Cmd--------------timestamp"<< timestamp;
 
-                REGIST_PIPE regPipe;
+                CTRL_REGIST_VO regPipe;
                 regPipe.RadioID   = netRegist.RadioID;                                          //
                 regPipe.NetIPAddr = QString(QLatin1String(netRegist.NetIPAddr));                //注册IP
                 regPipe.NetPort   = netRegist.NetPort;                                          //注册Port
                 regPipe.uptTime   = timestamp;                                                  //跟新时间戳(秒级)
 
 
-                registPipe(regPipe);
+                registCtrl(regPipe);
 
             }
 
@@ -136,18 +134,30 @@ void UDPRctrl::onRev()
 
 void UDPRctrl::sendData(char* pData,int nLen)
 {
-    // 固定发送
-    m_udpSocket->writeDatagram(pData, nLen, m_sndToIP, m_sndToPort);
 
     // 注册通道发送
-    QMutexLocker locker(&pipeMutex);
+    int curTime = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
 
-    for(int i=0; i<regPipeList.size(); i++){
+    regMutex.lock();
+    foreach(CTRL_REGIST_VO regVO,regList)
+    {
+        int diffS = curTime - regVO.uptTime;
+        if(diffS <= 30){
+           m_udpSocket->writeDatagram(pData, nLen, QHostAddress(regVO.NetIPAddr), regVO.NetPort);
 
-        REGIST_PIPE pipe = regPipeList.at(i);
-        m_udpSocket->writeDatagram(pData, nLen, QHostAddress(pipe.NetIPAddr), pipe.NetPort);
+        } else {
+
+//           qDebug()<<"Ctrl Regist Delete --------------Radio ID"  << regVO.RadioID;
+//           qDebug()<<"Ctrl Regist Delete --------------IP"        << regVO.NetIPAddr;
+//           qDebug()<<"Ctrl Regist Delete --------------Port"      << regVO.NetPort;
+//           qDebug()<<"Ctrl Regist Delete --------------UptTime"   << regVO.uptTime;
+
+           regList.removeOne(regVO);
+        }
     }
+    regMutex.unlock();
 }
+
 
 void UDPRctrl::sendCtrlAck(uint16_t ackTyp, char* pData,int nLen)
 {
@@ -171,22 +181,9 @@ void UDPRctrl::sendCtrlAck(uint16_t ackTyp, char* pData,int nLen)
         memcpy(sndData, &netHeader, sizeof(NET_MSG_HEADER));
         memcpy(sndData + sizeof(NET_MSG_HEADER), pData, sizeof(VHF_ACK_STATE));
 
-        // 固定发送
-        m_udpSocket->writeDatagram(sndData, sndLen, m_sndToIP, m_sndToPort);
+        sendData(sndData, sndLen);
 
-        qDebug() << "Send --------------------------!!!" << m_sndToIP << m_sndToPort;
-
-        // 注册通道发送
-        QMutexLocker locker(&pipeMutex);
-        for(int i=0; i<regPipeList.size(); i++){
-
-            REGIST_PIPE pipe = regPipeList.at(i);
-            m_udpSocket->writeDatagram(sndData, sndLen, QHostAddress(pipe.NetIPAddr), pipe.NetPort);
-
-            qDebug() << "Send --------------------------!!!" << pipe.NetIPAddr << pipe.NetPort;
-        }
     }
-
 
 }
 
@@ -197,38 +194,40 @@ void UDPRctrl::onError(QAbstractSocket::SocketError socketError)
 }
 
 
-void UDPRctrl::registPipe(REGIST_PIPE regPipe){
+void UDPRctrl::registCtrl(CTRL_REGIST_VO registVO){
 
     /////////////////////////////////////////////////////////////////////////
-    bool havePipe = false;
-    for(int i=0; i<regPipeList.size(); i++){
-        REGIST_PIPE pipe = regPipeList.at(i);
+    bool haveReg = false;
+    for(int i=0; i<regList.size(); i++){
+        CTRL_REGIST_VO regVO = regList.at(i);
 
-        if(pipe.RadioID == regPipe.RadioID
-           && pipe.NetIPAddr == regPipe.NetIPAddr
-           && pipe.NetPort   == regPipe.NetPort){
+        if(regVO == registVO){
 
-            qDebug()<<"Update Regist --------------Radio ID"    << regPipe.RadioID;
-            qDebug()<<"Update Regist --------------Radio IP"    << regPipe.NetIPAddr;
-            qDebug()<<"Update Regist --------------Regist Port" << regPipe.NetPort;
+            regVO.uptTime = registVO.uptTime;
+            regList.replace(i, regVO);
 
-            pipe.uptTime = regPipe.uptTime;
-            havePipe = true;
+//            qDebug()<<"Ctrl Regist Update --------------Radio ID"  << regVO.RadioID;
+//            qDebug()<<"Ctrl Regist Update --------------IP"        << regVO.NetIPAddr;
+//            qDebug()<<"Ctrl Regist Update --------------Port"      << regVO.NetPort;
+//            qDebug()<<"Ctrl Regist Update --------------UptTime"   << regVO.uptTime;
+
+            haveReg = true;
             break;
         }
-
     }
 
-    QMutexLocker locker(&pipeMutex);
-    if(!havePipe){
-//        if(m_sndToIP.toString() != regPipe.NetIPAddr && m_sndToPort != regPipe.NetPort){        // 注册通道 != 固定通道
-            regPipeList.append(regPipe);
+    regMutex.lock();
+    if(!haveReg){
 
-            qDebug()<<"ADD Regist --------------Radio ID"    << regPipe.RadioID;
-            qDebug()<<"ADD Regist --------------Radio IP"    << regPipe.NetIPAddr;
-            qDebug()<<"ADD Regist --------------Regist Port" << regPipe.NetPort;
-//        }
+        regList.append(registVO);
+
+//        qDebug()<<"Ctrl Regist Add --------------Radio ID"  << registVO.RadioID;
+//        qDebug()<<"Ctrl Regist Add --------------IP"        << registVO.NetIPAddr;
+//        qDebug()<<"Ctrl Regist Add --------------Port"      << registVO.NetPort;
+//        qDebug()<<"Ctrl Regist Add --------------UptTime"   << registVO.uptTime;
+
     }
+    regMutex.unlock();
     /////////////////////////////////////////////////////////////////////////
 }
 

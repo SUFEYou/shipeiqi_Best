@@ -35,17 +35,14 @@ SocketManage* SocketManage::getInstance()
 void SocketManage::init()
 {
 
-    QString sndToIP = ConfigLoader::getInstance()->getCtrlSndToIP();
-    int vSndToPort  = ConfigLoader::getInstance()->getVoicSndToPort();
-    int vRecivPort  = ConfigLoader::getInstance()->getVoicOnRevPort();
-    int cSndToPort  = ConfigLoader::getInstance()->getCtrlSndToPort();
-    int cRecivPort  = ConfigLoader::getInstance()->getCtrlOnRevPort();
+    int ctrlPort   = ConfigLoader::getInstance()->getCtrlPort();
+    int voicPort   = ConfigLoader::getInstance()->getVoicPort();
 
     voiceUdp = new UDPVoice();
-    voiceUdp->init(vRecivPort, sndToIP, vSndToPort);
+    voiceUdp->init(voicPort);
 
     rctrlUdp = new UDPRctrl();
-    rctrlUdp->init(cRecivPort, sndToIP, cSndToPort);
+    rctrlUdp->init(ctrlPort);
 
     tcpClient = new TcpClient();
     tcpClient->init();
