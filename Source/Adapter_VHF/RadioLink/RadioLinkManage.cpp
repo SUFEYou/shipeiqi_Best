@@ -13,6 +13,7 @@ RadioLinkManage::RadioLinkManage()
                 : m_radioLinkMaster(new RadioLinkMaster)
                 , m_radioLinkClient(new RadioLinkClient)
                 , m_timer(new QTimer(this))
+                , m_listTimer(new QTimer(this))
 {
     m_pBufSend		= new char[RADIORTCCMDLEN];		// 发送数据缓存
     m_nBufSendLen	= 0;	// 发送数据缓存长度
@@ -28,6 +29,7 @@ RadioLinkManage::RadioLinkManage()
     memset(m_MRTPosData,0,256);
 
     connect(m_timer, SIGNAL(timeout()), this, SLOT(dealTimer()));
+    connect(m_listTimer, SIGNAL(timeout()), this, SLOT(msgListProcess()));
 }
 
 RadioLinkManage::~RadioLinkManage()
@@ -77,9 +79,10 @@ void RadioLinkManage::init()
     //////////////////////////////////////////////////////////////////////////
         // 链路基本信息
     m_sSendHead.ProgramType	= 13;
-    m_sSendHead.ProgramID	= 7001;
+    m_sSendHead.ProgramID	= 7998;
 
-    m_nIDMe = 10001;
+    m_nIDMe = 12998;
+    //m_nIDMe = 10002;
     m_radioLinkClient->setCodeMe(m_nIDMe);
     m_radioLinkMaster->setCodeMe(m_nIDMe);
 
@@ -99,6 +102,7 @@ void RadioLinkManage::init()
     m_radioLinkMaster->setMonitorAll(true);
 
     m_timer->start(200);
+    m_listTimer->start(1000);
 }
 
 RadioLink* RadioLinkManage::GetLayer()
@@ -510,5 +514,35 @@ void RadioLinkManage::dealTimer()
     if (m_radioLinkClient->GetAvailable())
     {
         m_radioLinkClient->timerProcess();
+    }
+}
+
+void RadioLinkManage::msgListProcess()
+{
+    QMutexLocker locker(&m_listMutex);
+    QList<pVHFMsg>::iterator iter = m_lMsgList.begin();
+    while (iter != m_lMsgList.end())
+    {
+        (*iter)->nTimeCount++;
+        if ((*iter)->nDegree == MSGDEG_CYCLE || (*iter)->nDegree == MSGDEG_ENDCYCLE)
+        {
+            if ((*iter)->nSendtimes >= 6|| (*iter)->nTimeCount > 300)
+            {
+                qDebug() << "TimerDriverDealWith RemoveAt SendID " << (*iter)->nSource << ", nSerial" << (*iter)->nSerial;
+                iter = m_lMsgList.erase(iter);
+            }
+            else
+                ++iter;
+        }
+        else
+        {
+            if ((*iter)->nSendtimes >= 3 || (*iter)->nTimeCount > 300)
+            {
+                qDebug() << "TimerDriverDealWith RemoveAt SendID " << (*iter)->nSource << ", nSerial" << (*iter)->nSerial;
+                iter = m_lMsgList.erase(iter);
+            }
+            else
+                ++iter;
+        }
     }
 }

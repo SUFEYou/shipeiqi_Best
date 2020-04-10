@@ -305,7 +305,8 @@ void RadioLink::recvDataSubpackage()
                         //将头和尾的0XAA都加入队列，解析时会用到
                         m_recvDataList.push_back(m_recvDataArray.mid(contBegin-1, contLen+2));
                         //更新已解码成功的数据长度
-                        removeLen = contBegin + contLen + 1;
+                        //removeLen = contBegin + contLen + 1;
+                        removeLen = contBegin + contLen;
                         step = 0;
                         continue;
                     }
@@ -335,6 +336,14 @@ void RadioLink::recvDataParse()
         memset(tmp, 0, MAXDATALENGTH);
         memcpy(tmp, tmpArray.data(), tmpArray.length());
 
+        printf("\n>>>>>>>>>>>>>>>>>>>>>> Recv Data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+
+        for(int i = 0; i < tmpArray.size(); ++i)
+            printf("%02x ", tmp[i]);
+
+        printf("\n>>>>>>>>>>>>>>>>>>>>>>> Recv Data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+        fflush(stdout);
+
         // Clear the 0xAA Empty Num
         ActEncrypt_CharAdd(tmp+2, tmpArray.length()-3, tmp[1]);
         // Check Number
@@ -347,12 +356,30 @@ void RadioLink::recvDataParse()
         if (tmp[2] != a)
         {
             qDebug() << "In RadioLink::recvDataParse() CRC Err";
+
+            printf("\n>>>>>>>>>>>>>>>>>>>>>> CRC Err >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+
+            for(int i = 0; i < tmpArray.size(); ++i)
+                printf("%02x ", tmp[i]);
+
+            printf("\n>>>>>>>>>>>>>>>>>>>>>>> CRC Err >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+            fflush(stdout);
+
             continue;
         }
         // Message Length
         if (((unsigned char)tmp[3]) != tmpArray.length())
         {
             qDebug() << "In RadioLink::recvDataParse() Length Err";
+
+            printf("\n>>>>>>>>>>>>>>>>>>>>>> Length Err >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+
+            for(int i = 0; i < tmpArray.size(); ++i)
+                printf("%02x ", tmp[i]);
+
+            printf("\n>>>>>>>>>>>>>>>>>>>>>>> Length Err >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+            fflush(stdout);
+
             continue;
         }
         // Version & Encrypt
@@ -935,8 +962,9 @@ void RadioLink::ActEncrypt_CodeCreate(char A,char B,char C)
 // 去处数据中指定的字符fix
 void RadioLink::ActEncrypt_CharClear(char* pchar,const int nlength,char& nEmp,const char fix)
 {
+#if 0
     //求取nEmp,去0x0A标记
-    char tmp[256];
+    unsigned char tmp[256];
     unsigned char d=0;
     memset(tmp,0,256);
     for(int i=0;i<nlength;i++)
@@ -967,11 +995,46 @@ void RadioLink::ActEncrypt_CharClear(char* pchar,const int nlength,char& nEmp,co
             a-=256;
         pchar[i]=a;
     }
+#else
+    //求取nEmp,去0x0A标记
+    quint8 tmp[256];
+    unsigned char d=0;
+    memset(tmp, 0, 256);
+    for(int i = 0; i < nlength; ++i)
+    {
+        d = (unsigned char)pchar[i];
+        tmp[d] = 1;
+    }
+
+    for(int i = 255; i >= 0; --i)
+    {
+        if(tmp[i] == 0)
+        {
+            if (i != fix)
+            {
+                nEmp = i;
+                break;
+            }
+        }
+    }
+    nEmp = 256 + fix - nEmp;
+
+    //去除fix
+    int a=0;
+    for(int i = 0; i < nlength; ++i)
+    {
+        a = pchar[i] + nEmp;
+        if(a > 255)
+            a -= 256;
+        memset(&pchar[i], a, 1);
+    }
+#endif
 }
 
 // 恢复数据中的指定字符fix
 void RadioLink::ActEncrypt_CharAdd(char* pchar,const int nlength,const char nEmp)
 {
+#if 0
     int a = 0;
     for(int i=0;i<nlength;i++)
     {
@@ -983,4 +1046,15 @@ void RadioLink::ActEncrypt_CharAdd(char* pchar,const int nlength,const char nEmp
             a += 256;
         pchar[i] = a;
     }
+#else
+    for(int i = 0; i < nlength; ++i)
+    {
+        int a = pchar[i]- nEmp;
+        if ( a < 0)
+        {
+            a += 256;
+        }
+        memset(&pchar[i], a, 1);
+    }
+#endif
 }

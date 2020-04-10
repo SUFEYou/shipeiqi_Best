@@ -12,6 +12,15 @@ class QTimer;
 
 typedef QSharedPointer<ObjMsg> pVHFMsg;
 
+enum	RSCMessage_Degree	// Message Degree
+{
+    MSGDEG_URGENT = 1,			// Urgent Message
+    MSGDEG_GENERAL,				// General Message
+    MSGDEG_CYCLE,				// Cycle Message
+    MSGDEG_RELAX,				// Relax Message
+    MSGDEG_ENDCYCLE,			// 末端循环
+};
+
 class RadioLinkManage : public QObject
 {
     Q_OBJECT
@@ -85,6 +94,7 @@ private:
 
 private slots:
     void dealTimer();
+    void msgListProcess();
 
 private:
     static RadioLinkManage*         m_instance;
@@ -94,6 +104,7 @@ private:
     RadioLinkClient*                m_radioLinkClient;
 
     QTimer*                         m_timer;
+    QTimer*                         m_listTimer;
     QMutex                          m_listMutex;
 
     char*                           m_pExDataSend;          // VHF Layer Send Data buffer

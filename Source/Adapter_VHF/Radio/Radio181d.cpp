@@ -18,7 +18,7 @@ Radio181D::~Radio181D()
 void Radio181D::serialInit()
 {
 #if WIN32
-    dataCom = new QextSerialPort("COM1");
+    dataCom = new QextSerialPort("COM10");
 #else
     dataCom = new QextSerialPort("/dev/ttymxc1");
 #endif
