@@ -1,25 +1,18 @@
 #ifndef RADIO781TCP_H
 #define RADIO781TCP_H
 
-#include <QObject>
-#include <QMutex>
-#include <stdint.h>
-#include <QTimer>
-#include "Uart/qextserialport.h"
-#include "socket/socketcommon.h"
+#include "Radio.h"
 
-class Radio781TCP:public QObject
+class Radio781TCP : public Radio
 {
     Q_OBJECT
 
 public:
     Radio781TCP();
-    ~Radio781TCP();
-    void serialInit();
-    int writeCtrlData(uint16_t ctrlTyp, char* data, int len);
-    int writeLinkData(char* data, int len);
-
-    inline VHF_ACK_STATE getRadioState() const { return radioState; }
+    virtual ~Radio781TCP();
+    virtual void serialInit();
+    virtual int writeCtrlData(uint16_t ctrlTyp, char* data, int len);
+    virtual int writeLinkData(char* data, int len);
 
 private:
     void wConverte(char* srcData, int srcLen, char* dstData, int &dstLen);
@@ -31,14 +24,7 @@ private slots:
     void onTimer();
 
 private:
-    QMutex                   m_ctrlMutex;
-    QextSerialPort          *ctrlCom;
-
-    QMutex                   m_dataMutex;
-    QextSerialPort          *dataCom;
-
     QTimer                  *timer;
-    VHF_ACK_STATE           radioState;
     long                    updTim;
 
 };

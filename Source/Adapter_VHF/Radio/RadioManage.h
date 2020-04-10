@@ -3,12 +3,9 @@
 
 #include <QObject>
 #include <QMutex>
-#include "Radio/Radio181d.h"
-#include "Radio/Radio171al.h"
-#include "Radio/Radio171d.h"
-#include "Radio/Radio781tcp.h"
-#include "Radio/Radio212tcr.h"
 #include <stdint.h>
+
+class Radio;
 
 #pragma pack(1)
 typedef enum Radio_Type	{
@@ -46,11 +43,8 @@ private:
     static QMutex            m_mutex;
 
     int                      curRadioTyp;
-    Radio181D                *radio181D;
-    Radio171D                *radio171D;
-    Radio171AL               *radio171AL;
-    Radio781TCP              *radio781TCP;
-    Radio212TCR              *radio212TCR;
+    Radio                    *radio;
+
 
 };
 

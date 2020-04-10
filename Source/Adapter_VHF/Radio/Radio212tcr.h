@@ -1,24 +1,18 @@
 #ifndef RADIO212TCR_H
 #define RADIO212TCR_H
 
-#include <QObject>
-#include <QMutex>
-#include <stdint.h>
-#include "Uart/qextserialport.h"
-#include "socket/socketcommon.h"
+#include "Radio.h"
 
-class Radio212TCR: public QObject
+class Radio212TCR : public Radio
 {
     Q_OBJECT
 
 public:
     Radio212TCR();
-    ~Radio212TCR();
-    void serialInit();
-    int writeCtrlData(uint16_t ctrlTyp, char* data, int len);
-    int writeLinkData(char* data, int len);
-
-    inline VHF_ACK_STATE getRadioState() const { return radioState; }
+    virtual ~Radio212TCR();
+    virtual void serialInit();
+    virtual int writeCtrlData(uint16_t ctrlTyp, char* data, int len);
+    virtual int writeLinkData(char* data, int len);
 
 private:
     void wConverte(char* srcData, int srcLen, char* dstData, int &dstLen);
@@ -31,7 +25,6 @@ private slots:
 
 
 private:
-    VHF_ACK_STATE           radioState;
 
 };
 

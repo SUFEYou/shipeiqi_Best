@@ -5,6 +5,7 @@
 #include "socket/TCPDataProcess.h"
 #include "config/ConfigLoader.h"
 #include <time.h>
+#include <QTimer>
 #include <QDebug>
 
 RadioLinkManage* RadioLinkManage::m_instance = NULL;

@@ -45,6 +45,7 @@ SOURCES += main.cpp \
     RadioLink/RadioLinkMaster.cpp \
     Audio/AudioPtt.cpp\
     Radio/Radio212tcr.cpp \
+    Radio/Radio.cpp
 
 
 HEADERS += \
@@ -73,7 +74,8 @@ HEADERS += \
     RadioLink/RadioLinkClient.h \
     RadioLink/RadioLinkMaster.h \
     Audio/AudioPtt.h \
-    Radio/Radio212tcr.h
+    Radio/Radio212tcr.h \
+    Radio/Radio.h
 
 win32:{
     SOURCES += Uart/qextserialport_win.cpp

@@ -1,9 +1,6 @@
 #include "Radio181d.h"
-#include "RadioManage.h"
-#include <stdint.h>
 #include <QDebug>
 #include <QDateTime>
-#include "socket/socketcommon.h"
 
 Radio181D::Radio181D()
 {

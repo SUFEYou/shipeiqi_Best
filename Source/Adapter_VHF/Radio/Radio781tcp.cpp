@@ -1,9 +1,6 @@
 #include "Radio781tcp.h"
-#include "RadioManage.h"
-#include <stdint.h>
 #include <QDebug>
 #include <QDateTime>
-#include "socket/socketcommon.h"
 
 Radio781TCP::Radio781TCP()
 {

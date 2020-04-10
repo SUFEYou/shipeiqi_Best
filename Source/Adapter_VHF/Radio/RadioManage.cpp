@@ -2,6 +2,11 @@
 #include "config/ConfigLoader.h"
 #include "socket/SocketManage.h"
 #include "RadioLink/RadioLinkManage.h"
+#include "Radio181d.h"
+#include "Radio171al.h"
+#include "Radio171d.h"
+#include "Radio781tcp.h"
+#include "Radio212tcr.h"
 #include <QDebug>
 
 RadioManage* RadioManage::m_instance = NULL;
@@ -35,33 +40,31 @@ void RadioManage::init()
 
     if(curRadioTyp == RADIO_181D){
 
-        radio181D = new Radio181D();
-        radio181D->serialInit();
+        radio = new Radio181D();
     }
 
     if(curRadioTyp == RADIO_171AL){
 
-        radio171AL = new Radio171AL();
-        radio171AL->serialInit();
+        radio = new Radio171AL();
     }
 
     if(curRadioTyp == RADIO_171D){
 
-        radio171D = new Radio171D();
-        radio171D->serialInit();
+        radio = new Radio171D();
     }
 
     if(curRadioTyp == RADIO_781TCP){
 
-        radio781TCP = new Radio781TCP();
-        radio781TCP->serialInit();
+        radio = new Radio781TCP();
     }
 
     if(curRadioTyp == RADIO_212TCR){
 
-        radio212TCR = new Radio212TCR();
-        radio212TCR->serialInit();
+        radio = new Radio212TCR();
     }
+
+    if (radio != NULL)
+        radio->serialInit();
 }
 
 
@@ -69,59 +72,15 @@ void RadioManage::writeLinkData(char* pChar,int nLen)
 {
     qDebug() << "Com Send size: " << nLen;
 
-    if(curRadioTyp == RADIO_181D){
-
-        radio181D->writeLinkData(pChar, nLen);
-    }
-
-    if(curRadioTyp == RADIO_171AL){
-
-        radio171AL->writeLinkData(pChar, nLen);
-    }
-
-    if(curRadioTyp == RADIO_171D){
-
-        radio171D->writeLinkData(pChar, nLen);
-    }
-
-    if(curRadioTyp == RADIO_781TCP){
-
-        radio781TCP->writeLinkData(pChar, nLen);
-    }
-
-    if(curRadioTyp == RADIO_212TCR){
-
-        radio212TCR->writeLinkData(pChar, nLen);
-    }
+    if (radio != NULL)
+        radio->writeLinkData(pChar, nLen);
 }
 
 
 void RadioManage::writeCtrlData(uint16_t ctrlTyp, char* pChar,int nLen)
 {
-    if(curRadioTyp == RADIO_181D){
-
-        radio181D->writeCtrlData(ctrlTyp, pChar, nLen);
-    }
-
-    if(curRadioTyp == RADIO_171AL){
-
-        radio171AL->writeCtrlData(ctrlTyp, pChar, nLen);
-    };
-
-    if(curRadioTyp == RADIO_171D){
-
-        radio171D->writeCtrlData(ctrlTyp, pChar, nLen);
-    }
-
-    if(curRadioTyp == RADIO_781TCP){
-
-        radio781TCP->writeCtrlData(ctrlTyp, pChar, nLen);
-    }
-
-    if(curRadioTyp == RADIO_212TCR){
-
-        radio212TCR->writeCtrlData(ctrlTyp, pChar, nLen);
-    }
+    if (radio != NULL)
+        radio->writeCtrlData(ctrlTyp, pChar, nLen);
 }
 
 

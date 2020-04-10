@@ -1,25 +1,18 @@
 #ifndef RADIO181D_H
 #define RADIO181D_H
 
-#include <QObject>
-#include <QMutex>
-#include <stdint.h>
-#include <QTimer>
-#include "Uart/qextserialport.h"
-#include "socket/socketcommon.h"
+#include "Radio.h"
 
-class Radio181D: public QObject
+class Radio181D : public Radio
 {
     Q_OBJECT
 
 public:
     Radio181D();
-    ~Radio181D();
-    void serialInit();
-    int writeCtrlData(uint16_t ctrlTyp, char* data, int len);
-    int writeLinkData(char* data, int len);
-
-    inline VHF_ACK_STATE getRadioState() const { return radioState; }
+    virtual ~Radio181D();
+    virtual void serialInit();
+    virtual int writeCtrlData(uint16_t ctrlTyp, char* data, int len);
+    virtual int writeLinkData(char* data, int len);
 
 private:
     void wConverte(char* srcData, int srcLen, char* dstData, int &dstLen);
@@ -31,22 +24,13 @@ private slots:
     void onTimer();
 
 private:
-    QMutex                   m_ctrlMutex;
-    QextSerialPort          *ctrlCom;
-
-    QMutex                   m_dataMutex;
-    QextSerialPort          *dataCom;
-
-    QByteArray              dataArray;
-
     //////////////////////////////////////////////////////////
     int                     Protocol;           //0:非集群协议   1:集群协议
     int                     sChannel;           //初始频道
     //////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////
-    QTimer                  *timer;    
-    VHF_ACK_STATE           radioState;
+    QTimer                  *timer;
     long                    updTim;
     //////////////////////////////////////////////////////////
 
