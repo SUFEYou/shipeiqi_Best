@@ -82,21 +82,21 @@ int Radio171AL::writeCtrlData(uint16_t ctrlTyp, char* data, int len)
         }
     break;
     }
-
+    return 0;
 }
 
 int Radio171AL::writeLinkData(char* data, int len)
 {
     QMutexLocker locker(&m_dataMutex);
-    sendDataPackage(0x0050, data, len);
+    sendDataPackage(0x5500, data, len);
 
     return 0;
 }
 
 void Radio171AL::sendDataPackage(uint16_t type, const char* data, const int len)
 {
-    char tmp[4096];
-    memset(tmp, 0, sizeof(tmp));
+    char tmp[MAXDATALENGTH];
+    memset(tmp, 0, MAXDATALENGTH);
     int tmpLen = 0;
     //类型ID
     tmp[0] = (type>>8) & 0xFF;
@@ -110,13 +110,13 @@ void Radio171AL::sendDataPackage(uint16_t type, const char* data, const int len)
     memcpy(tmp+4, data, len);
     tmpLen += len;
     //CRC校验
-    uint16_t t_crc = getCRC(tmp, tmpLen);
+    uint16_t t_crc = getCRC((unsigned char*)tmp, tmpLen);
     tmp[tmpLen] = (t_crc>>8) & 0xFF;
     tmp[tmpLen+1] = t_crc & 0xFF;
     tmpLen += 2;
 
-    char dstData[4096];
-    memset(dstData, 0, sizeof(dstData));
+    char dstData[MAXDATALENGTH];
+    memset(dstData, 0, MAXDATALENGTH);
     int dstLen = 0;
     //添加转义
     wConverte(tmp, tmpLen, dstData+1, dstLen);
@@ -235,12 +235,12 @@ void Radio171AL::recvDataParse()
         m_recvDataList.pop_front();
 
         //去除转义字符
-        char dstData[4096];
-        memset(dstData, 0, sizeof(dstData));
+        char dstData[MAXDATALENGTH];
+        memset(dstData, 0, MAXDATALENGTH);
         int dstLen = 0;
         rConverte(tmpArray.data(), tmpArray.length(), dstData, dstLen);
         //CRC校验
-        uint16_t t_crc = getCRC(dstData, dstLen-2);
+        uint16_t t_crc = getCRC((unsigned char*)dstData, dstLen-2);
         uint16_t recv_crc = (dstData[dstLen-2]<<8) | (dstData[dstLen-1]);
         if ( t_crc != recv_crc)
         {
@@ -258,7 +258,7 @@ void Radio171AL::recvDataParse()
         //消息类型
         uint16_t msgType = (dstData[0]<<8) | (dstData[1]);
         //数传
-        if (msgType == 0X0050)
+        if (msgType == 0X5500)
         {
             RadioManage::getInstance()->onRecvLinkData(dstData+4, msgLen);
         }

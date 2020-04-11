@@ -9,6 +9,8 @@
 #include "Uart/qextserialport.h"
 #include "socket/socketcommon.h"
 
+#define MAXDATALENGTH 4096
+
 class Radio : public QObject
 {
     Q_OBJECT

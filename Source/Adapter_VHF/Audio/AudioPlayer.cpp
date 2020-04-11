@@ -171,6 +171,7 @@ int AudioPlayer::getPlayData(uint8_t *data, int &len)
     {
         len = -1;
     }
+    return 0;
 }
 
 uint8_t AudioPlayer::getPlayID() const

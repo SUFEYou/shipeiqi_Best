@@ -15,7 +15,10 @@ public:
     virtual int writeLinkData(char* data, int len);
 
 private:
-    void wConverte(char* srcData, int srcLen, char* dstData, int &dstLen);
+    void recvDataSubpackage();
+    void recvDataParse();
+    char CRCVerify(const char* data, const quint16 len);
+    void wConverte(char* srcData, int srcLen, char* dstData, int& dstLen);
     void updateRadioState(char* data, int len);
 
 private slots:
@@ -23,9 +26,10 @@ private slots:
     void readCtrlCom();
     void onTimer();
 
-
 private:
-
+    QList<QByteArray>                   m_recvDataList;
+    QTimer                              *timer;
+    long                                updTim;
 };
 
 #endif // RADIO212TCR_H

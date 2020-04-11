@@ -71,7 +71,6 @@ void Radio181D::readDataCom()
     {
 
         //qDebug() << "181D DataCom Recv size: " << data.size();
-        //emit comRecData(temp);
         RadioManage::getInstance()->onRecvLinkData(data);
     }
 }
