@@ -20,10 +20,17 @@ private slots:
 
 
 private:
+    void recvDataSubpackage();
+    void recvDataParse();
+    void rConverte(const char* srcData, const int srcLen, char* dstData, int& dstLen);
+    void sendDataPackage(uint16_t type, const char* data, const int len);
+    void wConverte(const char* srcData, const int srcLen, char* dstData, int& dstLen);
+    void updateRadioState(uint16_t type, const char* data, const int len);
     uint16_t getCRC(unsigned char* buf, unsigned int len);
-    void wConverte(char* srcData, int srcLen, char* dstData, int &dstLen);
-    void updateRadioState(char* data, int len);
 
+private:
+    QList<QByteArray>                   m_recvDataList;
+    QTimer                              *m_timer;
 };
 
 #endif // RADIO171D_H

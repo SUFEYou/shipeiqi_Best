@@ -61,6 +61,7 @@ public:
     // 数据输出
     bool PortCommSendOutData(char* pChar, int nLen);
     void OnCommRecData(const QByteArray &data);
+    void OnCommRecData(const char* data, const uint16_t len);
 
     // No.4 Condition
     // Get the Layer Message And Change the State

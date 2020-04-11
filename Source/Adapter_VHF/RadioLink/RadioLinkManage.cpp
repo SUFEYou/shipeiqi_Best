@@ -370,7 +370,6 @@ void  RadioLinkManage::ReSetListCountNum()
 
 }
 
-
 void RadioLinkManage::OnCommRecData(const QByteArray &data)
 {
     if (m_radioLinkClient->GetAvailable())
@@ -380,6 +379,18 @@ void RadioLinkManage::OnCommRecData(const QByteArray &data)
     else if (m_radioLinkMaster->GetAvailable())
     {
         m_radioLinkMaster->recvData(data.data(), data.length());
+    }
+}
+
+void RadioLinkManage::OnCommRecData(const char* data, const uint16_t len)
+{
+    if (m_radioLinkClient->GetAvailable())
+    {
+        m_radioLinkClient->recvData(data, len);
+    }
+    else if (m_radioLinkMaster->GetAvailable())
+    {
+        m_radioLinkMaster->recvData(data, len);
     }
 }
 

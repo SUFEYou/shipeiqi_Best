@@ -33,6 +33,7 @@ public:
 
     void writeLinkData(char* pChar,int nLen);  
     void onRecvLinkData(QByteArray data);
+    void onRecvLinkData(const char* data, const uint16_t len);
 
 private:
     RadioManage();

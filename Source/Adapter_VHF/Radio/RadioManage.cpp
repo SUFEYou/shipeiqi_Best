@@ -93,3 +93,8 @@ void RadioManage::onRecvLinkData(QByteArray data)
 {
     RadioLinkManage::getInstance()->OnCommRecData(data);
 }
+
+void RadioManage::onRecvLinkData(const char* data, const uint16_t len)
+{
+    RadioLinkManage::getInstance()->OnCommRecData(data, len);
+}
