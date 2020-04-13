@@ -18,7 +18,7 @@ private:
     void recvDataParse();
     void messageSeparate(const char* data, const int len);
     void rConverte(const char* srcData, const int srcLen, char* dstData, int& dstLen);
-    void sendDataPackage(char type, const char* data, const int len);
+    void sendDataPackage(char nDimID, char type, const char* data, const int len);
     void wConverte(char* srcData, int srcLen, char* dstData, int& dstLen);
     char CRCVerify(const char* data, const quint16 len);
     void updateRadioState(char* data, int len);

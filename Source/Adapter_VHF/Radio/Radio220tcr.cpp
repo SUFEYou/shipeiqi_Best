@@ -627,12 +627,12 @@ int Radio220tcr::writeCtrlData(uint16_t ctrlTyp, char* data, int len)
 int Radio220tcr::writeLinkData(char* data, int len)
 {
     QMutexLocker locker(&m_dataMutex);
-    sendDataPackage(0x84, data, len);
+    sendDataPackage(0x41, 0x84, data, len);
 
     return 0;
 }
 
-void Radio220tcr::sendDataPackage(char type, const char* data, const int len)
+void Radio220tcr::sendDataPackage(char nDimID, char type, const char* data, const int len)
 {
     char tmp[MAXDATALENGTH];
     memset(tmp, 0, MAXDATALENGTH);
@@ -642,9 +642,9 @@ void Radio220tcr::sendDataPackage(char type, const char* data, const int len)
     //信息长度
     tmp[1] = len+7;
     //目的设备ID
-    tmp[2] = 0x42;
+    tmp[2] = nDimID;
     //源设备ID
-    tmp[3] = 0x40;
+    tmp[3] = 0x42;
     //信令ID
     tmp[4] = type;
     tmpLen += 5;
