@@ -148,7 +148,7 @@ void Radio171AL::wConverte(const char* srcData, const int srcLen, char* dstData,
         }
         else
         {
-            dstData[dstLen] = 0xDD;
+            dstData[dstLen] = srcData[i];
             ++dstLen;
         }
     }

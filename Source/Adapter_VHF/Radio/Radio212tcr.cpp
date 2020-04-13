@@ -658,11 +658,15 @@ void Radio212TCR::sendDataPackage(char nDimID, char type, const char* data, cons
     wConverte(tmp, tmpLen, dstData+1, dstLen);
     //CRC校验
     uint16_t t_crc = CRCVerify(dstData+1, dstLen);
+    //添加包头0xC0长度1
+    dstLen += 1;
     dstData[dstLen] = t_crc >> 4;
     dstData[dstLen+1] = t_crc & 0x0F;
     dstLen += 2;
     dstData[0] = 0xC0;
     dstData[dstLen] = 0xC0;
+    dstLen += 1;
+    dataCom->write(dstData, dstLen);
 }
 
 void Radio212TCR::wConverte(char* srcData, int srcLen, char* dstData, int& dstLen)
@@ -685,7 +689,7 @@ void Radio212TCR::wConverte(char* srcData, int srcLen, char* dstData, int& dstLe
         }
         else
         {
-            dstData[dstLen] = 0xDD;
+            dstData[dstLen] = srcData[i];
             ++dstLen;
         }
     }
