@@ -1,15 +1,14 @@
-#ifndef RADIO212TCR_H
-#define RADIO212TCR_H
+#ifndef RADIO220TCR_H
+#define RADIO220TCR_H
 
 #include "Radio.h"
 
-class Radio212TCR : public Radio
+class Radio220tcr : public Radio
 {
     Q_OBJECT
-
 public:
-    Radio212TCR();
-    virtual ~Radio212TCR();
+    Radio220tcr();
+    virtual ~Radio220tcr();
     virtual void serialInit();
     virtual int writeCtrlData(uint16_t ctrlTyp, char* data, int len);
     virtual int writeLinkData(char* data, int len);
@@ -34,4 +33,4 @@ private:
     long                                updTim;
 };
 
-#endif // RADIO212TCR_H
+#endif // RADIO220TCR_H

@@ -132,14 +132,14 @@ void Radio171D::wConverte(const char* srcData, const int srcLen, char* dstData, 
 {
     for (int i = 0; i < srcLen; ++i)
     {
-        if (srcData[i] == 0XC0)
+        if (srcData[i] == 0xC0)
         {
             dstData[dstLen] = 0xDB;
             ++dstLen;
             dstData[dstLen] = 0xDC;
             ++dstLen;
         }
-        else if (srcData[i] == 0XDB)
+        else if (srcData[i] == 0xDB)
         {
             dstData[dstLen] = 0xDB;
             ++dstLen;

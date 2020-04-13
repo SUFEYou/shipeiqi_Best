@@ -1,18 +1,18 @@
-#include "Radio212tcr.h"
+#include "Radio220tcr.h"
 #include <QDateTime>
 #include <QDebug>
 
-Radio212TCR::Radio212TCR()
+Radio220tcr::Radio220tcr()
 {
 
 }
 
-Radio212TCR::~Radio212TCR()
+Radio220tcr::~Radio220tcr()
 {
 
 }
 
-void Radio212TCR::serialInit()
+void Radio220tcr::serialInit()
 {
 #if WIN32
     dataCom = new QextSerialPort("COM1");
@@ -29,9 +29,9 @@ void Radio212TCR::serialInit()
     //
     if (false == dataCom->open(QIODevice::ReadWrite))
     {
-        qDebug() << "212TCR Data Serail Open Err!";
+        qDebug() << "220TCR Data Serail Open Err!";
     } else {
-        qDebug() << "212TCR Data Serail Open Success!";
+        qDebug() << "220TCR Data Serail Open Success!";
     }
 
     timer = new QTimer(this);
@@ -43,14 +43,14 @@ void Radio212TCR::serialInit()
     memset(&radioState, 0, sizeof(VHF_ACK_STATE));
 }
 
-void Radio212TCR::readCom()
+void Radio220tcr::readCom()
 {
     dataArray.push_back(ctrlCom->readAll());
     recvDataSubpackage();
     recvDataParse();
 }
 
-void Radio212TCR::recvDataSubpackage()
+void Radio220tcr::recvDataSubpackage()
 {
     if (dataArray.length() < 3)//3 == 包头（1字节）+ 校验（2字节） + 包尾（1字节）
         return;
@@ -107,7 +107,7 @@ void Radio212TCR::recvDataSubpackage()
     }
 }
 
-void Radio212TCR::recvDataParse()
+void Radio220tcr::recvDataParse()
 {
     //解析包内容
     while (!m_recvDataList.isEmpty())
@@ -139,7 +139,7 @@ void Radio212TCR::recvDataParse()
     }
 }
 
-void Radio212TCR::messageSeparate(const char* data, const int len)
+void Radio220tcr::messageSeparate(const char* data, const int len)
 {
     char CMDType = *(data+4);
     switch(CMDType)
@@ -380,7 +380,7 @@ void Radio212TCR::messageSeparate(const char* data, const int len)
                             break;
                         case 0x16:		// 自动等待探测
                             {
-                               // m_nRadioState	= RADIOAUTO_DET_LISTEN;
+                                //m_nRadioState	= RADIOAUTO_DET_LISTEN;
                             }
                             break;
                         case 0x17:		// 自动响应探测
@@ -582,7 +582,7 @@ void Radio212TCR::messageSeparate(const char* data, const int len)
         }
 }
 
-void Radio212TCR::rConverte(const char* srcData, const int srcLen, char* dstData, int& dstLen)
+void Radio220tcr::rConverte(const char* srcData, const int srcLen, char* dstData, int& dstLen)
 {
     for (int m = 0;  m < srcLen; ++m)
     {
@@ -614,17 +614,17 @@ void Radio212TCR::rConverte(const char* srcData, const int srcLen, char* dstData
     }
 }
 
-void Radio212TCR::updateRadioState(char* data, int len)
+void Radio220tcr::updateRadioState(char* data, int len)
 {
 
 }
 
-int Radio212TCR::writeCtrlData(uint16_t ctrlTyp, char* data, int len)
+int Radio220tcr::writeCtrlData(uint16_t ctrlTyp, char* data, int len)
 {
 
 }
 
-int Radio212TCR::writeLinkData(char* data, int len)
+int Radio220tcr::writeLinkData(char* data, int len)
 {
     QMutexLocker locker(&m_dataMutex);
     sendDataPackage(0x84, data, len);
@@ -632,7 +632,7 @@ int Radio212TCR::writeLinkData(char* data, int len)
     return 0;
 }
 
-void Radio212TCR::sendDataPackage(char type, const char* data, const int len)
+void Radio220tcr::sendDataPackage(char type, const char* data, const int len)
 {
     char tmp[MAXDATALENGTH];
     memset(tmp, 0, MAXDATALENGTH);
@@ -665,7 +665,7 @@ void Radio212TCR::sendDataPackage(char type, const char* data, const int len)
     dstData[dstLen] = 0xC0;
 }
 
-void Radio212TCR::wConverte(char* srcData, int srcLen, char* dstData, int& dstLen)
+void Radio220tcr::wConverte(char* srcData, int srcLen, char* dstData, int& dstLen)
 {
     for (int i = 0; i < srcLen; ++i)
     {
@@ -691,7 +691,7 @@ void Radio212TCR::wConverte(char* srcData, int srcLen, char* dstData, int& dstLe
     }
 }
 
-char Radio212TCR::CRCVerify(const char* data, const quint16 len)
+char Radio220tcr::CRCVerify(const char* data, const quint16 len)
 {
     if (len <= 0)
         return 0;
@@ -701,7 +701,7 @@ char Radio212TCR::CRCVerify(const char* data, const quint16 len)
     return crc;
 }
 
-void Radio212TCR::onTimer()
+void Radio220tcr::onTimer()
 {
 
 }
