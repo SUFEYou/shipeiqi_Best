@@ -32,6 +32,7 @@ private:
     QList<QByteArray>                   m_recvDataList;
     QTimer                              *timer;
     long                                updTim;
+    uint16_t                            m_nModemState;
 };
 
 #endif // RADIO212TCR_H
