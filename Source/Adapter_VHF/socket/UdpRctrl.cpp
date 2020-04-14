@@ -5,7 +5,7 @@
 #include "config/ConfigLoader.h"
 #include "socket/SocketManage.h"
 #include "Radio/RadioManage.h"
-#include <socket/socketcommon.h>
+#include <socket/SocketCommu.h>
 #include <time.h>
 
 
@@ -48,26 +48,26 @@ void UDPRctrl::onRev()
 //       qDebug()<<"Recv Snder Port-------------:"<< sndPort;
 
 
-       NET_MSG_HEADER netHeader;
-       memcpy(&netHeader,data,sizeof(NET_MSG_HEADER));
-       int currLen = sizeof(NET_MSG_HEADER);
+       MSG_HEADER msgHeader;
+       memcpy(&msgHeader,data,sizeof(MSG_HEADER));
+       int currLen = sizeof(MSG_HEADER);
 
-       if (netHeader.MessageModel == MessageModel_VHF_Ctrl)
+       if (msgHeader.msgTyp == MSG_TYP_CTRL)
        {
-            if(netHeader.MessageType == MessageTyp_VHF_regist){                                 //通道注冊
+            if(msgHeader.funCod == Dev_regist){                                                 //通道注冊
 
                 qDebug()<<"Recv Regist Cmd--------------!!!";
 
-                NET_REGIST netRegist;
-                memcpy(&netRegist,data + currLen, sizeof(NET_REGIST));
+                DEV_REGIST devRegist;
+                memcpy(&devRegist,data + currLen, sizeof(DEV_REGIST));
 
                 int timestamp = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
 //                qDebug()<<"Recv Regist Cmd--------------timestamp"<< timestamp;
 
                 CTRL_REGIST_VO regPipe;
-                regPipe.RadioID   = netRegist.RadioID;                                          //
-                regPipe.NetIPAddr = QString(QLatin1String(netRegist.NetIPAddr));                //注册IP
-                regPipe.NetPort   = netRegist.NetPort;                                          //注册Port
+                regPipe.DevID   = msgHeader.DevID;                                            //
+                regPipe.NetIPAddr = QString(QLatin1String(devRegist.NetIPAddr));                //注册IP
+                regPipe.NetPort   = devRegist.NetPort;                                          //注册Port
                 regPipe.uptTime   = timestamp;                                                  //跟新时间戳(秒级)
 
 
@@ -75,58 +75,26 @@ void UDPRctrl::onRev()
 
             }
 
-            if(netHeader.MessageType == MessageTyp_VHF_Set_WorkMod){                        //设置工作模式
+            if(msgHeader.funCod == Set_WorkTyp
+             ||msgHeader.funCod == Set_WorkMod
+             ||msgHeader.funCod == Set_Channel
+             ||msgHeader.funCod == Set_TxFreq
+             ||msgHeader.funCod == Set_RxFreq
+             ||msgHeader.funCod == Set_Power
+             ||msgHeader.funCod == Set_Squelch
+             ||msgHeader.funCod == Ask_State){
 
-                int ctrlDataLen = sizeof(VHF_SET_WORKMOD);
-                if(nLen == sizeof(NET_MSG_HEADER) + ctrlDataLen){
-
-                    char ctrlData[ctrlDataLen];
-                    memcpy(ctrlData, data + currLen, ctrlDataLen);
-
-
-                    RadioManage::getInstance()->writeCtrlData(netHeader.MessageType, ctrlData, ctrlDataLen);
-                }
-
-            }
-
-            if(netHeader.MessageType == MessageTyp_VHF_Set_Channel){                        //设置信道
-
-                int ctrlDataLen = sizeof(VHF_SET_CHANNEL);
-                if(nLen == sizeof(NET_MSG_HEADER) + ctrlDataLen){
+                int ctrlDataLen = sizeof(RADIO_SET);
+                if(nLen == sizeof(MSG_HEADER) + ctrlDataLen){
 
                     char ctrlData[ctrlDataLen];
                     memcpy(ctrlData, data + currLen, ctrlDataLen);
 
 
-                    RadioManage::getInstance()->writeCtrlData(netHeader.MessageType, ctrlData, ctrlDataLen);
+                    RadioManage::getInstance()->writeCtrlData(msgHeader.funCod, ctrlData, ctrlDataLen);
                 }
+
             }
-
-            if(netHeader.MessageType == MessageTyp_VHF_Set_Channel){                        //设置信道
-
-                int ctrlDataLen = sizeof(VHF_SET_CHANNEL);
-                if(nLen == sizeof(NET_MSG_HEADER) + ctrlDataLen){
-
-                    char ctrlData[ctrlDataLen];
-                    memcpy(ctrlData, data + currLen, ctrlDataLen);
-
-
-                    RadioManage::getInstance()->writeCtrlData(netHeader.MessageType, ctrlData, ctrlDataLen);
-                }
-            }
-
-//            if(netHeader.MessageType == MessageTyp_VHF_Ask_State){                          //状态问询
-
-//                int ctrlDataLen = sizeof(VHF_ASK_STATE);
-//                if(nLen == sizeof(NET_MSG_HEADER) + ctrlDataLen){
-
-//                    char ctrlData[ctrlDataLen];
-//                    memcpy(ctrlData, data + currLen, ctrlDataLen);
-
-
-//                    RadioManage::getInstance()->writeCtrlData(netHeader.MessageType, ctrlData, ctrlDataLen);
-//                }
-//            }
        }
     }
 }
@@ -162,24 +130,23 @@ void UDPRctrl::sendData(char* pData,int nLen)
 void UDPRctrl::sendCtrlAck(uint16_t ackTyp, char* pData,int nLen)
 {
 
-    if(ackTyp == MessageTyp_VHF_Ack_State){                          //状态回复
+    if(ackTyp == Ack_State){                          //工作转台
 
         time_t ltime;
         time( &ltime );
-        int  sndLen = sizeof(NET_MSG_HEADER) + sizeof(VHF_ACK_STATE);
+        int  sndLen = sizeof(MSG_HEADER) + sizeof(RADIO_STATE);
         char sndData[sndLen];
 
-        NET_MSG_HEADER netHeader;
-        netHeader.MessageLen = sndLen;
-        netHeader.MessageModel = MessageModel_VHF_Ctrl;
-        netHeader.MessageSerial= (unsigned long)ltime;
-        netHeader.MessageType  = MessageTyp_VHF_Ack_State;
-    //    netHeader.MessageVer;
-        netHeader.ProgramID    = ConfigLoader::getInstance()->getProgramID();
-        netHeader.ProgramType  = ConfigLoader::getInstance()->getProgramType();
+        MSG_HEADER msgHeader;
+        msgHeader.ProgramType = ConfigLoader::getInstance()->getProgramType();
+        msgHeader.ProgramID   = ConfigLoader::getInstance()->getProgramID();
+        msgHeader.msgTyp      = MSG_TYP_CTRL;
+        msgHeader.DevID       = ConfigLoader::getInstance()->getRadioID();
+        msgHeader.RadioTyp    = ConfigLoader::getInstance()->getRadioTyp();
+        msgHeader.funCod      = Ack_State;
 
-        memcpy(sndData, &netHeader, sizeof(NET_MSG_HEADER));
-        memcpy(sndData + sizeof(NET_MSG_HEADER), pData, sizeof(VHF_ACK_STATE));
+        memcpy(sndData, &msgHeader, sizeof(MSG_HEADER));
+        memcpy(sndData + sizeof(MSG_HEADER), pData, sizeof(RADIO_STATE));
 
         sendData(sndData, sndLen);
 

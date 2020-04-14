@@ -4,12 +4,20 @@
 
 Radio181D::Radio181D()
 {
-     Protocol = 1;
+    memset(&radioState, 0, sizeof(RADIO_STATE));
+    Protocol = 1;
 }
 
 Radio181D::~Radio181D()
 {
-
+    if(ctrlCom != NULL){
+        delete ctrlCom;
+        ctrlCom = NULL;
+    }
+    if(dataCom != NULL){
+        delete dataCom;
+        dataCom = NULL;
+    }
 }
 
 void Radio181D::serialInit()
@@ -61,8 +69,8 @@ void Radio181D::serialInit()
 
     updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
 
-    memset(&radioState, 0, sizeof(VHF_ACK_STATE));
 }
+
 
 void Radio181D::readDataCom()
 {
@@ -74,6 +82,7 @@ void Radio181D::readDataCom()
         RadioManage::getInstance()->onRecvLinkData(data);
     }
 }
+
 
 void Radio181D::readCtrlCom()
 {
@@ -195,18 +204,23 @@ void Radio181D::updateRadioState(char* data, int len)
         float sndFreq = float(400.0+double(data[2]*256 + data[3])*0.025);
         float revFreq = float(400.0+double(data[4]*256 + data[5])*0.025);
         char  channel = data[6];
-        char  signalV = data[7];
-        char  intensityEx = data[8];
+//        char  signalV = data[7];
+//        char  intensityEx = data[8];
 
-        radioState.funCod  = 0xF8;
         radioState.workMod = workMod;
         radioState.channel = channel;
-        radioState.signalV = signalV;
-        radioState.radioPro= intensityEx;
+        radioState.txFreq  = sndFreq*10000;
+        radioState.rxFreq  = revFreq*10000;
+        radioState.radioConnect = 1;
 
-        char ackData[sizeof(VHF_ACK_STATE)];
-        memcpy(ackData, &radioState, sizeof(VHF_ACK_STATE));
-        RadioManage::getInstance()->onCtrlAck(MessageTyp_VHF_Ack_State, ackData, sizeof(VHF_ASK_STATE));
+        updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
+
+//        radioState.signalV = signalV;
+//        radioState.radioPro= intensityEx;
+
+        char ackData[sizeof(RADIO_STATE)];
+        memcpy(ackData, &radioState, sizeof(RADIO_STATE));
+        RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));
 
     }
 
@@ -222,12 +236,14 @@ void Radio181D::updateRadioState(char* data, int len)
             return;
         }
 
-        radioState.funCod  = 0xF8;
-        radioState.workMod = wkM1;
+        radioState.workMod  = wkM1;
+        radioState.radioConnect = 1;
 
-        char ackData[sizeof(VHF_ACK_STATE)];
-        memcpy(ackData, &radioState, sizeof(VHF_ACK_STATE));
-        RadioManage::getInstance()->onCtrlAck(MessageTyp_VHF_Ack_State, ackData, sizeof(VHF_ASK_STATE));
+        updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
+
+        char ackData[sizeof(RADIO_STATE)];
+        memcpy(ackData, &radioState, sizeof(RADIO_STATE));
+        RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));
 
     }
 
@@ -243,31 +259,33 @@ void Radio181D::updateRadioState(char* data, int len)
             return;
         }
 
-        radioState.funCod  = 0xF8;
-        radioState.channel = chd1;
+        radioState.channel  = chd1;
+        radioState.radioConnect = 1;
 
-        char ackData[sizeof(VHF_ACK_STATE)];
-        memcpy(ackData, &radioState, sizeof(VHF_ACK_STATE));
-        RadioManage::getInstance()->onCtrlAck(MessageTyp_VHF_Ack_State, ackData, sizeof(VHF_ASK_STATE));
+        updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
+
+        char ackData[sizeof(RADIO_STATE)];
+        memcpy(ackData, &radioState, sizeof(RADIO_STATE));
+        RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));
 
     }
 }
 
 
-int Radio181D::writeCtrlData(uint16_t ctrlTyp, char* data, int len)
+int Radio181D::writeCtrlData(uint16_t funCode, char* data, int len)
 {
 
     QMutexLocker locker(&m_ctrlMutex);
-    if(ctrlTyp == MessageTyp_VHF_Set_WorkMod){          //设置工作模式
+    if(funCode == Set_WorkMod){          //设置工作模式
 
-        int ctrlDataLen = sizeof(VHF_SET_WORKMOD);
+        int ctrlDataLen = sizeof(RADIO_SET);
         if(len == ctrlDataLen){
 
-            VHF_SET_WORKMOD setWorkMod;
+            RADIO_SET setWorkMod;
             memcpy(&setWorkMod, data, ctrlDataLen);
 
             //工作模式 0:语音 1:数传 2:集群
-            if(setWorkMod.param1 != 0x00 && setWorkMod.param1 != 0x01 && setWorkMod.param1 != 0x02){
+            if(setWorkMod.workMod != 0x00 && setWorkMod.workMod != 0x01 && setWorkMod.workMod != 0x02){
                 return 1;
             }
 
@@ -277,7 +295,7 @@ int Radio181D::writeCtrlData(uint16_t ctrlTyp, char* data, int len)
             int  dstLen;
 
             srcData[0] = 0xF3;
-            srcData[1] = setWorkMod.param1;
+            srcData[1] = setWorkMod.workMod;
             if(Protocol == 1){       // 集群协议
                 srcData[0] = 0xF3 - 0x10;
             }
@@ -286,12 +304,12 @@ int Radio181D::writeCtrlData(uint16_t ctrlTyp, char* data, int len)
             ctrlCom->write(dstData, dstLen);
         }
 
-    } else if(ctrlTyp == MessageTyp_VHF_Set_Channel){   //设置信道
+    } else if(funCode == Set_Channel){   //设置信道
 
-        int ctrlDataLen = sizeof(VHF_SET_CHANNEL);
+        int ctrlDataLen = sizeof(RADIO_SET);
         if(len == ctrlDataLen){
 
-            VHF_SET_CHANNEL setChannel;
+            RADIO_SET setChannel;
             memcpy(&setChannel, data, ctrlDataLen);
 
             char srcData[2];
@@ -300,7 +318,7 @@ int Radio181D::writeCtrlData(uint16_t ctrlTyp, char* data, int len)
             int  dstLen;
 
             srcData[0] = 0xFD;
-            srcData[1] = setChannel.param1;
+            srcData[1] = setChannel.channel;
             if(Protocol == 1){       // 集群协议
                 srcData[0] = 0xFD - 0x10;
             }
@@ -309,9 +327,9 @@ int Radio181D::writeCtrlData(uint16_t ctrlTyp, char* data, int len)
             ctrlCom->write(dstData, dstLen);
         }
 
-    } else if(ctrlTyp == MessageTyp_VHF_Ask_State){     //状态问询
+    } else if(funCode == Ask_State){     //状态问询
 
-        int ctrlDataLen = sizeof(VHF_ASK_STATE);
+        int ctrlDataLen = sizeof(RADIO_SET);
         if(len == ctrlDataLen){
 
             char srcData[2];
@@ -328,14 +346,6 @@ int Radio181D::writeCtrlData(uint16_t ctrlTyp, char* data, int len)
             wConverte(srcData, srcLen, dstData, dstLen);
             ctrlCom->write(dstData, dstLen);
         }
-
-    } else if(ctrlTyp == MessageTyp_VHF_Set_Freq){      //频点设置
-
-
-
-    } else if(ctrlTyp == MessageTyp_VHF_Set_Signal){    //
-
-
 
     }
 
@@ -409,12 +419,29 @@ void Radio181D::onTimer()
 
 //    qDebug()<<"181D onTimer------------------!!!";
 
-    VHF_ASK_STATE askState;
-    askState.funCod = 0xF7;
-    askState.param1 = 0x01;
+    RADIO_SET askState;
+    memset(&askState, 0, sizeof(RADIO_SET));
 
-    char data[sizeof(VHF_ASK_STATE)];
-    memcpy(data, &askState, sizeof(VHF_ASK_STATE));
+    char data[sizeof(RADIO_SET)];
+    memcpy(data, &askState, sizeof(RADIO_SET));
 
-    writeCtrlData(MessageTyp_VHF_Ask_State, data, sizeof(VHF_ASK_STATE));
+    writeCtrlData(Ask_State, data, sizeof(RADIO_SET));      // 周期查询电台工作状态
+
+    checkDisconnect();
+}
+
+
+void Radio181D::checkDisconnect()
+{
+    long curTim = QDateTime::currentDateTimeUtc().toTime_t();         //秒级
+    long difTim = curTim - updTim;
+
+    if(difTim > 5){
+        updTim = curTim;
+
+        radioState.radioConnect = 1;
+        char ackData[sizeof(RADIO_STATE)];
+        memcpy(ackData, &radioState, sizeof(RADIO_STATE));
+        RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));
+    }
 }

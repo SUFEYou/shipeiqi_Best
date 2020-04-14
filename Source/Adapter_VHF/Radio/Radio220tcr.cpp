@@ -9,7 +9,10 @@ Radio220tcr::Radio220tcr()
 
 Radio220tcr::~Radio220tcr()
 {
-
+    if(dataCom != NULL){
+        delete dataCom;
+        dataCom = NULL;
+    }
 }
 
 void Radio220tcr::serialInit()
@@ -40,17 +43,17 @@ void Radio220tcr::serialInit()
 
     updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
 
-    memset(&radioState, 0, sizeof(VHF_ACK_STATE));
+    memset(&radioState, 0, sizeof(RADIO_STATE));
 }
 
 void Radio220tcr::readCom()
 {
     dataArray.push_back(dataCom->readAll());
-    recvDataSubpackage();
-    recvDataParse();
+    packageData();
+    parseData();
 }
 
-void Radio220tcr::recvDataSubpackage()
+void Radio220tcr::packageData()
 {
     if (dataArray.length() < 3)//3 == 包头（1字节）+ 校验（2字节） + 包尾（1字节）
         return;
@@ -107,7 +110,7 @@ void Radio220tcr::recvDataSubpackage()
     }
 }
 
-void Radio220tcr::recvDataParse()
+void Radio220tcr::parseData()
 {
     //解析包内容
     while (!m_recvDataList.isEmpty())
@@ -119,7 +122,7 @@ void Radio220tcr::recvDataParse()
         memset(tmp, 0, MAXDATALENGTH);
         memcpy(tmp, tmpArray.data(), tmpArray.length());
 
-        char nCRC = CRCVerify(tmp+5, tmpArray.length()-7);
+        char nCRC = getCRC(tmp+5, tmpArray.length()-7);
         char nCRCGet = (tmp[tmpArray.length()-2] << 4) + tmp[tmpArray.length()-1];
 
         if (nCRC != nCRCGet)
@@ -131,7 +134,7 @@ void Radio220tcr::recvDataParse()
             char  state[MAXDATALENGTH];
             memset(state, 0, MAXDATALENGTH);
             int   stateLen = 0;
-            rConverte(tmp, tmpArray.length()-2, state, stateLen);
+            decode(tmp, tmpArray.length()-2, state, stateLen);
             //解包到正确数据，判断该数据为数传还是控制信息，分别进行处理
             if (stateLen > 0)
                 messageSeparate(state, stateLen);
@@ -210,28 +213,28 @@ void Radio220tcr::messageSeparate(const char* data, const int len)
                 {
                 case 0x03:
                     {
-                        m_nModemState	= RADIOMODEMSTATE_RECEIVING;
+                        //m_nModemState	= RADIOMODEMSTATE_RECEIVING;
                         //qDebug() << QString::fromUtf8("电台正在接收数据");
                         qDebug() << "Recving Data";
                     }
                     break;
                 case 0x04:
                     {
-                        m_nModemState	= RADIOMODEMSTATE_RECEIVEEND;
+                        //m_nModemState	= RADIOMODEMSTATE_RECEIVEEND;
                         //qDebug() << QString::fromUtf8("电台接收数据完成");
                         qDebug() << "Recv Data Done";
                     }
                     break;
                 case 0x05:
                     {
-                        m_nModemState	= RADIOMODEMSTATE_SENDING;
+                        //m_nModemState	= RADIOMODEMSTATE_SENDING;
                         //qDebug() << QString::fromUtf8("电台开始发送数据");
                         qDebug() << "Begin Send Data";
                     }
                     break;
                 case 0x06:
                     {
-                        m_nModemState	= RADIOMODEMSTATE_SENDEND;
+                        //m_nModemState	= RADIOMODEMSTATE_SENDEND;
                         //qDebug() << QString::fromUtf8("电台发送数据结束");
                         qDebug() << "Send Data Done";
                     }
@@ -591,7 +594,7 @@ void Radio220tcr::messageSeparate(const char* data, const int len)
         }
 }
 
-void Radio220tcr::rConverte(const char* srcData, const int srcLen, char* dstData, int& dstLen)
+void Radio220tcr::decode(const char* srcData, const int srcLen, char* dstData, int& dstLen)
 {
     for (int m = 0;  m < srcLen; ++m)
     {
@@ -623,7 +626,7 @@ void Radio220tcr::rConverte(const char* srcData, const int srcLen, char* dstData
     }
 }
 
-void Radio220tcr::updateRadioState(char* data, int len)
+void Radio220tcr::updateRadioState(uint16_t type, const char* data, const int len)
 {
 
 }
@@ -636,12 +639,12 @@ int Radio220tcr::writeCtrlData(uint16_t ctrlTyp, char* data, int len)
 int Radio220tcr::writeLinkData(char* data, int len)
 {
     QMutexLocker locker(&m_dataMutex);
-    sendDataPackage(0x41, 0x84, data, len);
+    writeData(0x41, 0x84, data, len);
 
     return 0;
 }
 
-void Radio220tcr::sendDataPackage(char nDimID, char type, const char* data, const int len)
+void Radio220tcr::writeData(char nDimID, char type, const char* data, const int len)
 {
     char tmp[MAXDATALENGTH];
     memset(tmp, 0, MAXDATALENGTH);
@@ -664,13 +667,13 @@ void Radio220tcr::sendDataPackage(char nDimID, char type, const char* data, cons
     memset(dstData, 0, MAXDATALENGTH);
     int dstLen = 0;
     //添加转义
-    wConverte(tmp, tmpLen, dstData+1, dstLen);
+    enCode(tmp, tmpLen, dstData+1, dstLen);
     //添加包头0xC0长度1
     dstLen += 1;
     //CRC校验,只校验参数
     uint16_t t_crc = 0;
     if (len > 0)
-        CRCVerify(dstData+6, len);
+        getCRC(dstData+6, len);
 
     dstData[dstLen] = t_crc >> 4;
     dstData[dstLen+1] = t_crc & 0x0F;
@@ -681,7 +684,7 @@ void Radio220tcr::sendDataPackage(char nDimID, char type, const char* data, cons
     dataCom->write(dstData, dstLen);
 }
 
-void Radio220tcr::wConverte(char* srcData, int srcLen, char* dstData, int& dstLen)
+void Radio220tcr::enCode(const char* srcData, int srcLen, char* dstData, int& dstLen)
 {
     for (int i = 0; i < srcLen; ++i)
     {
@@ -707,7 +710,7 @@ void Radio220tcr::wConverte(char* srcData, int srcLen, char* dstData, int& dstLe
     }
 }
 
-char Radio220tcr::CRCVerify(const char* data, const quint16 len)
+char Radio220tcr::getCRC(const char* data, const quint16 len)
 {
     if (len <= 0)
         return 0;

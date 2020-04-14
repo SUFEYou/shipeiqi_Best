@@ -14,20 +14,25 @@ public:
     virtual int writeLinkData(char* data, int len);
 
 private:
-    void recvDataSubpackage();
-    void recvDataParse();
+    void packageData();
+    void parseData();
     void messageSeparate(const char* data, const int len);
-    void rConverte(const char* srcData, const int srcLen, char* dstData, int& dstLen);
-    void sendDataPackage(char nDimID, char type, const char* data, const int len);
-    void wConverte(char* srcData, int srcLen, char* dstData, int& dstLen);
-    char CRCVerify(const char* data, const quint16 len);
-    void updateRadioState(char* data, int len);
+    void decode(const char* srcData, const int srcLen, char* dstData, int& dstLen);
+    void writeData(char nDimID, char type, const char* data, const int len);
+    void enCode(const char* srcData, const int srcLen, char* dstData, int& dstLen);
+    void updateRadioState(uint16_t type, const char* data, const int len);
+    char getCRC(const char* data, const quint16 len);
+
+
 
 private slots:
     void readCom();
     void onTimer();
 
 private:
+    QMutex                              m_dataMutex;
+    QextSerialPort                      *dataCom;
+
     QList<QByteArray>                   m_recvDataList;
     QTimer                              *timer;
     long                                updTim;

@@ -11,7 +11,7 @@ public:
     Radio781TCP();
     virtual ~Radio781TCP();
     virtual void serialInit();
-    virtual int writeCtrlData(uint16_t ctrlTyp, char* data, int len);
+    virtual int writeCtrlData(uint16_t funCode, char* data, int len);
     virtual int writeLinkData(char* data, int len);
 
 private:
@@ -22,8 +22,15 @@ private slots:
     void readDataCom();
     void readCtrlCom();
     void onTimer();
+    void checkDisconnect();
 
 private:
+    QMutex                   m_ctrlMutex;
+    QextSerialPort          *ctrlCom;
+
+    QMutex                   m_dataMutex;
+    QextSerialPort          *dataCom;
+
     QTimer                  *timer;
     long                    updTim;
 

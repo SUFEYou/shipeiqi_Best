@@ -4,12 +4,15 @@
 
 Radio212TCR::Radio212TCR()
 {
-
+    memset(&radioState, 0, sizeof(RADIO_STATE));
 }
 
 Radio212TCR::~Radio212TCR()
 {
-
+    if(dataCom != NULL){
+        delete dataCom;
+        dataCom = NULL;
+    }
 }
 
 void Radio212TCR::serialInit()
@@ -40,17 +43,17 @@ void Radio212TCR::serialInit()
 
     updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
 
-    memset(&radioState, 0, sizeof(VHF_ACK_STATE));
+    memset(&radioState, 0, sizeof(RADIO_STATE));
 }
 
 void Radio212TCR::readCom()
 {
     dataArray.push_back(dataCom->readAll());
-    recvDataSubpackage();
-    recvDataParse();
+    packageData();
+    parseData();
 }
 
-void Radio212TCR::recvDataSubpackage()
+void Radio212TCR::packageData()
 {
     if (dataArray.length() < 3)//3 == 包头（1字节）+ 校验（2字节） + 包尾（1字节）
         return;
@@ -107,7 +110,7 @@ void Radio212TCR::recvDataSubpackage()
     }
 }
 
-void Radio212TCR::recvDataParse()
+void Radio212TCR::parseData()
 {
     //解析包内容
     while (!m_recvDataList.isEmpty())
@@ -119,7 +122,7 @@ void Radio212TCR::recvDataParse()
         memset(tmp, 0, MAXDATALENGTH);
         memcpy(tmp, tmpArray.data(), tmpArray.length());
 
-        char nCRC = CRCVerify(tmp+5, tmpArray.length()-7);
+        char nCRC = getCRC(tmp+5, tmpArray.length()-7);
         char nCRCGet = (tmp[tmpArray.length()-2] << 4) + tmp[tmpArray.length()-1];
 
         if (nCRC != nCRCGet)
@@ -131,7 +134,7 @@ void Radio212TCR::recvDataParse()
             char  state[MAXDATALENGTH];
             memset(state, 0, MAXDATALENGTH);
             int   stateLen = 0;
-            rConverte(tmp, tmpArray.length()-2, state, stateLen);
+            decode(tmp, tmpArray.length()-2, state, stateLen);
             //解包到正确数据，判断该数据为数传还是控制信息，分别进行处理
             if (stateLen > 0)
                 messageSeparate(state, stateLen);
@@ -143,64 +146,64 @@ void Radio212TCR::messageSeparate(const char* data, const int len)
 {
     unsigned char CMDType = (unsigned char)(*(data+4));
     switch(CMDType)
+    {
+    case 0x12:		// 2.7.2 电台报告信道信息
         {
-        case 0x12:		// 2.7.2 电台报告信道信息
-            {
-                ;
-            }
-            break;
-        case 0x15:		// 2.7.3 电台报告信道组信息
-            {
-                ;
-            }
-            break;
-        case 0x17:		// 2.5 电台报告定频当前工作状态信息
-            {
-                // 解析定频工作状态信息
-            }
-            break;
-        case 0x21:		// 2.4.3 电台报告功率等级
-            {
+            ;
+        }
+        break;
+    case 0x15:		// 2.7.3 电台报告信道组信息
+        {
+            ;
+        }
+        break;
+    case 0x17:		// 2.5 电台报告定频当前工作状态信息
+        {
+            // 解析定频工作状态信息
+        }
+        break;
+    case 0x21:		// 2.4.3 电台报告功率等级
+        {
 
-            }
-            break;
-        case 0x22:
-            {
+        }
+        break;
+    case 0x22:
+        {
 
-            }
-            break;
-        case 0x23:		// 2.4.4 电台报告业务类型
+        }
+        break;
+    case 0x23:		// 2.4.4 电台报告业务类型
+        {
+            if (*(data+5) == 0x03)
             {
-                if (*(data+5) == 0x03)
+                unsigned char m_nCurWorkType = (unsigned char)(*(data+6));
+                unsigned char m_nMyRadioType = 212;
+                if (m_nMyRadioType == 212)
                 {
-                    unsigned char m_nCurWorkType = (unsigned char)(*(data+6));
-                    unsigned char m_nMyRadioType = 212;
-                    if (m_nMyRadioType == 212)
-                    {
-                    }
-                    else if (m_nMyRadioType == 221)
-                    {
-                    }
+                }
+                else if (m_nMyRadioType == 221)
+                {
                 }
             }
-            break;
-        case 0x61:		// 2.8.1 电台报告自动网参数
-            {
-                ;
-            }
-            break;
-        case 0x65:		// 2.8.2 电台报告自动网址
-            {
-                ;
-            }
-            break;
-        case 0x70:		// 2.8.3 电台报告自动信道表
-            {
-                ;
-            }
-            break;
-        case 0x76:		// 上报自动建链情况
-            {
+        }
+        break;
+    case 0x61:		// 2.8.1 电台报告自动网参数
+        {
+            ;
+        }
+        break;
+    case 0x65:		// 2.8.2 电台报告自动网址
+        {
+            ;
+        }
+        break;
+    case 0x70:		// 2.8.3 电台报告自动信道表
+        {
+            ;
+        }
+        break;
+    case 0x76:		// 上报自动建链情况
+        {
 
             }
             break;
@@ -210,28 +213,28 @@ void Radio212TCR::messageSeparate(const char* data, const int len)
                 {
                 case 0x03:
                     {
-                        m_nModemState	= RADIOMODEMSTATE_RECEIVING;
+                        //m_nModemState	= RADIOMODEMSTATE_RECEIVING;
                         //qDebug() << QString::fromUtf8("电台正在接收数据");
                         qDebug() << "Recving Data";
                     }
                     break;
                 case 0x04:
                     {
-                        m_nModemState	= RADIOMODEMSTATE_RECEIVEEND;
+                        //m_nModemState	= RADIOMODEMSTATE_RECEIVEEND;
                         //qDebug() << QString::fromUtf8("电台接收数据完成");
                         qDebug() << "Recv Data Done";
                     }
                     break;
                 case 0x05:
                     {
-                        m_nModemState	= RADIOMODEMSTATE_SENDING;
+                        //m_nModemState	= RADIOMODEMSTATE_SENDING;
                         //qDebug() << QString::fromUtf8("电台开始发送数据");
                         qDebug() << "Begin Send Data";
                     }
                     break;
                 case 0x06:
                     {
-                        m_nModemState	= RADIOMODEMSTATE_SENDEND;
+                        //m_nModemState	= RADIOMODEMSTATE_SENDEND;
                         //qDebug() << QString::fromUtf8("电台发送数据结束");
                         qDebug() << "Send Data Done";
                     }
@@ -591,7 +594,7 @@ void Radio212TCR::messageSeparate(const char* data, const int len)
         }
 }
 
-void Radio212TCR::rConverte(const char* srcData, const int srcLen, char* dstData, int& dstLen)
+void Radio212TCR::decode(const char* srcData, const int srcLen, char* dstData, int& dstLen)
 {
     for (int m = 0;  m < srcLen; ++m)
     {
@@ -623,7 +626,7 @@ void Radio212TCR::rConverte(const char* srcData, const int srcLen, char* dstData
     }
 }
 
-void Radio212TCR::updateRadioState(char* data, int len)
+void Radio212TCR::updateRadioState(uint16_t type, const char* data, const int len)
 {
 
 }
@@ -636,12 +639,12 @@ int Radio212TCR::writeCtrlData(uint16_t ctrlTyp, char* data, int len)
 int Radio212TCR::writeLinkData(char* data, int len)
 {
     QMutexLocker locker(&m_dataMutex);
-    sendDataPackage(0x41, 0x84, data, len);
+    writeData(0x41, 0x84, data, len);
 
     return 0;
 }
 
-void Radio212TCR::sendDataPackage(char nDimID, char type, const char* data, const int len)
+void Radio212TCR::writeData(char nDimID, char type, const char* data, const int len)
 {
     char tmp[MAXDATALENGTH];
     memset(tmp, 0, MAXDATALENGTH);
@@ -664,13 +667,13 @@ void Radio212TCR::sendDataPackage(char nDimID, char type, const char* data, cons
     memset(dstData, 0, MAXDATALENGTH);
     int dstLen = 0;
     //添加转义
-    wConverte(tmp, tmpLen, dstData+1, dstLen);
+    enCode(tmp, tmpLen, dstData+1, dstLen);
     //添加包头0xC0长度1
     dstLen += 1;
     //CRC校验,只校验参数
     uint16_t t_crc = 0;
     if (len > 0)
-        CRCVerify(dstData+6, len);
+        getCRC(dstData+6, len);
 
     dstData[dstLen] = t_crc >> 4;
     dstData[dstLen+1] = t_crc & 0x0F;
@@ -681,7 +684,7 @@ void Radio212TCR::sendDataPackage(char nDimID, char type, const char* data, cons
     dataCom->write(dstData, dstLen);
 }
 
-void Radio212TCR::wConverte(char* srcData, int srcLen, char* dstData, int& dstLen)
+void Radio212TCR::enCode(const char* srcData, int srcLen, char* dstData, int& dstLen)
 {
     for (int i = 0; i < srcLen; ++i)
     {
@@ -707,7 +710,7 @@ void Radio212TCR::wConverte(char* srcData, int srcLen, char* dstData, int& dstLe
     }
 }
 
-char Radio212TCR::CRCVerify(const char* data, const quint16 len)
+char Radio212TCR::getCRC(const char* data, const quint16 len)
 {
     if (len <= 0)
         return 0;

@@ -4,12 +4,16 @@
 Radio171AL::Radio171AL()
            : m_timer(new QTimer(this))
 {
+    memset(&radioState, 0, sizeof(RADIO_STATE));
     connect(m_timer, SIGNAL(timeout()), this, SLOT(onTimer()));
 }
 
 Radio171AL::~Radio171AL()
 {
-
+    if(dataCom != NULL){
+        delete dataCom;
+        dataCom = NULL;
+    }
 }
 
 void Radio171AL::serialInit()
@@ -29,49 +33,42 @@ void Radio171AL::serialInit()
     //
     if (false == dataCom->open(QIODevice::ReadWrite))
     {
-        qDebug() << "171al Serail Open Err!";
+        qDebug() << "171AL Serail Open Err!";
     } else {
-        qDebug() << "171al Serail Open Success!";
+        qDebug() << "171AL Serail Open Success!";
         m_timer->start(1000);
     }
 }
 
-
 void Radio171AL::readCom()
 {
     dataArray.push_back(dataCom->readAll());
-    recvDataSubpackage();
-    recvDataParse();
+    packageData();
+    parseData();
 }
 
-int Radio171AL::writeCtrlData(uint16_t ctrlTyp, char* data, int len)
+int Radio171AL::writeCtrlData(uint16_t funCode, char* data, int len)
 {
-    QMutexLocker locker(&m_ctrlMutex);
 
-    switch (ctrlTyp)
+    switch (funCode)
     {
-    case MessageTyp_VHF_Set_WorkMod://设置工作模式
+    case Set_WorkMod://设置工作模式
         {
 
         }
     break;
-    case MessageTyp_VHF_Set_Channel://设置信道
+    case Set_Channel://设置信道
         {
-            int ctrlDataLen = sizeof(VHF_SET_CHANNEL);
+            int ctrlDataLen = sizeof(RADIO_SET);
             if(len == ctrlDataLen)
             {
-                VHF_SET_CHANNEL setChannel;
+                RADIO_SET setChannel;
                 memcpy(&setChannel, data, ctrlDataLen);
-                sendDataPackage(0x0100, data, len);
+                writeData(0x0100, data, len);
             }
         }
     break;
-    case MessageTyp_VHF_Ask_State://状态问询
-        {
-
-        }
-    break;
-    case MessageTyp_VHF_Set_Freq://频点设置
+    case Ask_State://状态问询
         {
 
         }
@@ -82,18 +79,19 @@ int Radio171AL::writeCtrlData(uint16_t ctrlTyp, char* data, int len)
         }
     break;
     }
+
     return 0;
 }
 
 int Radio171AL::writeLinkData(char* data, int len)
 {
-    QMutexLocker locker(&m_dataMutex);
-    sendDataPackage(0x5500, data, len);
+
+    writeData(0x5500, data, len);
 
     return 0;
 }
 
-void Radio171AL::sendDataPackage(uint16_t type, const char* data, const int len)
+void Radio171AL::writeData(uint16_t type, const char* data, const int len)
 {
     char tmp[MAXDATALENGTH];
     memset(tmp, 0, MAXDATALENGTH);
@@ -119,43 +117,21 @@ void Radio171AL::sendDataPackage(uint16_t type, const char* data, const int len)
     memset(dstData, 0, MAXDATALENGTH);
     int dstLen = 0;
     //添加转义
-    wConverte(tmp, tmpLen, dstData+1, dstLen);
+    enCode(tmp, tmpLen, dstData+1, dstLen);
     //包头包尾
     dstData[0] = 0xC0;
     dstData[dstLen+1] = 0xC0;
     dstLen += 2;
 
+    QMutexLocker locker(&m_dataMutex);
     dataCom->write(dstData, dstLen);
 }
 
-void Radio171AL::wConverte(const char* srcData, const int srcLen, char* dstData, int& dstLen)
-{
-    for (int i = 0; i < srcLen; ++i)
-    {
-        if (srcData[i] == 0xC0)
-        {
-            dstData[dstLen] = 0xDB;
-            ++dstLen;
-            dstData[dstLen] = 0xDC;
-            ++dstLen;
-        }
-        else if (srcData[i] == 0xDB)
-        {
-            dstData[dstLen] = 0xDB;
-            ++dstLen;
-            dstData[dstLen] = 0xDD;
-            ++dstLen;
-        }
-        else
-        {
-            dstData[dstLen] = srcData[i];
-            ++dstLen;
-        }
-    }
-}
+
 
 void Radio171AL::onTimer()
 {
+    QMutexLocker locker(&m_dataMutex);
     //心跳机制
     static bool flag = false;
     if (!flag)
@@ -169,7 +145,7 @@ void Radio171AL::onTimer()
 
 }
 
-void Radio171AL::recvDataSubpackage()
+void Radio171AL::packageData()
 {
     if (dataArray.length() < 8)//8 == 包头(1字节)+类型ID(2字节)+信息长度(2字节)+校验(2字节)+包尾(1字节)
         return;
@@ -227,7 +203,7 @@ void Radio171AL::recvDataSubpackage()
     }
 }
 
-void Radio171AL::recvDataParse()
+void Radio171AL::parseData()
 {
     while (!m_recvDataList.isEmpty())
     {
@@ -238,7 +214,7 @@ void Radio171AL::recvDataParse()
         char dstData[MAXDATALENGTH];
         memset(dstData, 0, MAXDATALENGTH);
         int dstLen = 0;
-        rConverte(tmpArray.data(), tmpArray.length(), dstData, dstLen);
+        decode(tmpArray.data(), tmpArray.length(), dstData, dstLen);
         //CRC校验
         uint16_t t_crc = getCRC((unsigned char*)dstData, dstLen-2);
         uint16_t recv_crc = (dstData[dstLen-2]<<8) | (dstData[dstLen-1]);
@@ -299,13 +275,41 @@ void Radio171AL::updateRadioState(uint16_t type, const char* data, const int len
     break;
     default:
         {
-            qDebug() << "In Radio171AL::updateRadioState, Recv unknown msg type!";
+            qDebug() << "In Radio171D::updateRadioState, Recv unknown msg type!";
         }
     break;
     }
 }
 
-void Radio171AL::rConverte(const char* srcData, const int srcLen, char* dstData, int& dstLen)
+
+void Radio171AL::enCode(const char* srcData, const int srcLen, char* dstData, int& dstLen)
+{
+    for (int i = 0; i < srcLen; ++i)
+    {
+        if (srcData[i] == 0XC0)
+        {
+            dstData[dstLen] = 0xDB;
+            ++dstLen;
+            dstData[dstLen] = 0xDC;
+            ++dstLen;
+        }
+        else if (srcData[i] == 0XDB)
+        {
+            dstData[dstLen] = 0xDB;
+            ++dstLen;
+            dstData[dstLen] = 0xDD;
+            ++dstLen;
+        }
+        else
+        {
+            dstData[dstLen] = srcData[i];
+            ++dstLen;
+        }
+    }
+}
+
+
+void Radio171AL::decode(const char* srcData, const int srcLen, char* dstData, int& dstLen)
 {
     for (int m = 0;  m < srcLen; ++m)
     {

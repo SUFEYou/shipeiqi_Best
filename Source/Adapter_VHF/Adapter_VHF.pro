@@ -67,7 +67,6 @@ HEADERS += \
     socket/UdpRctrl.h \
     socket/UdpVoice.h \
     socket/TcpClient.h \
-    socket/socketcommon.h \
     socket/TCPDataProcess.h \
     RadioLink/RadioLink.h \
     RadioLink/LinkCommon.h \
@@ -77,6 +76,8 @@ HEADERS += \
     Audio/AudioPtt.h \
     Radio/Radio212tcr.h \
     Radio/Radio.h \
+    Radio/RadioType.h \
+    socket/SocketCommu.h \
     Radio/Radio220tcr.h
 
 win32:{

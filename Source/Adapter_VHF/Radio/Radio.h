@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include "RadioManage.h"
 #include "Uart/qextserialport.h"
-#include "socket/socketcommon.h"
+#include "socket/SocketCommu.h"
 
 #define MAXDATALENGTH 4096
 
@@ -19,21 +19,15 @@ public:
     virtual ~Radio();
 
     virtual void serialInit() = 0;
-    virtual int writeCtrlData(uint16_t ctrlTyp, char* data, int len) = 0;
+    virtual int writeCtrlData(uint16_t funCode, char* data, int len) = 0;
     virtual int writeLinkData(char* data, int len) = 0;
 
-    inline VHF_ACK_STATE getRadioState() const { return radioState; }
+    inline RADIO_STATE getRadioState() const { return radioState; }
 
 
 protected:
-    QMutex                   m_ctrlMutex;
-    QextSerialPort          *ctrlCom;
 
-    QMutex                   m_dataMutex;
-    QextSerialPort          *dataCom;
-
-    VHF_ACK_STATE           radioState;
-
+    RADIO_STATE             radioState;
     QByteArray              dataArray;
 
 private:

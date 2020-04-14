@@ -4,12 +4,19 @@
 
 Radio781TCP::Radio781TCP()
 {
-
+    memset(&radioState, 0, sizeof(RADIO_STATE));
 }
 
 Radio781TCP::~Radio781TCP()
 {
-
+    if(ctrlCom != NULL){
+        delete ctrlCom;
+        ctrlCom = NULL;
+    }
+    if(dataCom != NULL){
+        delete dataCom;
+        dataCom = NULL;
+    }
 }
 
 void Radio781TCP::serialInit()
@@ -61,7 +68,6 @@ void Radio781TCP::serialInit()
 
     updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
 
-    memset(&radioState, 0, sizeof(VHF_ACK_STATE));
 }
 
 
@@ -74,6 +80,7 @@ void Radio781TCP::readDataCom()
         RadioManage::getInstance()->onRecvLinkData(data);
     }
 }
+
 
 void Radio781TCP::readCtrlCom()
 {
@@ -184,13 +191,151 @@ void Radio781TCP::readCtrlCom()
 
 void Radio781TCP::updateRadioState(char* data, int len)
 {
+    char funCod = data[0];
+    if((unsigned char)funCod == 0xF8 ){                //输出的电台查询状态
+        if(len != 9){
+            return;
+        }
 
+        char  workMod  = data[1];
+        float sndFreq = float(400.0+double(data[2]*256 + data[3])*0.025);
+        float revFreq = float(400.0+double(data[4]*256 + data[5])*0.025);
+        char  channel = data[6];
+//        char  signalV = data[7];
+//        char  intensityEx = data[8];
+
+        radioState.workMod = workMod;
+        radioState.channel = channel;
+        radioState.txFreq  = sndFreq*10000;
+        radioState.rxFreq  = revFreq*10000;
+        radioState.radioConnect = 1;
+
+        updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
+
+//        radioState.signalV = signalV;
+//        radioState.radioPro= intensityEx;
+
+        char ackData[sizeof(RADIO_STATE)];
+        memcpy(ackData, &radioState, sizeof(RADIO_STATE));
+        RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));
+
+    }
+
+    if((unsigned char)funCod == 0xF4 ){                //输出的语音/数据状态(工作模式)
+
+        if(len != 3){
+            return;
+        }
+
+        char wkM1 = data[1];
+        char wkM2 = data[2];
+        if(wkM1 != wkM2){
+            return;
+        }
+
+        radioState.workMod  = wkM1;
+        radioState.radioConnect = 1;
+
+        updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
+
+        char ackData[sizeof(RADIO_STATE)];
+        memcpy(ackData, &radioState, sizeof(RADIO_STATE));
+        RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));
+
+    }
+
+    if((unsigned char)funCod == 0xFE ){                //输出的设置频道号
+
+        if(len != 3){
+            return;
+        }
+
+        char chd1 = data[1];
+        char chd2 = data[2];
+        if(chd1 != chd2){
+            return;
+        }
+
+        radioState.channel  = chd1;
+        radioState.radioConnect = 1;
+
+        updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
+
+        char ackData[sizeof(RADIO_STATE)];
+        memcpy(ackData, &radioState, sizeof(RADIO_STATE));
+        RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));
+
+    }
 
 }
 
 
-int Radio781TCP::writeCtrlData(uint16_t ctrlTyp, char* data, int len)
+int Radio781TCP::writeCtrlData(uint16_t funCode, char* data, int len)
 {
+    QMutexLocker locker(&m_ctrlMutex);
+    if(funCode == Set_WorkMod){          //设置工作模式
+
+        int ctrlDataLen = sizeof(RADIO_SET);
+        if(len == ctrlDataLen){
+
+            RADIO_SET setWorkMod;
+            memcpy(&setWorkMod, data, ctrlDataLen);
+
+            //工作模式 0:语音 1:数传 2:集群
+            if(setWorkMod.workMod != 0x00 && setWorkMod.workMod != 0x01 && setWorkMod.workMod != 0x02){
+                return 1;
+            }
+
+            char srcData[2];
+            char dstData[20];
+            int  srcLen = 2;
+            int  dstLen;
+
+            srcData[0] = 0xF3;
+            srcData[1] = setWorkMod.workMod;
+
+            wConverte(srcData, srcLen, dstData, dstLen);
+            ctrlCom->write(dstData, dstLen);
+        }
+
+    } else if(funCode == Set_Channel){   //设置信道
+
+        int ctrlDataLen = sizeof(RADIO_SET);
+        if(len == ctrlDataLen){
+
+            RADIO_SET setChannel;
+            memcpy(&setChannel, data, ctrlDataLen);
+
+            char srcData[2];
+            char dstData[20];
+            int  srcLen = 2;
+            int  dstLen;
+
+            srcData[0] = 0xFD;
+            srcData[1] = setChannel.channel;
+
+            wConverte(srcData, srcLen, dstData, dstLen);
+            ctrlCom->write(dstData, dstLen);
+        }
+
+    } else if(funCode == Ask_State){     //状态问询
+
+        int ctrlDataLen = sizeof(RADIO_SET);
+        if(len == ctrlDataLen){
+
+            char srcData[2];
+            char dstData[20];
+            int  srcLen = 2;
+            int  dstLen;
+
+            srcData[0] = 0xF7;
+            srcData[1] = 0x01;
+
+            wConverte(srcData, srcLen, dstData, dstLen);
+            ctrlCom->write(dstData, dstLen);
+        }
+
+    }
 
     return 0;
 }
@@ -252,5 +397,29 @@ int Radio781TCP::writeLinkData(char* data, int len)
 void Radio781TCP::onTimer()
 {
 
+    RADIO_SET askState;
+    memset(&askState, 0, sizeof(RADIO_SET));
 
+    char data[sizeof(RADIO_SET)];
+    memcpy(data, &askState, sizeof(RADIO_SET));
+
+    writeCtrlData(Ask_State, data, sizeof(RADIO_SET));      // 周期查询电台工作状态
+
+    checkDisconnect();
+
+}
+
+void Radio781TCP::checkDisconnect()
+{
+    long curTim = QDateTime::currentDateTimeUtc().toTime_t();         //秒级
+    long difTim = curTim - updTim;
+
+    if(difTim > 5){
+        updTim = curTim;
+
+        radioState.radioConnect = 1;
+        char ackData[sizeof(RADIO_STATE)];
+        memcpy(ackData, &radioState, sizeof(RADIO_STATE));
+        RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));
+    }
 }

@@ -77,15 +77,15 @@ void RadioManage::writeLinkData(char* pChar,int nLen)
 }
 
 
-void RadioManage::writeCtrlData(uint16_t ctrlTyp, char* pChar,int nLen)
+void RadioManage::writeCtrlData(uint16_t funCode, char* pChar,int nLen)
 {
     if (radio != NULL)
-        radio->writeCtrlData(ctrlTyp, pChar, nLen);
+        radio->writeCtrlData(funCode, pChar, nLen);
 }
 
 
-void RadioManage::onCtrlAck(uint16_t ackTyp, char* pChar,int nLen){
-    SocketManage::getInstance()->getCtrlUdp()->sendCtrlAck(ackTyp, pChar, nLen);
+void RadioManage::onCtrlAck(uint16_t funCode, char* pChar,int nLen){
+    SocketManage::getInstance()->getCtrlUdp()->sendCtrlAck(funCode, pChar, nLen);
 }
 
 

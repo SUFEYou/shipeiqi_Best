@@ -17,18 +17,17 @@ UDPVoice::UDPVoice()
 
 void UDPVoice::init(int port)
 {
-//    this->m_sndToIP   = sndToIP;
+
     this->m_Port = port;
-//    this->m_sndToPort = sndToPort;
 
     for(int i=0; i<4; i++){
         VOICE_REGIST_VO regVO = regArray[i];
-        regVO.regKey= "";
-        regVO.DevID = -1;
+        regVO.regKey    = "";
+        regVO.DevID     = -1;
         regVO.NetIPAddr = "";
         regVO.NetPort   = -1;
         regVO.PlayID    = -1;
-        regArray[i] = regVO;
+        regArray[i]     = regVO;
     }
 
     m_udpSocket = new QUdpSocket(this);
@@ -57,31 +56,30 @@ void UDPVoice::onRev()
        int nLen   = datagram.size();
        QString sessionKey = sndAdd.toString().append(":").append(QString::number(sndPort));
 
-       NET_MSG_HEADER netHeader;
-       memcpy(&netHeader,data,sizeof(NET_MSG_HEADER));
-       int currLen = sizeof(NET_MSG_HEADER);
+       MSG_HEADER msgHeader;
+       memcpy(&msgHeader,data,sizeof(MSG_HEADER));
+       int currLen = sizeof(MSG_HEADER);
 
 //       qDebug()<<"Recv Voice Data   1111111111111111111111111111--------------!!!" << nLen;
 
 
-       if (netHeader.MessageModel == MessageModel_VoicData)
+       if (msgHeader.msgTyp == MSG_TYP_VOIC)
        {
-            if(netHeader.MessageType == Voice_Message_Apply){
+            if(msgHeader.funCod == Dev_regist){
 
                 qDebug()<<"Recv Voice Apply--------------!!!";
 
-                VOICE_APPLY voiceApply;
-                memcpy(&voiceApply,data + currLen, sizeof(VOICE_APPLY));
+                DEV_REGIST devRegist;
+                memcpy(&devRegist,data + currLen, sizeof(DEV_REGIST));
 
                 int timestamp = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
 //                qDebug()<<"Voice Regist --------------timestamp"   << timestamp;
 //                qDebug()<<"Voice Regist --------------Session Key" << sessionKey;
 
                 VOICE_REGIST_VO registVO;
-                registVO.DevID   = voiceApply.RadioID;                                        //
-
-                registVO.NetIPAddr = QString(QLatin1String(voiceApply.NetIPAddr));              //注册IP
-                registVO.NetPort   = voiceApply.NetPort;                                        //注册Port
+                registVO.DevID     = msgHeader.DevID;                                           //
+                registVO.NetIPAddr = QString(QLatin1String(devRegist.NetIPAddr));              //注册IP
+                registVO.NetPort   = devRegist.NetPort;                                        //注册Port
                 registVO.uptTime   = timestamp;                                                 //跟新时间戳(秒级)
                 registVO.PlayID    = 0;
 
@@ -91,16 +89,16 @@ void UDPVoice::onRev()
 
         }
 
-       if(nLen == 183) {
+       if(nLen == 175) {
 
 //           qDebug()<<"Recv Voice Data Package--------------!!!";
 
-           VOICE_DATA_HEAD vDataHead;
-           memcpy(&vDataHead,data + currLen, sizeof(VOICE_DATA_HEAD));
-           currLen += sizeof(VOICE_DATA_HEAD);
+           VOICE_HEAD voiceHead;
+           memcpy(&voiceHead,data + currLen, sizeof(VOICE_HEAD));
+           currLen += sizeof(VOICE_HEAD);
 
-           uint8_t priority = vDataHead.Attribute;      //优先级复用:1-255 优先级越大越高
-           uint32_t pttOn   = vDataHead.SignalValue;    //Ptt复用(0:PTT-Off 1:PTT-On)
+           uint8_t priority = voiceHead.Priority;      //优先级复用:1-255 优先级越大越高
+           uint8_t pttOn    = voiceHead.PttON;          //0:PTT-Off 1:PTT-On
 
            char voiceData[160];
            memcpy(voiceData, data + currLen, 160);
@@ -160,30 +158,31 @@ void UDPVoice::sendData(char* pData,int nLen)
 
 void UDPVoice::sendVoiceData(AudioData audioData)
 {
-    int dataLen = sizeof(NET_MSG_HEADER) + sizeof(VOICE_DATA_HEAD) + audioData.dataLen;
+    int dataLen = sizeof(MSG_HEADER) + sizeof(VOICE_HEAD) + audioData.dataLen;
 
     time_t ltime;
     time( &ltime );
 
-    NET_MSG_HEADER netHeader;
-    netHeader.MessageLen   = dataLen;
-    netHeader.MessageModel = MessageModel_VoicData;
-    netHeader.MessageSerial= (unsigned long)ltime;
-    netHeader.MessageType  = Voice_Message_Data;
-//    netHeader.MessageVer;
-    netHeader.ProgramID    = ConfigLoader::getInstance()->getProgramID();
-    netHeader.ProgramType  = ConfigLoader::getInstance()->getProgramType();
+    MSG_HEADER msgHeader;
+    msgHeader.ProgramType = ConfigLoader::getInstance()->getProgramType();
+    msgHeader.ProgramID   = ConfigLoader::getInstance()->getProgramID();
+    msgHeader.msgTyp      = MSG_TYP_VOIC;
+    msgHeader.DevID       = ConfigLoader::getInstance()->getRadioID();
+    msgHeader.RadioTyp    = ConfigLoader::getInstance()->getRadioTyp();
+    msgHeader.funCod      = Voice_Data;
 
     FrameSN ++;
 
-    VOICE_DATA_HEAD vDataHead;
-    vDataHead.RadioID    = ConfigLoader::getInstance()->getRadioID();
-    vDataHead.FrameSN    = FrameSN;
+    VOICE_HEAD voiceHead;
+    voiceHead.Priority   = 0;
+    voiceHead.codec      = 0;
+    voiceHead.FrameSN    = FrameSN;
+    voiceHead.PttON      = 0;
 
     char voicData[dataLen];
-    memcpy(voicData, &netHeader, sizeof(NET_MSG_HEADER));
-    memcpy(voicData + sizeof(NET_MSG_HEADER), &vDataHead, sizeof(VOICE_DATA_HEAD));
-    memcpy(voicData + sizeof(NET_MSG_HEADER) + sizeof(VOICE_DATA_HEAD), audioData.data, audioData.dataLen);
+    memcpy(voicData, &msgHeader, sizeof(MSG_HEADER));
+    memcpy(voicData + sizeof(MSG_HEADER), &voiceHead, sizeof(VOICE_HEAD));
+    memcpy(voicData + sizeof(MSG_HEADER) + sizeof(VOICE_HEAD), audioData.data, audioData.dataLen);
 
     sendData(voicData, dataLen);
 

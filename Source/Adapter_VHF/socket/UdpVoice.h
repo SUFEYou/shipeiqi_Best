@@ -4,7 +4,7 @@
 #include <QUdpSocket>
 #include <QAbstractSocket>
 #include <stdint.h>
-#include "socket/socketcommon.h"
+#include "socket/SocketCommu.h"
 #include "Audio/AudioControl.h"
 
 class UDPVoice: public QObject
