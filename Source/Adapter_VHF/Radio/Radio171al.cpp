@@ -3,6 +3,14 @@
 
 Radio171AL::Radio171AL()
            : m_timer(new QTimer(this))
+           , m_connected(false)
+           , m_disconnectCnt(0)
+           , m_workModFlag(false)
+           , m_workMod(0)
+           , m_freqFlag(false)
+           , m_freq(0)
+           , m_squelchFlag(false)
+           , m_squelch(0)
 {
     memset(&radioState, 0, sizeof(RADIO_STATE));
     connect(m_timer, SIGNAL(timeout()), this, SLOT(onTimer()));
@@ -49,35 +57,63 @@ void Radio171AL::readCom()
 
 int Radio171AL::writeCtrlData(uint16_t funCode, char* data, int len)
 {
-
-    switch (funCode)
+    int ctrlDataLen = sizeof(RADIO_SET);
+    if(len == ctrlDataLen)
     {
-    case Set_WorkMod://设置工作模式
+        RADIO_SET m_set;
+        memcpy(&m_set, data, ctrlDataLen);
+        switch (funCode)
         {
-
-        }
-    break;
-    case Set_Channel://设置信道
+        case Set_WorkMod://设置工作模式
         {
-            int ctrlDataLen = sizeof(RADIO_SET);
-            if(len == ctrlDataLen)
-            {
-                RADIO_SET setChannel;
-                memcpy(&setChannel, data, ctrlDataLen);
-                writeData(0x0100, data, len);
-            }
+            //由于工作模式包含在信道参数中，设置工作模式需要先查询信道参数，然后获取到信道参数后，只更改信道参数中的工作模式，然后下发
+            m_workModFlag = true;
+            m_workMod = m_set.workMod;
+            writeData(0x0141, NULL, 0);
         }
-    break;
-    case Ask_State://状态问询
+            break;
+        case Set_Channel://设置信道
         {
-
+            writeData(0x0100, (char*)(&m_set.channel), 1);
         }
-    break;
-    default:
+        break;
+        case Set_TxFreq:
         {
-
+            //同设置工作模式
+            m_freqFlag = true;
+            //设置端显示为KHZ，传输时扩大了10000倍，转换为HZ需要除以10
+            m_freq= m_set.txFreq/10;
+            writeData(0x0141, NULL, 0);
         }
-    break;
+            break;
+        case Set_RxFreq:
+        {
+            //同设置工作模式
+            m_freqFlag = true;
+            m_freq= m_set.rxFreq;
+            writeData(0x0141, NULL, 0);
+        }
+            break;
+        case Set_Power://设置发射功率
+        {
+            writeData(0x0005, (char*)(&m_set.power), 1);
+        }
+            break;
+        case Set_Squelch://设置静噪
+        {
+            m_squelchFlag = true;
+            m_squelch = m_set.squelch;
+            writeData(0x0048, NULL, 0);
+        }
+            break;
+        case Ask_State://状态问询
+        {
+            //
+        }
+            break;
+        default:
+            break;
+        }
     }
 
     return 0;
@@ -133,16 +169,32 @@ void Radio171AL::onTimer()
 {
     QMutexLocker locker(&m_dataMutex);
     //心跳机制
-    static bool flag = false;
-    if (!flag)
+    if (!m_connected)
     {
-        flag = true;
         static char str[] = {0xC0, 0x00, 0x0A, 0x00, 0x01, 0x00, 0x0E, 0x03, 0xC0};
         dataCom->write(str, sizeof(str));
     }
-    static char str[] = {0xC0, 0x03, 0x02, 0x00, 0x04, 0x12, 0x34, 0x56, 0x78, 0x2D, 0x49, 0xC0};
-    dataCom->write(str, sizeof(str));
-
+    else
+    {
+        static char str[] = {0xC0, 0x03, 0x02, 0x00, 0x04, 0x12, 0x34, 0x56, 0x78, 0x2D, 0x49, 0xC0};
+        dataCom->write(str, sizeof(str));
+        //定时查询状态
+        static uint8_t cnt = 0;
+        ++cnt;
+        if (cnt > 5)
+        {
+            cnt = 0;
+            writeData(0x0048, NULL, 0);
+            writeData(0x0141, NULL, 0);
+        }
+        //断连计数，接收到电台消息时清零，否则每秒递增1，超时后，电台状态为断连
+        ++m_disconnectCnt;
+        if (m_disconnectCnt > 10)
+        {
+            radioState.radioConnect = 0;
+            m_connected = false;
+        }
+    }
 }
 
 void Radio171AL::packageData()
@@ -245,39 +297,80 @@ void Radio171AL::parseData()
     }
 }
 
-void Radio171AL::updateRadioState(uint16_t type, const char* data, const int len)
+void Radio171AL::updateRadioState(uint16_t type, char* data, const int len)
 {
+    //接收到电台数据，断连计数清零
+    m_disconnectCnt = 0;
     switch (type) {
     case 0X0081://上报时间（0x0081）
-        {
-
-        }
-    break;
+    {
+    }
+        break;
     case 0X0382://上报工作状态信息（0x0382）
-        {
-
-        }
-    break;
+    {
+        if (!m_connected)
+            m_connected = true;
+    }
+        break;
     case 0X0086://上报功率大小（0x0086）
-        {
-
-        }
-    break;
+    {
+        if (len > 0)
+        radioState.power = data[0];
+    }
+        break;
     case 0X0087://上报音量大小（0x0087）
+    {
+    }
+        break;
+    case 0X0088://上报开关状态（0x0088）
+    {
+        if (len != 1)
         {
-
+            qDebug() << "Recv on-off state Len Err";
         }
-    break;
+        else
+        {
+            //更新静噪状态
+            if (data[0]&0x01)
+                radioState.squelch = 1;
+            else
+                radioState.squelch = 0;
+            //设置开关状态
+            if (m_squelchFlag)
+            {
+                m_squelchFlag = false;
+                if (m_squelch)
+                    data[0] = data[0] | 0x01;
+                else
+                    data[0] = data[0] & 0xFE;
+                writeData(0x0007, data, len);
+            }
+        }
+    }
+        break;
     case 0X0180://上报当前信道号（0x0180）
+    {
+        if (len > 0)//BCD码转换为整形
+            bcd2uint8(data[0], (uint8_t*)(&radioState.channel));
+    }
+        break;
+    case 0X0181://上报当前信道参数（0x0181）
+    {
+        if (len != 13)
         {
-
+            qDebug() << "Recv Channel Parameters Len Err";
         }
-    break;
+        else
+        {
+            setChannelParam(data, len);
+        }
+    }
+        break;
     default:
-        {
-            qDebug() << "In Radio171D::updateRadioState, Recv unknown msg type!";
-        }
-    break;
+    {
+        qDebug() << "In Radio171AL::updateRadioState, Recv unknown msg type!";
+    }
+        break;
     }
 }
 
@@ -385,4 +478,55 @@ uint16_t Radio171AL::getCRC(unsigned char* buf, unsigned int len)
         }
     }
     return crc;
+}
+
+void Radio171AL::bcd2uint8(uint8_t src, uint8_t* dst)
+{
+    *dst = (src>>4)*10 + (src&0x0F);
+}
+
+void Radio171AL::uint82bcd(uint8_t src, uint8_t* dst)
+{
+    if (src > 99)
+        *dst = 0;
+    *dst = (src/10)<<4 | (src%10);
+}
+
+void Radio171AL::setChannelParam(char* data, const int len)
+{
+    //更新状态
+    radioState.workMod = data[2];
+    uint8_t m = 0;
+    bcd2uint8(data[3], &m);
+    quint64 freq = m*100000000;
+    bcd2uint8(data[4], &m);
+    freq += m*10000000;
+    bcd2uint8(data[5], &m);
+    freq += (m/10)*100000 + (m%10)*25000;
+    radioState.rxFreq = freq*10;
+    radioState.txFreq = freq*10;
+
+    //设置状态
+    if (m_workModFlag || m_freqFlag)
+    {
+        if (m_workModFlag)
+        {
+            m_workModFlag = false;
+            data[2] = m_workMod;
+        }
+        if (m_freqFlag)
+        {
+            m_freqFlag = false;
+            //获取100M位
+            uint8_t tmp = m_freq/100000000;
+            uint82bcd(tmp, (uint8_t*)(&data[3]));
+            //获取10M,1M位
+            tmp = (m_freq%100000000)/1000000;
+            uint82bcd(tmp, (uint8_t*)(&data[4]));
+            //获取100K,25K位
+            tmp = (m_freq%1000000)/100000 + (m_freq%100000)/25000;
+            uint82bcd(tmp, (uint8_t*)(&data[5]));
+        }
+        writeData(0x0101, data, len);
+    }
 }

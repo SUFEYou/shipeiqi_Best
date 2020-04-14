@@ -25,15 +25,28 @@ private:
     void decode(const char* srcData, const int srcLen, char* dstData, int& dstLen);
     void writeData(uint16_t type, const char* data, const int len);
     void enCode(const char* srcData, const int srcLen, char* dstData, int& dstLen);
-    void updateRadioState(uint16_t type, const char* data, const int len);
+    void updateRadioState(uint16_t type, char* data, const int len);
     uint16_t getCRC(unsigned char* buf, unsigned int len);
+    void setChannelParam(char* data, const int len);
+
+    void bcd2uint8(uint8_t src, uint8_t* dst);
+    void uint82bcd(uint8_t src, uint8_t* dst);
 
 private:
-    QMutex                   m_dataMutex;
-    QextSerialPort           *dataCom;
+    QMutex                      m_dataMutex;
+    QextSerialPort              *dataCom;
 
-    QList<QByteArray>        m_recvDataList;
-    QTimer                   *m_timer;
+    QList<QByteArray>           m_recvDataList;
+    QTimer                      *m_timer;
+
+    bool                        m_connected;
+    uint8_t                     m_disconnectCnt;
+    bool                        m_workModFlag;
+    uint8_t                     m_workMod;          //工作模式
+    bool                        m_freqFlag;
+    uint64_t                    m_freq;             //频率
+    bool                        m_squelchFlag;
+    uint8_t                     m_squelch;          //静噪
 };
 
 #endif // RADIO171D_H
