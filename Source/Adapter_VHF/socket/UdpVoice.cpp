@@ -6,6 +6,7 @@
 #include "config/ConfigLoader.h"
 #include "Audio/AudioPlayer.h"
 #include "Audio/AudioPtt.h"
+#include <time.h>
 
 
 
@@ -102,7 +103,7 @@ void UDPVoice::onRev()
 
            char voiceData[160];
            memcpy(voiceData, data + currLen, 160);
-
+#if !WIN32
            for(int i=0; i<4; i++){
                VOICE_REGIST_VO regVO = regArray[i];
 
@@ -117,6 +118,7 @@ void UDPVoice::onRev()
                   break;
                }
            }
+#endif
        }
     }
 }
@@ -141,8 +143,9 @@ void UDPVoice::sendData(char* pData,int nLen)
 //              qDebug()<<"Voice Data Send -----------------------------" << regVO.NetIPAddr << ":" << regVO.NetPort;
 
             } else {
-
+#if !WIN32
                 AudioControl::getInstance()->unbindPlayID(regVO.PlayID);
+#endif
                 regVO.regKey = "";
                 regVO.DevID  = -1;
                 regVO.NetIPAddr = "";
@@ -223,7 +226,7 @@ int UDPVoice::registVoice(QString sessionKey, VOICE_REGIST_VO registVO){
     if(!haveReg){
         for(int i=0; i<4; i++){
             VOICE_REGIST_VO regVO = regArray[i];
-
+#if !WIN32
             if(regVO.DevID < 0){
                 int playID = AudioControl::getInstance()->bindPlayID();
 
@@ -241,6 +244,7 @@ int UDPVoice::registVoice(QString sessionKey, VOICE_REGIST_VO registVO){
                     break;
                 }
             }
+#endif
         }
     }
 

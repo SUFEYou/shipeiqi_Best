@@ -663,7 +663,7 @@ void Radio212TCR::writeData(char nDimID, char type, const char* data, const int 
     //CRC校验,只校验参数
     uint16_t t_crc = 0;
     if (len > 0)
-        getCRC(dstData+6, len);
+        t_crc = getCRC(data, len);
 
     dstData[dstLen] = t_crc >> 4;
     dstData[dstLen+1] = t_crc & 0x0F;

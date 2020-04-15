@@ -39,7 +39,7 @@ void Radio220tcr::serialInit()
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimer()));
-    //timer->start(2000);
+    timer->start(5000);
 
     updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
 
@@ -138,7 +138,7 @@ void Radio220tcr::parseData()
             //解包到正确数据，判断该数据为数传还是控制信息，分别进行处理
             if (stateLen > 0)
             {
-                RadioManage::getInstance()->onRecvLinkData(state, stateLen);
+                RadioManage::getInstance()->onRecvLinkData(state+5, stateLen-5);
                 messageSeparate(state, stateLen);
             }
         }
@@ -623,14 +623,20 @@ void Radio220tcr::updateRadioState(uint16_t type, const char* data, const int le
 
 int Radio220tcr::writeCtrlData(uint16_t ctrlTyp, char* data, int len)
 {
-
+    QMutexLocker locker(&m_dataMutex);
+    writeData(0x40, ctrlTyp, data, len);
+    return 0;
 }
 
 int Radio220tcr::writeLinkData(char* data, int len)
 {
     QMutexLocker locker(&m_dataMutex);
+    char tmp[1];
+    tmp[0] = 0x01;
+    writeData(0x41, 0x83, tmp, 1);
     writeData(0x41, 0x84, data, len);
-
+    tmp[0] = 0x02;
+    writeData(0x41, 0x83, tmp, 1);
     return 0;
 }
 
@@ -663,7 +669,7 @@ void Radio220tcr::writeData(char nDimID, char type, const char* data, const int 
     //CRC校验,只校验参数
     uint16_t t_crc = 0;
     if (len > 0)
-        getCRC(dstData+6, len);
+        t_crc = getCRC(data, len);
 
     dstData[dstLen] = t_crc >> 4;
     dstData[dstLen+1] = t_crc & 0x0F;
@@ -712,5 +718,8 @@ char Radio220tcr::getCRC(const char* data, const quint16 len)
 
 void Radio220tcr::onTimer()
 {
-
+    char tmp[1];
+    tmp[0] = 1;
+    writeCtrlData(0xB1, tmp, 1);
+    writeCtrlData(0x23, tmp, 1);
 }

@@ -7,6 +7,7 @@
 #include "Radio171d.h"
 #include "Radio781tcp.h"
 #include "Radio212tcr.h"
+#include "Radio220tcr.h"
 #include <QDebug>
 
 RadioManage* RadioManage::m_instance = NULL;
@@ -61,6 +62,11 @@ void RadioManage::init()
     if(curRadioTyp == RADIO_212TCR){
 
         radio = new Radio212TCR();
+    }
+
+    if(curRadioTyp == RADIO_220){
+
+        radio = new Radio220tcr();
     }
 
     if (radio != NULL)

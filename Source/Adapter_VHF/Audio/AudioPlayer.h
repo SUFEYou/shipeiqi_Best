@@ -4,8 +4,10 @@
 #include <QThread>
 #include <QTime>
 #include <stdint.h>
-#include "alsa/asoundlib.h"
 #include "AudioControl.h"
+#if !WIN32
+#include "alsa/asoundlib.h"
+#endif
 
 
 class AudioPlayer : public QThread
@@ -35,8 +37,10 @@ private:
 
 private:
     bool                    m_stop;
+#if !WIN32
     snd_pcm_t               *m_handle;      //pcm句柄
     snd_pcm_hw_params_t     *m_params;      //pcm属性
+#endif
     unsigned int            m_frameSize;
     QTime time;
 

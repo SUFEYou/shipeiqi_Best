@@ -171,13 +171,13 @@ void Radio171D::onTimer()
     //心跳机制
     if (!m_connected)
     {
-        static char str[] = {0xC0, 0x00, 0x0A, 0x00, 0x01, 0x00, 0x0E, 0x03, 0xC0};
-        dataCom->write(str, sizeof(str));
+        static unsigned char str[] = {0xC0, 0x00, 0x0A, 0x00, 0x01, 0x00, 0x0E, 0x03, 0xC0};
+        dataCom->write((char*)str, sizeof(str));
     }
     else
     {
-        static char str[] = {0xC0, 0x03, 0x02, 0x00, 0x04, 0x12, 0x34, 0x56, 0x78, 0x2D, 0x49, 0xC0};
-        dataCom->write(str, sizeof(str));
+        static unsigned char str[] = {0xC0, 0x03, 0x02, 0x00, 0x04, 0x12, 0x34, 0x56, 0x78, 0x2D, 0x49, 0xC0};
+        dataCom->write((char*)str, sizeof(str));
         //定时查询状态
         static uint8_t cnt = 0;
         ++cnt;
@@ -379,14 +379,14 @@ void Radio171D::enCode(const char* srcData, const int srcLen, char* dstData, int
 {
     for (int i = 0; i < srcLen; ++i)
     {
-        if (srcData[i] == 0XC0)
+        if ((unsigned char)srcData[i] == 0XC0)
         {
             dstData[dstLen] = 0xDB;
             ++dstLen;
             dstData[dstLen] = 0xDC;
             ++dstLen;
         }
-        else if (srcData[i] == 0XDB)
+        else if ((unsigned char)srcData[i] == 0XDB)
         {
             dstData[dstLen] = 0xDB;
             ++dstLen;

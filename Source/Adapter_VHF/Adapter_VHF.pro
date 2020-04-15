@@ -17,15 +17,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 QMAKE_CXXFLAGS += -fpermissive
 
-INCLUDEPATH += /usr/local/arm/alsa_4.6.2/include
-LIBS += -L/usr/local/arm/alsa_4.6.2/lib -lasound
-
-
 SOURCES += main.cpp \
-    Audio/AudioControl.cpp \
-    Audio/AudioMixer.cpp \
-    Audio/AudioPlayer.cpp \
-    Audio/AudioRecoder.cpp \
     socket/SocketManage.cpp \
     config/ConfigLoader.cpp \
     Uart/qextserialport.cpp \
@@ -43,17 +35,12 @@ SOURCES += main.cpp \
     RadioLink/RadioLinkManage.cpp \
     RadioLink/RadioLinkClient.cpp \
     RadioLink/RadioLinkMaster.cpp \
-    Audio/AudioPtt.cpp\
     Radio/Radio212tcr.cpp \
     Radio/Radio.cpp \
     Radio/Radio220tcr.cpp
 
 
 HEADERS += \
-    Audio/AudioControl.h \
-    Audio/AudioMixer.h \
-    Audio/AudioPlayer.h \
-    Audio/AudioRecoder.h \
     socket/SocketManage.h \
     config/ConfigLoader.h \
     Uart/qextserialport.h \
@@ -73,19 +60,33 @@ HEADERS += \
     RadioLink/RadioLinkManage.h \
     RadioLink/RadioLinkClient.h \
     RadioLink/RadioLinkMaster.h \
-    Audio/AudioPtt.h \
     Radio/Radio212tcr.h \
     Radio/Radio.h \
     Radio/RadioType.h \
     socket/SocketCommu.h \
     Radio/Radio220tcr.h
 
-win32:{
+win32{
     SOURCES += Uart/qextserialport_win.cpp
 
 #    HEADERS +=
 }
 
-unix:{
-    SOURCES += Uart/qextserialport_unix.cpp
+unix{
+
+    INCLUDEPATH += /usr/local/arm/alsa_4.6.2/include
+    LIBS += -L/usr/local/arm/alsa_4.6.2/lib -lasound
+
+    SOURCES +=  Uart/qextserialport_unix.cpp \
+                Audio/AudioControl.cpp \
+                Audio/AudioMixer.cpp \
+                Audio/AudioPlayer.cpp \
+                Audio/AudioRecoder.cpp \
+                Audio/AudioPtt.cpp
+
+    HEADERS +=  Audio/AudioControl.h \
+                Audio/AudioMixer.h \
+                Audio/AudioPlayer.h \
+                Audio/AudioRecoder.h \
+                Audio/AudioPtt.h
 }
