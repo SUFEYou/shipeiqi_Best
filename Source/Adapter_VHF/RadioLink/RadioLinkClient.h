@@ -12,6 +12,7 @@ public:
 
     inline int getNotInChainCt() { return m_nTNotInChainCt; }
     inline void setNotInChainCt(int x) { m_nTNotInChainCt = x; }
+    inline void setNotInChainCtLmt(uint16_t x) { m_nTNotInChainCtLmt = x; }
 
     //////////////////////////////////////////////////////////////////////////
     // Link Layer Circle

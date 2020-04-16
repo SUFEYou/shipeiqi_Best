@@ -47,6 +47,7 @@ void UDPRctrl::onRev()
 //       qDebug()<<"Recv Snder IP---------------:"<< sndAdd.toString();
 //       qDebug()<<"Recv Snder Port-------------:"<< sndPort;
        int radioTyp = ConfigLoader::getInstance()->getRadioTyp();
+       QString sessionKey = sndAdd.toString().append(":").append(QString::number(sndPort));
 
        MSG_HEADER msgHeader;
        memcpy(&msgHeader,data,sizeof(MSG_HEADER));
@@ -71,7 +72,7 @@ void UDPRctrl::onRev()
                 regPipe.uptTime   = timestamp;                                                  //跟新时间戳(秒级)
 
 
-                registCtrl(regPipe);
+                registCtrl(sessionKey, regPipe);
 
             }
 
@@ -84,8 +85,9 @@ void UDPRctrl::onRev()
              ||msgHeader.funCod == Set_Squelch
              ||msgHeader.funCod == Ask_State){
 
+                int registed = getRegistedID(sessionKey);
                 int ctrlDataLen = sizeof(RADIO_SET);
-                if(nLen == sizeof(MSG_HEADER) + ctrlDataLen){
+                if(nLen == sizeof(MSG_HEADER) + ctrlDataLen && registed != -1){
 
                     char ctrlData[ctrlDataLen];
                     memcpy(ctrlData, data + currLen, ctrlDataLen);
@@ -99,6 +101,9 @@ void UDPRctrl::onRev()
        } else if(msgHeader.msgTyp == MSG_TYP_CTRL && msgHeader.RadioTyp != radioTyp){
 
            if(msgHeader.funCod == Dev_regist){
+
+               qDebug()<<"Err Regist RadioTyp--------------------------"<< msgHeader.RadioTyp;
+
                DEV_REGIST devRegist;
                memcpy(&devRegist,data + currLen, sizeof(DEV_REGIST));
 
@@ -177,7 +182,7 @@ void UDPRctrl::sendRegistState(uint8_t regState, QHostAddress netAddr, uint32_t 
     msgHeader.msgTyp      = MSG_TYP_CTRL;
     msgHeader.DevID       = ConfigLoader::getInstance()->getRadioID();
     msgHeader.RadioTyp    = ConfigLoader::getInstance()->getRadioTyp();
-    msgHeader.funCod      = Dev_restrict_Ack;
+    msgHeader.funCod      = Dev_regist_Ack;
 
     DEV_REGIST_ACK registACK;
     registACK.regState = regState;
@@ -185,9 +190,12 @@ void UDPRctrl::sendRegistState(uint8_t regState, QHostAddress netAddr, uint32_t 
     memcpy(sndData, &msgHeader, sizeof(MSG_HEADER));
     memcpy(sndData + sizeof(MSG_HEADER), &registACK, sizeof(DEV_REGIST_ACK));
 
+    qDebug()<<"Send Regist ACK--------------------------"<< netAddr << ":" << netPort;
+
     m_udpSocket->writeDatagram(sndData, sndLen, netAddr, netPort);
 
 }
+
 
 void UDPRctrl::onError(QAbstractSocket::SocketError socketError)
 {
@@ -196,14 +204,32 @@ void UDPRctrl::onError(QAbstractSocket::SocketError socketError)
 }
 
 
-void UDPRctrl::registCtrl(CTRL_REGIST_VO registVO){
+int UDPRctrl::getRegistedID(QString sessionKey)
+{
+    int haveReg = -1;
+    for(int i=0; i<regList.size(); i++){
+        CTRL_REGIST_VO regVO = regList.at(i);
+
+        if(regVO.regKey == sessionKey){
+            haveReg = i;
+            break;
+        }
+    }
+
+    return haveReg;
+}
+
+
+void UDPRctrl::registCtrl(QString sessionKey, CTRL_REGIST_VO registVO){
 
     /////////////////////////////////////////////////////////////////////////
+
+    bool registOK = false;
     bool haveReg = false;
     for(int i=0; i<regList.size(); i++){
         CTRL_REGIST_VO regVO = regList.at(i);
 
-        if(regVO == registVO){
+        if(regVO.regKey == sessionKey){
 
             regVO.uptTime = registVO.uptTime;
             regList.replace(i, regVO);
@@ -214,24 +240,30 @@ void UDPRctrl::registCtrl(CTRL_REGIST_VO registVO){
 //            qDebug()<<"Ctrl Regist Update --------------UptTime"   << regVO.uptTime;
 
             haveReg = true;
+            registOK= true;
             break;
         }
     }
 
     regMutex.lock();
     if(!haveReg){
-
+        registVO.regKey = sessionKey;
         regList.append(registVO);
+        registOK= true;
 
 //        qDebug()<<"Ctrl Regist Add --------------Radio ID"  << registVO.RadioID;
 //        qDebug()<<"Ctrl Regist Add --------------IP"        << registVO.NetIPAddr;
 //        qDebug()<<"Ctrl Regist Add --------------Port"      << registVO.NetPort;
 //        qDebug()<<"Ctrl Regist Add --------------UptTime"   << registVO.uptTime;
-        QHostAddress netAddr(registVO.NetIPAddr);
-        sendRegistState(RegistOK,  netAddr, registVO.NetPort);
 
     }
     regMutex.unlock();
+
+    if(registOK){
+        QHostAddress netAddr(registVO.NetIPAddr);
+        sendRegistState(RegistOK,  netAddr, registVO.NetPort);
+    }
+
     /////////////////////////////////////////////////////////////////////////
 }
 

@@ -32,6 +32,7 @@ typedef enum _FUNC_CODE
     Dev_restrict_Ack= 32,            // 权限受限反馈
 
     Voice_Data      = 41,            // 语音数据
+    PTT_set         = 42,            // PTT设置
 
 }FUNC_CODE;
 
@@ -135,6 +136,15 @@ typedef struct _VOICE_HEAD
 
 
 #pragma pack(1)
+typedef struct _PTT_SET
+{
+    uint8_t         Priority;           // 优先级:1-255 优先级越大越高
+    uint8_t         PttON;              // 0:PTT-Off 1:PTT-On
+
+}PTT_SET;
+
+
+#pragma pack(1)
 typedef struct _PTT_STATE
 {
     uint16_t	    DevID;              // 设备ID
@@ -147,6 +157,7 @@ typedef struct _PTT_STATE
 #pragma pack(1)
 typedef struct _CTRL_REGIST_INFO
 {
+    QString         regKey;
     uint16_t	    DevID;              // 注册的设备ID
     QString 	    NetIPAddr;		    // 注册IP
     uint32_t	    NetPort;			// 注册Port

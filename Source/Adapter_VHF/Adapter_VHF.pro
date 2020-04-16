@@ -37,7 +37,14 @@ SOURCES += main.cpp \
     RadioLink/RadioLinkMaster.cpp \
     Radio/Radio212tcr.cpp \
     Radio/Radio.cpp \
-    Radio/Radio220tcr.cpp
+    Radio/Radio220tcr.cpp \
+    config/ConfigRadio171al.cpp \
+    config/ConfigRadio171d.cpp \
+    config/ConfigRadio181d.cpp \
+    config/ConfigRadio781tcp.cpp \
+    config/ConfigRadio.cpp \
+    config/ConfigRadio212tcr.cpp \
+    config/ConfigRadio220.cpp
 
 
 HEADERS += \
@@ -64,7 +71,14 @@ HEADERS += \
     Radio/Radio.h \
     Radio/RadioType.h \
     socket/SocketCommu.h \
-    Radio/Radio220tcr.h
+    Radio/Radio220tcr.h \
+    config/ConfigRadio171al.h \
+    config/ConfigRadio171d.h \
+    config/ConfigRadio181d.h \
+    config/ConfigRadio781tcp.h \
+    config/ConfigRadio.h \
+    config/ConfigRadio212tcr.h \
+    config/ConfigRadio220.h
 
 win32{
     SOURCES += Uart/qextserialport_win.cpp

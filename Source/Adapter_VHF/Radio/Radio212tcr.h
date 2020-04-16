@@ -17,13 +17,19 @@ public:
 private:
     void packageData();
     void parseData();
-    void messageSeparate(const char* data, const int len);
+    void updateRadioState(const char* data, const int len);
     void decode(const char* srcData, const int srcLen, char* dstData, int& dstLen);
     void writeData(char nDimID, char type, const char* data, const int len);
     void enCode(const char* srcData, const int srcLen, char* dstData, int& dstLen);
-    void updateRadioState(uint16_t type, const char* data, const int len);
     char getCRC(const char* data, const quint16 len);
 
+    void radioModemCanSendData(bool isSend);
+
+    void setModemNoticeSendEnd();
+    void setModemNoticeCancel();
+
+    void setChannel(const uint16_t nCHN);
+    void setPower(const uint8_t nPower);
 
 
 private slots:
@@ -37,7 +43,17 @@ private:
     QList<QByteArray>                   m_recvDataList;
     QTimer                              *timer;
     long                                updTim;
+
+    uint16_t                            m_nRadioState;                  // Radio State
+
+    bool                                m_nModemSend;
     uint16_t                            m_nModemState;
+    uint16_t                            m_SendingTimesCount;
+
+    char*                               m_DycArrayData;
+    uint16_t                            m_DycArrayLen;
+
+    uint8_t                             m_RequestCount;
 };
 
 #endif // RADIO212TCR_H

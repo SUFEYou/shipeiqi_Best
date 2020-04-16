@@ -17,7 +17,8 @@ public:
     void sendVoiceData(AudioData audioData);
 
 private:
-    int registVoice(QString sessionKey, VOICE_REGIST_VO regPipe);
+    void registVoice(QString sessionKey, VOICE_REGIST_VO regPipe);
+    int getRegistedID(QString sessionKey);
     void sendRegistState(uint8_t regState, QHostAddress netAddr, uint32_t netPort);
 
 private slots:

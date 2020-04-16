@@ -108,7 +108,9 @@ int Radio171D::writeCtrlData(uint16_t funCode, char* data, int len)
             break;
         case Ask_State://状态问询
         {
-            //
+            char ackData[sizeof(RADIO_STATE)];
+            memcpy(ackData, &radioState, sizeof(RADIO_STATE));
+            RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));
         }
             break;
         default:
@@ -184,6 +186,7 @@ void Radio171D::onTimer()
         if (cnt > 5)
         {
             cnt = 0;
+            radioState.errState = 1;
             writeData(0x0048, NULL, 0);
             writeData(0x0141, NULL, 0);
         }

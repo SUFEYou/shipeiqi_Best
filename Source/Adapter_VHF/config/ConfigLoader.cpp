@@ -3,11 +3,13 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QFile>
+#include "Radio/RadioType.h"
 
 ConfigLoader* ConfigLoader::m_instance = NULL;
 QMutex ConfigLoader::m_Mutex;
 
 ConfigLoader::ConfigLoader()
+             : m_radio(NULL)
 {
 
 }
@@ -52,11 +54,6 @@ void ConfigLoader::loadConfig()
 
     QSettings settings("Apt-Config.ini", QSettings::IniFormat);
 
-    this->programType = settings.value("Apt-Static/ProgramType").toInt();
-    this->programID   = settings.value("Apt-Static/ProgramID").toInt();
-    this->radioTyp    = settings.value("Apt-Static/RadioTyp").toInt();
-    this->radioID     = settings.value("Apt-Static/RadioID").toInt();
-
     this->TcpIP     = settings.value("Commu-TCP/TcpIP").toString();
     this->TcpPort   = settings.value("Commu-TCP/TcpPort").toInt();
 
@@ -66,6 +63,11 @@ void ConfigLoader::loadConfig()
     qDebug() << "Commu Server TcpIP: "      << TcpIP;
     qDebug() << "Commu Server TcpPort: "    << TcpPort;
 
+    this->programType = settings.value("Apt-Static/ProgramType").toInt();
+    this->programID   = settings.value("Apt-Static/ProgramID").toInt();
+    this->radioTyp    = settings.value("Apt-Static/RadioTyp").toInt();
+    this->radioID     = settings.value("Apt-Static/RadioID").toInt();
+    loadRadioConfig(radioTyp);
 }
 
 
@@ -76,9 +78,9 @@ void ConfigLoader::createConfig()
 
     settings.beginGroup("Apt-Static");
     settings.setValue("PROGRAMTYPE", 6);
-    settings.setValue("PROGRAMID",   7998);
-    settings.setValue("RadioTyp", 2204);
-    settings.setValue("RadioID",  12998);
+    settings.setValue("PROGRAMID", 7998);
+    settings.setValue("RadioTyp", RADIO_220);
+    settings.setValue("RadioID", 12998);
     settings.endGroup();
 
     settings.beginGroup("Commu-TCP");
@@ -96,6 +98,38 @@ void ConfigLoader::createConfig()
 
 }
 
+void ConfigLoader::loadRadioConfig(uint32_t tRadioTyp)
+{
+    if (tRadioTyp == RADIO_171D)
+    {
+        m_radio = new ConfigRadio171d;
+    }
+    else if (tRadioTyp == RADIO_171AL)
+    {
+        m_radio = new ConfigRadio171al;
+    }
+    else if (tRadioTyp == RADIO_181D)
+    {
+        m_radio = new ConfigRadio181d;
+    }
+    else if (tRadioTyp == RADIO_781TCP)
+    {
+        m_radio = new ConfigRadio781tcp;
+    }
+    else if (tRadioTyp == RADIO_212TCR)
+    {
+        m_radio = new ConfigRadio212tcr;
+    }
+    else if (tRadioTyp == RADIO_220)
+    {
+        m_radio = new ConfigRadio220;
+    }
+
+    if (m_radio != NULL)
+    {
+        m_radio->load();
+    }
+}
 
 uint32_t ConfigLoader::getRadioID() const
 {
@@ -116,7 +150,6 @@ uint16_t ConfigLoader::getProgramType() const
 {
     return programType;
 }
-
 
 
 

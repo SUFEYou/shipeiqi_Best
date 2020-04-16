@@ -148,12 +148,12 @@ void Radio220tcr::parseData()
             int   stateLen = 0;
             decode(tmp, tmpArray.length()-2, state, stateLen);
             //解包到正确数据，判断该数据为数传还是控制信息，分别进行处理
-            messageSeparate(state, stateLen);
+            updateRadioState(state, stateLen);
         }
     }
 }
 
-void Radio220tcr::messageSeparate(const char* data, const int len)
+void Radio220tcr::updateRadioState(const char* data, const int len)
 {
     unsigned char CMDType = (unsigned char)(*(data+4));
     switch(CMDType)
@@ -173,6 +173,10 @@ void Radio220tcr::messageSeparate(const char* data, const int len)
         break;
     case 0x21:		// 2.4.3 电台报告功率等级
     {
+        if (*(data+5) == 0x03)
+        {
+            radioState.power = *(data+6);
+        }
     }
         break;
     case 0x22:
@@ -243,7 +247,7 @@ void Radio220tcr::messageSeparate(const char* data, const int len)
                 if (m_SendingTimesCount > 30)
                 {
                     setModemNoticeSendEnd();
-                    qDebug() << "0x0B m_SendingTimesCount > 30  Set212ModemNoticeSendEnd!";
+                    qDebug() << "0x0B m_SendingTimesCount > 30  SetModemNoticeSendEnd!";
 
                 }
                 else if (m_SendingTimesCount > 40)
@@ -252,7 +256,7 @@ void Radio220tcr::messageSeparate(const char* data, const int len)
                     m_SendingTimesCount = 0;
                     m_nModemSend = false;
                     m_nModemState = 0;
-                    qDebug() << "0x0B m_SendingTimesCount > 40  Set212ModemNoticeCancel!";
+                    qDebug() << "0x0B m_SendingTimesCount > 40  SetModemNoticeCancel!";
                 }
             }
             //m_RadioStateMsgQueryCount = 0;
@@ -701,11 +705,6 @@ void Radio220tcr::decode(const char* srcData, const int srcLen, char* dstData, i
     }
 }
 
-void Radio220tcr::updateRadioState(uint16_t type, const char* data, const int len)
-{
-
-}
-
 int Radio220tcr::writeCtrlData(uint16_t funCode, char* data, int len)
 {
     int ctrlDataLen = sizeof(RADIO_SET);
@@ -722,7 +721,7 @@ int Radio220tcr::writeCtrlData(uint16_t funCode, char* data, int len)
             break;
         case Set_Channel://设置信道
         {
-
+            setChannel(m_set.channel);
         }
         break;
         case Set_TxFreq:
@@ -737,7 +736,7 @@ int Radio220tcr::writeCtrlData(uint16_t funCode, char* data, int len)
             break;
         case Set_Power://设置发射功率
         {
-
+            setPower(m_set.power);
         }
             break;
         case Set_Squelch://设置静噪
@@ -747,7 +746,9 @@ int Radio220tcr::writeCtrlData(uint16_t funCode, char* data, int len)
             break;
         case Ask_State://状态问询
         {
-            //
+            char ackData[sizeof(RADIO_STATE)];
+            memcpy(ackData, &radioState, sizeof(RADIO_STATE));
+            RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));
         }
             break;
         default:
@@ -860,8 +861,8 @@ char Radio220tcr::getCRC(const char* data, const quint16 len)
 
 void Radio220tcr::onTimer()
 {
-    static uint8_t ShakeHeadCount = 0;
-    static uint8_t ChangeToDataModeCount = 0;
+    static uint16_t ShakeHeadCount = 0;
+    static uint16_t ChangeToDataModeCount = 0;
     static uint8_t QueryStateCount = 0;
 
     if (ShakeHeadCount > 120)
@@ -912,4 +913,25 @@ void Radio220tcr::onTimer()
     ++ShakeHeadCount;
     ++ChangeToDataModeCount;
     ++QueryStateCount;
+}
+
+void Radio220tcr::setChannel(const uint16_t nCHN)
+{
+    char pPara[3];
+    pPara[0]	= 0x02;
+    pPara[1]	= nCHN/256;
+    pPara[2]	= nCHN%256;
+
+    writeData(0x40, 0x14, pPara, 3);
+    radioState.channel = nCHN;
+}
+
+void Radio220tcr::setPower(const uint8_t nPower)
+{
+    char pPara[2];
+    pPara[0]	= 0x02;
+    pPara[1]	= nPower;
+
+    writeData(0x40, 0x21, pPara, 2);
+    radioState.power = nPower;
 }

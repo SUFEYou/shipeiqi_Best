@@ -3,15 +3,27 @@
 #include <QDebug>
 
 Radio212TCR::Radio212TCR()
+            : updTim(0)
+            , m_nModemSend(false)
+            , m_nModemState(0)
+            , m_SendingTimesCount(0)
+            , m_DycArrayLen(0)
+            , m_RequestCount(0)
 {
-    memset(&radioState, 0, sizeof(RADIO_STATE));
+    m_DycArrayData = new char[ARRAY_DATA_LEN];
 }
 
 Radio212TCR::~Radio212TCR()
 {
-    if(dataCom != NULL){
+    if(dataCom != NULL)
+    {
         delete dataCom;
         dataCom = NULL;
+    }
+    if (NULL != m_DycArrayData)
+    {
+        delete[] m_DycArrayData;
+        m_DycArrayData = NULL;
     }
 }
 
@@ -39,7 +51,7 @@ void Radio212TCR::serialInit()
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimer()));
-    //timer->start(2000);
+    timer->start(1000);
 
     updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
 
@@ -127,7 +139,7 @@ void Radio212TCR::parseData()
 
         if (nCRC != nCRCGet)
         {
-            qDebug() << "In Radio220tcr::recvDataParse, Decoder Recv Data CRC Err!";
+            qDebug() << "In Radio212tcr::recvDataParse, Decoder Recv Data CRC Err!";
         }
         else
         {
@@ -136,16 +148,12 @@ void Radio212TCR::parseData()
             int   stateLen = 0;
             decode(tmp, tmpArray.length()-2, state, stateLen);
             //解包到正确数据，判断该数据为数传还是控制信息，分别进行处理
-            if (stateLen > 0)
-            {
-                RadioManage::getInstance()->onRecvLinkData(state, stateLen);
-                messageSeparate(state, stateLen);
-            }
+            updateRadioState(state, stateLen);
         }
     }
 }
 
-void Radio212TCR::messageSeparate(const char* data, const int len)
+void Radio212TCR::updateRadioState(const char* data, const int len)
 {
     unsigned char CMDType = (unsigned char)(*(data+4));
     switch(CMDType)
@@ -165,6 +173,10 @@ void Radio212TCR::messageSeparate(const char* data, const int len)
         break;
     case 0x21:		// 2.4.3 电台报告功率等级
     {
+        if (*(data+5) == 0x03)
+        {
+            radioState.power = *(data+6);
+        }
     }
         break;
     case 0x22:
@@ -176,14 +188,7 @@ void Radio212TCR::messageSeparate(const char* data, const int len)
     {
         if (*(data+5) == 0x03)
         {
-            unsigned char m_nCurWorkType = (unsigned char)(*(data+6));
-            unsigned char m_nMyRadioType = 212;
-            if (m_nMyRadioType == 212)
-            {
-            }
-            else if (m_nMyRadioType == 221)
-            {
-            }
+            radioState.workTyp = *(data+6);
         }
     }
         break;
@@ -209,34 +214,52 @@ void Radio212TCR::messageSeparate(const char* data, const int len)
         {
         case 0x03:
         {
-            //m_nModemState	= RADIOMODEMSTATE_RECEIVING;
-            //qDebug() << QString::fromUtf8("电台正在接收数据");
+            m_nModemState	= RADIOMODEMSTATE_RECEIVING;
             qDebug() << "Recving Data";
         }
             break;
         case 0x04:
         {
-            //m_nModemState	= RADIOMODEMSTATE_RECEIVEEND;
-            //qDebug() << QString::fromUtf8("电台接收数据完成");
+            m_nModemState	= RADIOMODEMSTATE_RECEIVEEND;
             qDebug() << "Recv Data Done";
         }
             break;
         case 0x05:
         {
-            //m_nModemState	= RADIOMODEMSTATE_SENDING;
-            //qDebug() << QString::fromUtf8("电台开始发送数据");
+            m_nModemState	= RADIOMODEMSTATE_SENDING;
             qDebug() << "Begin Send Data";
         }
             break;
         case 0x06:
         {
-            //m_nModemState	= RADIOMODEMSTATE_SENDEND;
-            //qDebug() << QString::fromUtf8("电台发送数据结束");
+            m_nModemState	= RADIOMODEMSTATE_SENDEND;
+            m_nModemSend = false;
             qDebug() << "Send Data Done";
         }
             break;
         case 0x0B:
         {
+            if((RADIOMODEMSTATE_SENDING == m_nModemState ||
+                RADIOMODEMSTATE_BUFEMPTY == m_nModemState) &&
+                true == m_nModemSend)
+            {
+                m_SendingTimesCount++;
+                if (m_SendingTimesCount > 30)
+                {
+                    setModemNoticeSendEnd();
+                    qDebug() << "0x0B m_SendingTimesCount > 30  SetModemNoticeSendEnd!";
+
+                }
+                else if (m_SendingTimesCount > 40)
+                {
+                    setModemNoticeCancel();
+                    m_SendingTimesCount = 0;
+                    m_nModemSend = false;
+                    m_nModemState = 0;
+                    qDebug() << "0x0B m_SendingTimesCount > 40  SetModemNoticeCancel!";
+                }
+            }
+            //m_RadioStateMsgQueryCount = 0;
         }
             break;
         default:
@@ -247,8 +270,8 @@ void Radio212TCR::messageSeparate(const char* data, const int len)
         break;
     case 0x84:		// 2.3 接收非保密数据
     {
-        //qDebug() << QString::fromUtf8("接收非保密数据");
         qDebug() << "Recv Unclassified Data";
+        RadioManage::getInstance()->onRecvLinkData(data+5, len-5);
     }
         break;
     case 0x87:		// 2.3 电台发送流控状态
@@ -256,10 +279,13 @@ void Radio212TCR::messageSeparate(const char* data, const int len)
         switch(*(data+5))
         {
         case 0x00:
-
+            m_nModemState	= RADIOMODEMSTATE_BUFFULL;
+            radioModemCanSendData(false);
             break;
         case 0x01:
-
+            m_nModemState	= RADIOMODEMSTATE_BUFEMPTY;
+            radioModemCanSendData(true);
+            m_RequestCount = 0;
             break;
         default:
             break;
@@ -276,52 +302,52 @@ void Radio212TCR::messageSeparate(const char* data, const int len)
         {
             if (*(data+6) == 0x01)			// 定频模式
             {
-                //m_nWorkMode	= RADIOMODE_RCU;
+                radioState.workTyp = RADIOMODE_RCU;
                 switch((unsigned char)(*(data+7)))
                 {
                 case 0x10:		// 定频操作模式
                 {
-                    //m_nRadioState	= RADIORCU_STATE;
+                    m_nRadioState	= RADIORCU_STATE;
                 }
                     break;
                 case 0xA1:		//定频正在调谐
                 {
-                    //m_nRadioState	= RADIORCU_TURNNING;
+                    m_nRadioState	= RADIORCU_TURNNING;
                 }
                     break;
                 case 0xA2:		// 定频调谐成功
                 {
-                    //m_nRadioState	= RADIORCU_TURNSUCCESS;
+                    m_nRadioState	= RADIORCU_TURNSUCCESS;
                 }
                     break;
                 case 0xA3:		// 定频调谐失败
                 {
-                    //m_nRadioState	= RADIORCU_TURNFAILURE;
+                    m_nRadioState	= RADIORCU_TURNFAILURE;
                 }
                     break;
                 case 0x35:		// 定频发送低速报
                 {
-                    //m_nRadioState	= RADIORCU_LSMSG_SEND;
+                    m_nRadioState	= RADIORCU_LSMSG_SEND;
                 }
                     break;
                 case 0x3D:		// 定频低速报发送结束
                 {
-                    //m_nRadioState	= RADIORCU_LSMSG_SENDOVER;
+                    m_nRadioState	= RADIORCU_LSMSG_SENDOVER;
                 }
                     break;
                 case 0x40:		// 定频接收低速报
                 {
-                    //m_nRadioState	= RADIORCU_LSMSG_RECEIVE;
+                    m_nRadioState	= RADIORCU_LSMSG_RECEIVE;
                 }
                     break;
                 case 0x45:		// 定频正确收到低速报
                 {
-                    //m_nRadioState	= RADIORCU_LSMSG_RECEIVEOVER;
+                    m_nRadioState	= RADIORCU_LSMSG_RECEIVEOVER;
                 }
                     break;
                 case 0xA0:		// 定频已恢复出厂设置
                 {
-                    //m_nRadioState	= RADIORCU_DEFAULT;
+                    m_nRadioState	= RADIORCU_DEFAULT;
                 }
                     break;
                 default:
@@ -330,133 +356,133 @@ void Radio212TCR::messageSeparate(const char* data, const int len)
             }
             else if ((unsigned char)(*(data+6)) == 0x04)	// 自动模式
             {
-                //m_nWorkMode	= RADIOMODE_AUTO;
+                radioState.workTyp	= RADIOMODE_AUTO;
                 switch((unsigned char)(*(data+7)))
                 {
                 case 0x10:		// 自动扫描状态
                 {
-                    //m_nRadioState	= RADIOAUTO_SCANNING;
+                    m_nRadioState	= RADIOAUTO_SCANNING;
                 }
                     break;
                 case 0x13:		// 自动收到扫描呼叫
                 {
-                    //m_nRadioState	= RADIOAUTO_RECVCALL;
+                    m_nRadioState	= RADIOAUTO_RECVCALL;
                 }
                     break;
                 case 0x14:		// 自动发送扫描呼叫
                 {
-                    //m_nRadioState	= RADIOAUTO_CALLING;
+                    m_nRadioState	= RADIOAUTO_CALLING;
                 }
                     break;
                 case 0x27:		// 自动退出链路
                 {
-                    //m_nRadioState	= RADIOAUTO_TERLINK;
+                    m_nRadioState	= RADIOAUTO_TERLINK;
                 }
                     break;
                 case 0x2B:		// 自动业务 建立主叫
                 {
-                    //m_nRadioState	= RADIOAUTO_LINK_S;
+                    m_nRadioState	= RADIOAUTO_LINK_S;
                 }
                     break;
                 case 0x2C:		// 自动业务 建立被叫
                 {
-                    //m_nRadioState	= RADIOAUTO_LINK_C;
+                    m_nRadioState	= RADIOAUTO_LINK_C;
                 }
                     break;
                 case 0xA0:		// 自动已恢复出厂设置
                 {
-                    //m_nRadioState	= RADIOAUTO_DEFAULT;
+                    m_nRadioState	= RADIOAUTO_DEFAULT;
                 }
                     break;
                 case 0xA1:		// 自动正在调谐状态
                 {
-                    //m_nRadioState	= RADIOAUTO_TURNNING;
+                    m_nRadioState	= RADIOAUTO_TURNNING;
                 }
                     break;
                 case 0xA2:		// 自动调谐成功
                 {
-                    //m_nRadioState	= RADIOAUTO_TURNSUCCESS;
+                    m_nRadioState	= RADIOAUTO_TURNSUCCESS;
                 }
                     break;
                 case 0xA3:		// 自动调谐失败
                 {
-                    //m_nRadioState	= RADIOAUTO_TURNFAILURE;
+                    m_nRadioState	= RADIOAUTO_TURNFAILURE;
                 }
                     break;
                 case 0x16:		// 自动等待探测
                 {
-                    //m_nRadioState	= RADIOAUTO_DET_LISTEN;
+                    m_nRadioState	= RADIOAUTO_DET_LISTEN;
                 }
                     break;
                 case 0x17:		// 自动响应探测
                 {
-                    //m_nRadioState	= RADIOAUTO_DET_RECALL;
+                    m_nRadioState	= RADIOAUTO_DET_RECALL;
                 }
                     break;
                 case 0x18:		// 自动发送探测
                 {
-                    //m_nRadioState	= RADIOAUTO_DET_SEND;
+                    m_nRadioState	= RADIOAUTO_DET_SEND;
                 }
                     break;
                 case 0x19:		// 自动收到探测
                 {
-                    //m_nRadioState	= RADIOAUTO_DET_RECEIVE;
+                    m_nRadioState	= RADIOAUTO_DET_RECEIVE;
                 }
                     break;
                 case 0x20:		// 自动应答探测
                 {
-                    //m_nRadioState	= RADIOAUTO_DET_RECALL;
+                    m_nRadioState	= RADIOAUTO_DET_RECALL;
                 }
                     break;
                 case 0x21:		// 自动等待探测
                 {
-                    //m_nRadioState	= RADIOAUTO_DET_LISTEN;
+                    m_nRadioState	= RADIOAUTO_DET_LISTEN;
                 }
                     break;
                 case 0x22:		// 自动ALE建链
                 {
-                    //m_nRadioState	= RADIOAUTO_LINK_S;
+                    m_nRadioState	= RADIOAUTO_LINK_S;
                 }
                     break;
                 case 0x25:		// 自动等待应答
                 {
-                    //m_nRadioState	= RADIOAUTO_LINK_S;
+                    m_nRadioState	= RADIOAUTO_LINK_S;
                 }
                     break;
                 case 0x28:		// 自动已发送确认
                 {
-                    //m_nRadioState	= RADIOAUTO_ACKSEND;			// 确认发送
+                    m_nRadioState	= RADIOAUTO_ACKSEND;			// 确认发送
 
                 }
                     break;
                 case 0x29:		// 自动已收到确认
                 {
-                    //m_nRadioState	= RADIOAUTO_ACKRECEIVE;		// 收到确认
+                    m_nRadioState	= RADIOAUTO_ACKRECEIVE;		// 收到确认
                 }
                     break;
                 case 0x2A:		// 自动业务握手
                 {
-                    //m_nRadioState	= RADIOAUTO_SHACKE;			// 业务握手
+                    m_nRadioState	= RADIOAUTO_SHACKE;			// 业务握手
                 }
                     break;
                 case 0x2D:		// 自动ARQ发送开始
                 {
-                    //m_nRadioState	= RADIOAUTO_ARQ_SENDBEGIN;	// ARQ开始发送
+                    m_nRadioState	= RADIOAUTO_ARQ_SENDBEGIN;	// ARQ开始发送
                 }
                     break;
                 case 0x2E:		// 自动ARQ开始接收
                 {
-                    //m_nRadioState	= RADIOAUTO_ARQ_RECEIVEBEGIN;	// ARQ开始接收
+                    m_nRadioState	= RADIOAUTO_ARQ_RECEIVEBEGIN;	// ARQ开始接收
                 }
                     break;
                 case 0x2F:		// 自动ARQ接收完成
                 {
-                    //m_nRadioState	= RADIOAUTO_ARQ_RECEIVEEND;	// ARQ接收结束
+                    m_nRadioState	= RADIOAUTO_ARQ_RECEIVEEND;	// ARQ接收结束
                 }
                     break;
                 case 0x30:		// 自动ARQ发送结束
                 {
-                    //m_nRadioState	= RADIOAUTO_ARQ_SENDEND;		// ARQ开始结束
+                    m_nRadioState	= RADIOAUTO_ARQ_SENDEND;		// ARQ开始结束
                 }
                     break;
                 case 0x33:		// 自动发送定频报 ？
@@ -477,7 +503,7 @@ void Radio212TCR::messageSeparate(const char* data, const int len)
                     break;
                 case 0x52:		// 自动ARQ等待应答
                 {
-                    //m_nRadioState	= RADIOAUTO_ARQ_WAITRECALL;	// ARQ等待应答
+                    m_nRadioState	= RADIOAUTO_ARQ_WAITRECALL;	// ARQ等待应答
                 }
                     break;
                 case 0x55:		// 自动ARQ等待数据
@@ -572,15 +598,78 @@ void Radio212TCR::messageSeparate(const char* data, const int len)
     {
         if ((unsigned char)*(data+5) == 0xB0)
         {
-            //m_nWorkMode	= RADIOMODE_CONNECT;
-            //m_RadioStateMsgQueryCount = 0;
-            //qDebug() << QString::fromLatin1("与短波电台握手成功");
+            radioState.workMod	= RADIOMODE_CONNECT;
             qDebug() << "Shake Hands Success";
         }
     }
         break;
         default:
             break;
+    }
+}
+
+void Radio212TCR::setModemNoticeSendEnd()
+{
+    // 请求MODEM结束发送数据
+    char pPara[1];
+    pPara[0] = 0x02;
+    writeData(0x40, 0x83, pPara, 1);
+}
+
+void Radio212TCR::setModemNoticeCancel()
+{
+    // 请求MODEM取消发送数据
+    char pPara[1];
+    pPara[0]	= 0x07;
+    writeData(0x40, 0x83, pPara, 1);
+}
+
+void Radio212TCR::radioModemCanSendData(bool isSend)
+{
+    if (true == isSend)
+    {
+        if (m_DycArrayLen < ARRAY_DATA_LEN)
+        {
+            int len = 0;
+            int copyLen = 0;
+            len = (m_DycArrayLen / HFSENDDATA_MAXLIMITLEN) + 1;
+
+            char tempData[HFSENDDATA_LIMITLEN];
+
+            for (int i = 0 ; i < len; i++)
+            {
+                if (m_nModemState == RADIOMODEMSTATE_SENDEND)
+                {
+                    //TRACE(_T("超过组织机制分配的时间片\n\r"));
+                    m_nModemState = 0;
+                    break;
+                }
+                if (((i+1)* HFSENDDATA_LIMITLEN) < m_DycArrayLen)
+                {
+                    copyLen = HFSENDDATA_LIMITLEN;
+                }
+                else
+                {
+                    copyLen = m_DycArrayLen - (i*HFSENDDATA_LIMITLEN);
+                }
+
+                memset(tempData, 0, HFSENDDATA_LIMITLEN);
+                memcpy(tempData, m_DycArrayData+(HFSENDDATA_LIMITLEN*i), copyLen);
+                writeData(0x41, 0x84, tempData,copyLen);
+
+                qDebug() << "On radioModemCanSendData copyLen " << copyLen;
+            }
+
+            m_nModemState = RADIOMODEMSTATE_SENDING;
+
+            setModemNoticeSendEnd();
+        }
+        else
+        {
+            setModemNoticeSendEnd();
+            m_nModemState = 0;
+            qDebug() << "else m_DycArrayLen < ARRAY_DATA_LEN";
+        }
     }
 }
 
@@ -616,20 +705,80 @@ void Radio212TCR::decode(const char* srcData, const int srcLen, char* dstData, i
     }
 }
 
-void Radio212TCR::updateRadioState(uint16_t type, const char* data, const int len)
+int Radio212TCR::writeCtrlData(uint16_t funCode, char* data, int len)
 {
+    int ctrlDataLen = sizeof(RADIO_SET);
+    if(len == ctrlDataLen)
+    {
+        RADIO_SET m_set;
+        memcpy(&m_set, data, ctrlDataLen);
+        switch (funCode)
+        {
+        case Set_WorkMod://设置工作模式
+        {
 
-}
+        }
+            break;
+        case Set_Channel://设置信道
+        {
+            setChannel(m_set.channel);
+        }
+        break;
+        case Set_TxFreq:
+        {
 
-int Radio212TCR::writeCtrlData(uint16_t ctrlTyp, char* data, int len)
-{
+        }
+            break;
+        case Set_RxFreq:
+        {
 
+        }
+            break;
+        case Set_Power://设置发射功率
+        {
+            setPower(m_set.power);
+        }
+            break;
+        case Set_Squelch://设置静噪
+        {
+
+        }
+            break;
+        case Ask_State://状态问询
+        {
+            char ackData[sizeof(RADIO_STATE)];
+            memcpy(ackData, &radioState, sizeof(RADIO_STATE));
+            RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));
+        }
+            break;
+        default:
+            break;
+        }
+    }
+
+    return 0;
 }
 
 int Radio212TCR::writeLinkData(char* data, int len)
 {
     QMutexLocker locker(&m_dataMutex);
-    writeData(0x41, 0x84, data, len);
+    //请求发送数据
+    char tmp[1];
+    tmp[0] = 0x01;
+    writeData(0x41, 0x83, tmp, 1);
+
+    if (len <= ARRAY_DATA_LEN)
+    {
+        memset(m_DycArrayData, 0, ARRAY_DATA_LEN);
+        memcpy(m_DycArrayData, data, len);
+        m_DycArrayLen = len;
+        m_nModemSend = true;
+        m_RequestCount++;
+        if (m_RequestCount > 4)
+        {
+            m_RequestCount = 4;
+        }
+    }
 
     return 0;
 }
@@ -712,5 +861,77 @@ char Radio212TCR::getCRC(const char* data, const quint16 len)
 
 void Radio212TCR::onTimer()
 {
+    static uint16_t ShakeHeadCount = 0;
+    static uint16_t ChangeToDataModeCount = 0;
+    static uint8_t QueryStateCount = 0;
 
+    if (ShakeHeadCount > 120)
+    {
+        if (m_nModemState != RADIOMODEMSTATE_SENDING)
+        {
+            ShakeHeadCount = 0;
+            //握手
+            writeData(0x40, 0xB0, NULL, 0);
+        }
+    }
+
+    if (ChangeToDataModeCount > 300 && \
+        m_nModemState != RADIOMODEMSTATE_SENDING && \
+        m_nModemState != RADIOMODEMSTATE_RECEIVING )
+    {
+        ChangeToDataModeCount = 0;
+        char tmp[2];
+        tmp[0] = 0x02;
+        tmp[1] = DITAL_DATA;
+        //更改业务类型为数传
+        writeData(0x40, 0x23, tmp, 2);
+        //查询业务类型
+        tmp[0] = 0x01;
+        writeData(0x40, 0x23, tmp, 1);
+    }
+
+    if (QueryStateCount > 5)
+    {
+        QueryStateCount = 0;
+        if (m_nModemSend)
+        {
+            char tmp[10];
+            tmp[0] = 1;
+            writeData(0x40, 0xB1, tmp, 1);
+            writeData(0x40, 0x23, tmp, 1);
+        }
+    }
+
+    if(m_RequestCount > 3)
+    {
+        char nData[1];
+        nData[0] = 0x02;
+        writeData(0x40, 0x84, nData, 1);
+        setModemNoticeSendEnd();
+    }
+
+    ++ShakeHeadCount;
+    ++ChangeToDataModeCount;
+    ++QueryStateCount;
+}
+
+void Radio212TCR::setChannel(const uint16_t nCHN)
+{
+    char pPara[3];
+    pPara[0]	= 0x02;
+    pPara[1]	= nCHN/256;
+    pPara[2]	= nCHN%256;
+
+    writeData(0x40, 0x14, pPara, 3);
+    radioState.channel = nCHN;
+}
+
+void Radio212TCR::setPower(const uint8_t nPower)
+{
+    char pPara[2];
+    pPara[0]	= 0x02;
+    pPara[1]	= nPower;
+
+    writeData(0x40, 0x21, pPara, 2);
+    radioState.power = nPower;
 }

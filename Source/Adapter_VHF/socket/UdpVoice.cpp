@@ -89,6 +89,30 @@ void UDPVoice::onRev()
                 registVoice(sessionKey, registVO);
             }
 
+            if(msgHeader.funCod == PTT_set){            
+
+                PTT_SET pttSet;
+                memcpy(&pttSet,data + currLen, sizeof(PTT_SET));
+
+                uint8_t priority = pttSet.Priority;
+                uint8_t pttOn    = pttSet.PttON;
+
+                qDebug()<<"Rev PTT-SET-------------------------" << priority << "_" <<pttOn;
+
+                int playID = getRegistedID(sessionKey);
+                if(playID != -1){
+#if !WIN32
+                    AudioPlayer* player = AudioControl::getInstance()->getPlayer(playID);
+                    if(player != NULL && player->isBind()){
+  //                      qDebug()<<"-------------------------priority_pttOn" << priority << "_" <<pttOn;
+                        AudioControl::getInstance()->getPtt()->setPriority_PttOn(playID, priority, pttOn);
+                    }
+#endif
+                }
+
+            }
+
+
             if(nLen == 175) {
 
      //           qDebug()<<"Recv Voice Data Package--------------!!!";
@@ -97,25 +121,20 @@ void UDPVoice::onRev()
                 memcpy(&voiceHead,data + currLen, sizeof(VOICE_HEAD));
                 currLen += sizeof(VOICE_HEAD);
 
-                uint8_t priority = voiceHead.Priority;      //优先级复用:1-255 优先级越大越高
-                uint8_t pttOn    = voiceHead.PttON;          //0:PTT-Off 1:PTT-On
+                uint8_t priority = voiceHead.Priority;          //优先级:1-255 优先级越大越高
+                uint8_t pttOn    = voiceHead.PttON;             //0:PTT-Off 1:PTT-On
 
-                char voiceData[160];
-                memcpy(voiceData, data + currLen, 160);
+                int playID = getRegistedID(sessionKey);
+                if(playID != -1){
 
-                for(int i=0; i<4; i++){
-                    VOICE_REGIST_VO regVO = regArray[i];
-
+                    char voiceData[160];
+                    memcpy(voiceData, data + currLen, 160);
 #if !WIN32
-                    if(regVO.regKey == sessionKey){
-
-                       AudioPlayer* player = AudioControl::getInstance()->getPlayer(regVO.PlayID);
-                       if(player != NULL && player->isBind()){
-     //                      qDebug()<<"-------------------------priority_pttOn" << priority << "_" <<pttOn;
-                           AudioControl::getInstance()->getPtt()->setPriority_PttOn(regVO.PlayID, priority, pttOn);
-                           player->addPlayData(voiceData, 160);
-                       }
-                       break;
+                    AudioPlayer* player = AudioControl::getInstance()->getPlayer(playID);
+                    if(player != NULL && player->isBind()){
+    //                      qDebug()<<"-------------------------priority_pttOn" << priority << "_" <<pttOn;
+                        AudioControl::getInstance()->getPtt()->setPriority_PttOn(playID, priority, pttOn);
+                        player->addPlayData(voiceData, 160);
                     }
 #endif
                 }
@@ -213,7 +232,7 @@ void UDPVoice::sendRegistState(uint8_t regState, QHostAddress netAddr, uint32_t 
     msgHeader.msgTyp      = MSG_TYP_VOIC;
     msgHeader.DevID       = ConfigLoader::getInstance()->getRadioID();
     msgHeader.RadioTyp    = ConfigLoader::getInstance()->getRadioTyp();
-    msgHeader.funCod      = Dev_restrict_Ack;
+    msgHeader.funCod      = Dev_regist_Ack;
 
     DEV_REGIST_ACK registACK;
     registACK.regState = regState;
@@ -233,11 +252,28 @@ void UDPVoice::onError(QAbstractSocket::SocketError socketError)
 }
 
 
-int UDPVoice::registVoice(QString sessionKey, VOICE_REGIST_VO registVO){
+int UDPVoice::getRegistedID(QString sessionKey)
+{
+    int playID = -1;
+    for(int i=0; i<4; i++){
+        VOICE_REGIST_VO regVO = regArray[i];
+
+        if(regVO.regKey == sessionKey){
+
+            playID = regVO.PlayID;
+            break;
+        }
+    }
+
+    return playID;
+}
+
+
+void UDPVoice::registVoice(QString sessionKey, VOICE_REGIST_VO registVO){
 
     /////////////////////////////////////////////////////////////////////////
 
-    bool registOK = false;
+    bool occupyOK = false;
     bool haveReg  = false;
     for(int i=0; i<4; i++){
         VOICE_REGIST_VO regVO = regArray[i];
@@ -246,7 +282,7 @@ int UDPVoice::registVoice(QString sessionKey, VOICE_REGIST_VO registVO){
             regVO.uptTime = registVO.uptTime;
             regArray[i] = regVO;
             haveReg  = true;
-            registOK = true;
+            occupyOK = true;
 
 //            qDebug()<<"Voice Regist Update--------------ID"     << regArray[i].DevID;
 //            qDebug()<<"Voice Regist Update--------------IP"     << regArray[i].NetIPAddr;
@@ -260,7 +296,6 @@ int UDPVoice::registVoice(QString sessionKey, VOICE_REGIST_VO registVO){
 #if !WIN32
     if(!haveReg){
 
-        bool occupyOK = false;
         for(int i=0; i<4; i++){
             VOICE_REGIST_VO regVO = regArray[i];
 
@@ -271,7 +306,6 @@ int UDPVoice::registVoice(QString sessionKey, VOICE_REGIST_VO registVO){
                     registVO.regKey = sessionKey;
                     registVO.PlayID = playID;
                     regArray[i] = registVO;
-                    registOK = true;
 
                     qDebug()<<"Voice Regist Add--------------PlayID" << regArray[i].PlayID;
                     qDebug()<<"Voice Regist Add--------------ID"     << regArray[i].DevID;
@@ -295,15 +329,9 @@ int UDPVoice::registVoice(QString sessionKey, VOICE_REGIST_VO registVO){
             QHostAddress netAddr(registVO.NetIPAddr);
             sendRegistState(RegistNG_NoMore,  netAddr, registVO.NetPort);
         }
-
-    }
-
-    if(!registOK){
-        return 1;
     }
 
 #endif
-    return 0;
 
     /////////////////////////////////////////////////////////////////////////
 

@@ -24,7 +24,7 @@ Radio181D::~Radio181D()
 void Radio181D::serialInit()
 {
 #if WIN32
-    dataCom = new QextSerialPort("COM2");
+    dataCom = new QextSerialPort("COM1");
 #else
     dataCom = new QextSerialPort("/dev/ttymxc2");
 #endif
@@ -44,7 +44,7 @@ void Radio181D::serialInit()
     }
 
 #if WIN32
-    ctrlCom = new QextSerialPort("COM1");
+    ctrlCom = new QextSerialPort("COM7");
 #else
     ctrlCom = new QextSerialPort("/dev/ttymxc1");
 #endif
@@ -66,7 +66,7 @@ void Radio181D::serialInit()
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimer()));
-    timer->start(2000);
+    timer->start(1000);
 
     updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
 
@@ -222,10 +222,6 @@ void Radio181D::updateRadioState(char* data, int len)
 
 //        qDebug()<<"updateRadioState------------------!!!";
 
-        char ackData[sizeof(RADIO_STATE)];
-        memcpy(ackData, &radioState, sizeof(RADIO_STATE));
-        RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));
-
     }
 
     if((unsigned char)funCod == 0xF4 || (unsigned char)funCod == 0xF4 - 0x10){                //输出的语音/数据状态(工作模式)
@@ -245,10 +241,6 @@ void Radio181D::updateRadioState(char* data, int len)
 
         updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
 
-        char ackData[sizeof(RADIO_STATE)];
-        memcpy(ackData, &radioState, sizeof(RADIO_STATE));
-        RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));
-
     }
 
     if((unsigned char)funCod == 0xFE || (unsigned char)funCod == 0xFE - 0x10){                //输出的设置频道号
@@ -267,10 +259,6 @@ void Radio181D::updateRadioState(char* data, int len)
         radioState.errState = 0;
 
         updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
-
-        char ackData[sizeof(RADIO_STATE)];
-        memcpy(ackData, &radioState, sizeof(RADIO_STATE));
-        RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));
 
     }
 }
@@ -432,6 +420,10 @@ void Radio181D::onTimer()
     writeCtrlData(Ask_State, data, sizeof(RADIO_SET));      // 周期查询电台工作状态
 
     checkDisconnect();
+
+    char ackData[sizeof(RADIO_STATE)];
+    memcpy(ackData, &radioState, sizeof(RADIO_STATE));
+    RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));
 }
 
 
@@ -440,12 +432,9 @@ void Radio181D::checkDisconnect()
     long curTim = QDateTime::currentDateTimeUtc().toTime_t();         //秒级
     long difTim = curTim - updTim;
 
-    if(difTim > 5){
+    if(radioState.workMod != 2 && difTim > 5){                        // 181D集群模式下（暂无状态反馈）
         updTim = curTim;
 
-        radioState.errState = 1;
-        char ackData[sizeof(RADIO_STATE)];
-        memcpy(ackData, &radioState, sizeof(RADIO_STATE));
-        RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));
+        radioState.errState = 1;       // 电台通信异常
     }
 }

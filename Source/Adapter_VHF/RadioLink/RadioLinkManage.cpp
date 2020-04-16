@@ -87,14 +87,33 @@ void RadioLinkManage::init()
     m_radioLinkClient->setCodeMe(m_nIDMe);
     m_radioLinkMaster->setCodeMe(m_nIDMe);
 
-    m_radioLinkClient->setDataMaxLen(1020);
-    m_radioLinkMaster->setDataMaxLen(1020);
+    ConfigRadio* tmp = ConfigLoader::getInstance()->getConfigRadio();
+    if (tmp != NULL)
+    {
+        m_radioLinkClient->setDataMaxLen(1020);
+        m_radioLinkMaster->setDataMaxLen(1020);
 
-    m_radioLinkClient->setTimeFactor(5);
-    m_radioLinkMaster->setTimeFactor(5);
+        m_radioLinkClient->setTimeFactor(tmp->getTimerFactor());
+        m_radioLinkMaster->setTimeFactor(tmp->getTimerFactor());
 
-    m_radioLinkClient->setCircleDrift(1);
-    m_radioLinkMaster->setCircleDrift(1);
+        m_radioLinkClient->setCircleDrift(tmp->getCircleDrift());
+        m_radioLinkMaster->setCircleDrift(tmp->getCircleDrift());
+
+        m_radioLinkClient->setNotInChainCtLmt(tmp->getNotInChainCtLmt());
+    }
+    else
+    {
+        m_radioLinkClient->setDataMaxLen(1020);
+        m_radioLinkMaster->setDataMaxLen(1020);
+
+        m_radioLinkClient->setTimeFactor(5);
+        m_radioLinkMaster->setTimeFactor(5);
+
+        m_radioLinkClient->setCircleDrift(1);
+        m_radioLinkMaster->setCircleDrift(1);
+
+        m_radioLinkClient->setNotInChainCtLmt(300);
+    }
 
     m_radioLinkClient->SetAvailable(true);
     m_radioLinkClient->setMonitorAll(true);

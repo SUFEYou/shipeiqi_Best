@@ -16,7 +16,8 @@ public:
     void sendCtrlAck(uint16_t ackTyp, char* pData,int nLen);
 
 private:
-    void registCtrl(CTRL_REGIST_VO pipe);
+    void registCtrl(QString sessionKey, CTRL_REGIST_VO pipe);
+    int  getRegistedID(QString sessionKey);
     void sendRegistState(uint8_t regState, QHostAddress netAddr, uint32_t netPort);
 
 private slots:
