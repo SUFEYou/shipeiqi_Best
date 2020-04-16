@@ -46,17 +46,17 @@ void UDPRctrl::onRev()
 
 //       qDebug()<<"Recv Snder IP---------------:"<< sndAdd.toString();
 //       qDebug()<<"Recv Snder Port-------------:"<< sndPort;
-
+       int radioTyp = ConfigLoader::getInstance()->getRadioTyp();
 
        MSG_HEADER msgHeader;
        memcpy(&msgHeader,data,sizeof(MSG_HEADER));
        int currLen = sizeof(MSG_HEADER);
 
-       if (msgHeader.msgTyp == MSG_TYP_CTRL)
+       if (msgHeader.msgTyp == MSG_TYP_CTRL && msgHeader.RadioTyp == radioTyp)
        {
             if(msgHeader.funCod == Dev_regist){                                                 //通道注冊
 
-                qDebug()<<"Recv Regist Cmd--------------!!!";
+//                qDebug()<<"Recv Regist Cmd--------------!!!";
 
                 DEV_REGIST devRegist;
                 memcpy(&devRegist,data + currLen, sizeof(DEV_REGIST));
@@ -95,6 +95,16 @@ void UDPRctrl::onRev()
                 }
 
             }
+
+       } else if(msgHeader.msgTyp == MSG_TYP_CTRL && msgHeader.RadioTyp != radioTyp){
+
+           if(msgHeader.funCod == Dev_regist){
+               DEV_REGIST devRegist;
+               memcpy(&devRegist,data + currLen, sizeof(DEV_REGIST));
+
+               QHostAddress netAddr(QString(QLatin1String(devRegist.NetIPAddr)));
+               sendRegistState(RegistNG_ErrRTyp,  netAddr, devRegist.NetPort);
+           }
        }
     }
 }
@@ -111,6 +121,8 @@ void UDPRctrl::sendData(char* pData,int nLen)
     {
         int diffS = curTime - regVO.uptTime;
         if(diffS <= 30){
+
+//           qDebug() << "send to-----------------" << regVO.NetIPAddr << ":" << regVO.NetPort;
            m_udpSocket->writeDatagram(pData, nLen, QHostAddress(regVO.NetIPAddr), regVO.NetPort);
 
         } else {
@@ -130,7 +142,7 @@ void UDPRctrl::sendData(char* pData,int nLen)
 void UDPRctrl::sendCtrlAck(uint16_t ackTyp, char* pData,int nLen)
 {
 
-    if(ackTyp == Ack_State){                          //工作转台
+    if(ackTyp == Ack_State){                          //工作状态
 
         time_t ltime;
         time( &ltime );
@@ -154,6 +166,29 @@ void UDPRctrl::sendCtrlAck(uint16_t ackTyp, char* pData,int nLen)
 
 }
 
+void UDPRctrl::sendRegistState(uint8_t regState, QHostAddress netAddr, uint32_t netPort)
+{
+    int  sndLen = sizeof(MSG_HEADER) + sizeof(DEV_REGIST_ACK);
+    char sndData[sndLen];
+
+    MSG_HEADER msgHeader;
+    msgHeader.ProgramType = ConfigLoader::getInstance()->getProgramType();
+    msgHeader.ProgramID   = ConfigLoader::getInstance()->getProgramID();
+    msgHeader.msgTyp      = MSG_TYP_CTRL;
+    msgHeader.DevID       = ConfigLoader::getInstance()->getRadioID();
+    msgHeader.RadioTyp    = ConfigLoader::getInstance()->getRadioTyp();
+    msgHeader.funCod      = Dev_restrict_Ack;
+
+    DEV_REGIST_ACK registACK;
+    registACK.regState = regState;
+
+    memcpy(sndData, &msgHeader, sizeof(MSG_HEADER));
+    memcpy(sndData + sizeof(MSG_HEADER), &registACK, sizeof(DEV_REGIST_ACK));
+
+    m_udpSocket->writeDatagram(sndData, sndLen, netAddr, netPort);
+
+}
+
 void UDPRctrl::onError(QAbstractSocket::SocketError socketError)
 {
     Q_UNUSED(socketError);
@@ -173,7 +208,7 @@ void UDPRctrl::registCtrl(CTRL_REGIST_VO registVO){
             regVO.uptTime = registVO.uptTime;
             regList.replace(i, regVO);
 
-//            qDebug()<<"Ctrl Regist Update --------------Radio ID"  << regVO.RadioID;
+//            qDebug()<<"Ctrl Regist Update --------------Radio ID"  << regVO.DevID;
 //            qDebug()<<"Ctrl Regist Update --------------IP"        << regVO.NetIPAddr;
 //            qDebug()<<"Ctrl Regist Update --------------Port"      << regVO.NetPort;
 //            qDebug()<<"Ctrl Regist Update --------------UptTime"   << regVO.uptTime;
@@ -192,6 +227,8 @@ void UDPRctrl::registCtrl(CTRL_REGIST_VO registVO){
 //        qDebug()<<"Ctrl Regist Add --------------IP"        << registVO.NetIPAddr;
 //        qDebug()<<"Ctrl Regist Add --------------Port"      << registVO.NetPort;
 //        qDebug()<<"Ctrl Regist Add --------------UptTime"   << registVO.uptTime;
+        QHostAddress netAddr(registVO.NetIPAddr);
+        sendRegistState(RegistOK,  netAddr, registVO.NetPort);
 
     }
     regMutex.unlock();

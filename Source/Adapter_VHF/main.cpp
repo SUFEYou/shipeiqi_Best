@@ -11,7 +11,8 @@ int main(int argc, char *argv[])
 #if !WIN32
     system("amixer sset 'MIXINR IN3R' on");
     system("amixer sset 'INPGAR IN3R' on");
-    system("amixer cset name='Headphone Volume' 127,127");
+//    system("amixer cset name='Headphone Volume' 127,127");
+    system("amixer cset numID='9' 127");
 #endif
 
     ConfigLoader::getInstance()->load();

@@ -42,11 +42,11 @@ private:
     bool                        m_connected;
     uint8_t                     m_disconnectCnt;
     bool                        m_workModFlag;
-    uint8_t                     m_workMod;          //宸ヤ綔妯″紡
+    uint8_t                     m_workMod;          //工作模式
     bool                        m_freqFlag;
-    uint64_t                    m_freq;             //棰戠巼
+    uint64_t                    m_freq;             //频率
     bool                        m_squelchFlag;
-    uint8_t                     m_squelch;          //闈欏櫔
+    uint8_t                     m_squelch;          //静噪
 };
 
 #endif // RADIO171D_H

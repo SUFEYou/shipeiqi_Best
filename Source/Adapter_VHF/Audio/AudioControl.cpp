@@ -98,7 +98,7 @@ bool AudioControl::init(QString& status)
         //return false;
     }
 
-    if (!m_ptt->init(status))
+    if (!m_ptt->init())
     {
         qDebug() << "PTT Init err";
     }

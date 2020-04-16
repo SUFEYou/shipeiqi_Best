@@ -18,6 +18,7 @@ public:
 
 private:
     int registVoice(QString sessionKey, VOICE_REGIST_VO regPipe);
+    void sendRegistState(uint8_t regState, QHostAddress netAddr, uint32_t netPort);
 
 private slots:
     void onRev();

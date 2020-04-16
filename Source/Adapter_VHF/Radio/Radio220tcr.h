@@ -9,10 +9,10 @@
 #define HFSENDDATA_MAXLIMITLEN 100
 #define HFSENDDATA_LIMITLEN 100
 
-#define DITAL_TALKING 1  //数话
-#define MODE_TALKING 2   //模话
-#define DITAL_DATA 3     //数据
-#define DITAL_DATA_221 7 //221 数据
+#define DITAL_TALKING 1  //����
+#define MODE_TALKING 2   //ģ��
+#define DITAL_DATA 3     //����
+#define DITAL_DATA_221 7 //221 ����
 
 typedef enum {		// Radio Work Mode
     RADIOMODE_RCU = 1,			// RCU Model
@@ -26,54 +26,54 @@ typedef enum {		// Radio Work Mode
 } SSBRADIO_WORKMODE;
 
 typedef enum {		// Radio ALE State
-    RADIOALE_SCANNING	= 1,	// 扫描中
-    RADIOALE_INITIALIZE,		// 初始化
-    RADIOALE_SCANSTOP,			// 停扫状态
-    RADIOALE_LQA,				// LQA(链路质量分析)
-    RADIOALE_CALL,				// 连接呼叫
-    RADIOALE_LINK,				// 建链
-    RADIOALE_TERLINK,			// 断链
+    RADIOALE_SCANNING	= 1,	// ɨ����
+    RADIOALE_INITIALIZE,		// ��ʼ��
+    RADIOALE_SCANSTOP,			// ͣɨ״̬
+    RADIOALE_LQA,				// LQA(��·��������)
+    RADIOALE_CALL,				// ���Ӻ���
+    RADIOALE_LINK,				// ����
+    RADIOALE_TERLINK,			// ����
     RADIOALE_ERROR,				// Command Error
 } SSBRADIO_ALESTATE;
 
 typedef enum {		// Radio RCU State
-    RADIORCU_STATE	= 1,		 // 定频操作状态
-    RADIORCU_TURNNING,			 // 正在调谐
-    RADIORCU_TURNSUCCESS,		 // 调谐成功
-    RADIORCU_TURNFAILURE,		 // 调谐失败
-    RADIORCU_LSMSG_SEND,		 // 定频发送低速报
-    RADIORCU_LSMSG_SENDOVER,	 // 定频发送低速报结束
-    RADIORCU_LSMSG_RECEIVE,		 // 定频接收低速报
-    RADIORCU_LSMSG_RECEIVEOVER,	 // 定频正确接收低速报
-    RADIORCU_LSMSG_RECEIVEFAULT, // 定频接收低速报失败
-    RADIORCU_DEFAULT,			 // 恢复出厂设置
+    RADIORCU_STATE	= 1,		 // ��Ƶ����״̬
+    RADIORCU_TURNNING,			 // ���ڵ�г
+    RADIORCU_TURNSUCCESS,		 // ��г�ɹ�
+    RADIORCU_TURNFAILURE,		 // ��гʧ��
+    RADIORCU_LSMSG_SEND,		 // ��Ƶ���͵��ٱ�
+    RADIORCU_LSMSG_SENDOVER,	 // ��Ƶ���͵��ٱ�����
+    RADIORCU_LSMSG_RECEIVE,		 // ��Ƶ���յ��ٱ�
+    RADIORCU_LSMSG_RECEIVEOVER,	 // ��Ƶ��ȷ���յ��ٱ�
+    RADIORCU_LSMSG_RECEIVEFAULT, // ��Ƶ���յ��ٱ�ʧ��
+    RADIORCU_DEFAULT,			 // �ָ���������
 } SSBRADIO_RCUSTATE;
 
 typedef enum {		// Radio AUTO State
-    RADIOAUTO_SCANNING	= 1,	// 自动扫描状态
-    RADIOAUTO_RECVCALL,			// 收到扫描呼叫
-    RADIOAUTO_CALLING,			// 发送扫描呼叫
-    RADIOAUTO_TERLINK,			// 自动退出链路
-    RADIOAUTO_LINK_S,			// 自动业务建立,主叫
-    RADIOAUTO_LINK_C,			// 自动业务建立,被叫
-    RADIOAUTO_TURNNING,			// 自动正在调谐
-    RADIOAUTO_TURNSUCCESS,		// 自动调谐成功
-    RADIOAUTO_TURNFAILURE,		// 自动调谐失败
-    RADIOAUTO_DET_LISTEN,		// 自动等待探测
-    RADIOAUTO_DET_RECEIVE,		// 自动收到探测
-    RADIOAUTO_DET_SEND,			// 自动发送探测
-    RADIOAUTO_DET_RECALL,		// 自动响应探测
-    RADIOAUTO_ACKSEND,			// 自动确认发送
-    RADIOAUTO_ACKRECEIVE,		// 自动收到确认
-    RADIOAUTO_SHACKE,			// 自动业务握手
-    RADIOAUTO_ARQ_SENDBEGIN,	// ARQ开始发送
-    RADIOAUTO_ARQ_SENDEND,		// ARQ发送结束
-    RADIOAUTO_ARQ_RECEIVEEND,	// ARQ接收完成
-    RADIOAUTO_ARQ_RECEIVEBEGIN,	// ARQ开始接收
-    RADIOAUTO_ARQ_WAITRECALL,	// ARQ等待应答
-    RADIOAUTO_DEFAULT,			// 恢复出厂设置
-    RADIOAUTO_ARQ_SENDDATA,     // 自动ARQ发送数据
-    RADIOAUTO_LAST_MESSAGE		// 数据的结尾
+    RADIOAUTO_SCANNING	= 1,	// �Զ�ɨ��״̬
+    RADIOAUTO_RECVCALL,			// �յ�ɨ�����
+    RADIOAUTO_CALLING,			// ����ɨ�����
+    RADIOAUTO_TERLINK,			// �Զ��˳���·
+    RADIOAUTO_LINK_S,			// �Զ�ҵ����,����
+    RADIOAUTO_LINK_C,			// �Զ�ҵ����,����
+    RADIOAUTO_TURNNING,			// �Զ����ڵ�г
+    RADIOAUTO_TURNSUCCESS,		// �Զ���г�ɹ�
+    RADIOAUTO_TURNFAILURE,		// �Զ���гʧ��
+    RADIOAUTO_DET_LISTEN,		// �Զ��ȴ�̽��
+    RADIOAUTO_DET_RECEIVE,		// �Զ��յ�̽��
+    RADIOAUTO_DET_SEND,			// �Զ�����̽��
+    RADIOAUTO_DET_RECALL,		// �Զ���Ӧ̽��
+    RADIOAUTO_ACKSEND,			// �Զ�ȷ�Ϸ���
+    RADIOAUTO_ACKRECEIVE,		// �Զ��յ�ȷ��
+    RADIOAUTO_SHACKE,			// �Զ�ҵ������
+    RADIOAUTO_ARQ_SENDBEGIN,	// ARQ��ʼ����
+    RADIOAUTO_ARQ_SENDEND,		// ARQ���ͽ���
+    RADIOAUTO_ARQ_RECEIVEEND,	// ARQ�������
+    RADIOAUTO_ARQ_RECEIVEBEGIN,	// ARQ��ʼ����
+    RADIOAUTO_ARQ_WAITRECALL,	// ARQ�ȴ�Ӧ��
+    RADIOAUTO_DEFAULT,			// �ָ���������
+    RADIOAUTO_ARQ_SENDDATA,     // �Զ�ARQ��������
+    RADIOAUTO_LAST_MESSAGE		// ���ݵĽ�β
 } SSBRADIO_AUTOSTATE;
 
 typedef enum {
@@ -124,15 +124,15 @@ typedef enum {		// Command Type
     RADIOCMD_AUTO,			// TCR221 Auto Mode
     RADIOCMD_LINE_CTL = 20,		// ----- Control Line ------
 
-    RADIOCMD_SHAKE,			// 握手信号
-    RADIOCMD_CHANSEE,		// 查看信道基本信息
-    RADIOCMD_RANK,			// 查看信道打分信息
-    RADIOCMD_INDEX,			// 查看链路网信息
+    RADIOCMD_SHAKE,			// �����ź�
+    RADIOCMD_CHANSEE,		// �鿴�ŵ�������Ϣ
+    RADIOCMD_RANK,			// �鿴�ŵ������Ϣ
+    RADIOCMD_INDEX,			// �鿴��·����Ϣ
     RADIOCMD_LINE_SEE = 30,		// ----- See Line ------
 
-    RADIOCMD_PGM_IND,		// 网址信息编程
-    RADIOCMD_PGM_CH,		// 信道信息编程
-    RADIOCMD_PGM_MDM,		// MODEM信息编程
+    RADIOCMD_PGM_IND,		// ��ַ��Ϣ���
+    RADIOCMD_PGM_CH,		// �ŵ���Ϣ���
+    RADIOCMD_PGM_MDM,		// MODEM��Ϣ���
     RADIOCMD_LINE_PGM = 40,		// ----- Program Line ------
 } SSBRADIO_CMDTYPE;
 

@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QThread>
+#include "Uart/qextserialport.h"
 
 #pragma pack(1)
 typedef struct _PTTSET
@@ -17,7 +18,9 @@ class AudioPtt : public QThread
     Q_OBJECT
 public:
     AudioPtt();
-    bool init(QString& status);
+    bool init();
+    void sendPTTOn();
+    void sendPTTOff();
 
     void setPriority_PttOn(int pID, int priority, int pttOn);
     int getPttOn(int pID);
@@ -25,12 +28,18 @@ public:
 protected:
     virtual void run();
 
+private slots:
+    void readCom();
+
 private:
     bool      m_stop;
+    QextSerialPort   *pttCom;
 
     PttSet    pttSetArr[4];
     int       pttOnTim;
     int       pttOnLim;
+
+    int       PttONSended;
 
 };
 

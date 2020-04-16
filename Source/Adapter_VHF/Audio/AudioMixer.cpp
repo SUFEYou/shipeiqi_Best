@@ -10,7 +10,7 @@ AudioMixer::AudioMixer()
            , m_elem(NULL)
            , m_volMin(0)
            , m_volMax(0)
-           , m_val(87)
+           , m_val(127)
 {
 
 }

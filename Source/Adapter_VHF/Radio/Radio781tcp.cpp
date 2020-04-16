@@ -5,6 +5,7 @@
 Radio781TCP::Radio781TCP()
 {
     memset(&radioState, 0, sizeof(RADIO_STATE));
+    radioState.errState = 1;
 }
 
 Radio781TCP::~Radio781TCP()
@@ -208,7 +209,7 @@ void Radio781TCP::updateRadioState(char* data, int len)
         radioState.channel = channel;
         radioState.txFreq  = sndFreq*10000;
         radioState.rxFreq  = revFreq*10000;
-        radioState.radioConnect = 1;
+        radioState.errState = 0;
 
         updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
 
@@ -234,7 +235,7 @@ void Radio781TCP::updateRadioState(char* data, int len)
         }
 
         radioState.workMod  = wkM1;
-        radioState.radioConnect = 1;
+        radioState.errState = 0;
 
         updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
 
@@ -257,7 +258,7 @@ void Radio781TCP::updateRadioState(char* data, int len)
         }
 
         radioState.channel  = chd1;
-        radioState.radioConnect = 1;
+        radioState.errState = 0;
 
         updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
 
@@ -417,7 +418,7 @@ void Radio781TCP::checkDisconnect()
     if(difTim > 5){
         updTim = curTim;
 
-        radioState.radioConnect = 1;
+        radioState.errState = 1;
         char ackData[sizeof(RADIO_STATE)];
         memcpy(ackData, &radioState, sizeof(RADIO_STATE));
         RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));

@@ -5,6 +5,7 @@
 Radio181D::Radio181D()
 {
     memset(&radioState, 0, sizeof(RADIO_STATE));
+    radioState.errState = 1;
     Protocol = 1;
 }
 
@@ -23,9 +24,9 @@ Radio181D::~Radio181D()
 void Radio181D::serialInit()
 {
 #if WIN32
-    dataCom = new QextSerialPort("COM1");
+    dataCom = new QextSerialPort("COM2");
 #else
-    dataCom = new QextSerialPort("/dev/ttymxc1");
+    dataCom = new QextSerialPort("/dev/ttymxc2");
 #endif
     connect(dataCom, SIGNAL(readyRead()), this, SLOT(readDataCom()));
     dataCom->setBaudRate(BAUD38400);    //设置波特率
@@ -43,9 +44,9 @@ void Radio181D::serialInit()
     }
 
 #if WIN32
-    ctrlCom = new QextSerialPort("COM2");
+    ctrlCom = new QextSerialPort("COM1");
 #else
-    ctrlCom = new QextSerialPort("/dev/ttymxc2");
+    ctrlCom = new QextSerialPort("/dev/ttymxc1");
 #endif
 
     connect(ctrlCom, SIGNAL(readyRead()), this, SLOT(readCtrlCom()));
@@ -86,6 +87,7 @@ void Radio181D::readDataCom()
 
 void Radio181D::readCtrlCom()
 {
+
     dataArray.push_back(ctrlCom->readAll());
 
     if (dataArray.length() < 7)
@@ -211,12 +213,14 @@ void Radio181D::updateRadioState(char* data, int len)
         radioState.channel = channel;
         radioState.txFreq  = sndFreq*10000;
         radioState.rxFreq  = revFreq*10000;
-        radioState.radioConnect = 1;
+        radioState.errState = 0;
 
         updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
 
 //        radioState.signalV = signalV;
 //        radioState.radioPro= intensityEx;
+
+//        qDebug()<<"updateRadioState------------------!!!";
 
         char ackData[sizeof(RADIO_STATE)];
         memcpy(ackData, &radioState, sizeof(RADIO_STATE));
@@ -237,7 +241,7 @@ void Radio181D::updateRadioState(char* data, int len)
         }
 
         radioState.workMod  = wkM1;
-        radioState.radioConnect = 1;
+        radioState.errState = 0;
 
         updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
 
@@ -260,7 +264,7 @@ void Radio181D::updateRadioState(char* data, int len)
         }
 
         radioState.channel  = chd1;
-        radioState.radioConnect = 1;
+        radioState.errState = 0;
 
         updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
 
@@ -439,7 +443,7 @@ void Radio181D::checkDisconnect()
     if(difTim > 5){
         updTim = curTim;
 
-        radioState.radioConnect = 1;
+        radioState.errState = 1;
         char ackData[sizeof(RADIO_STATE)];
         memcpy(ackData, &radioState, sizeof(RADIO_STATE));
         RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));

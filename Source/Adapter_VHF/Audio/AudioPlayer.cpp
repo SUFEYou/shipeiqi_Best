@@ -99,6 +99,11 @@ void AudioPlayer::run()
 
         }
 
+//        qDebug()<<"Player--------------------------" << m_PlayID << ":" << isPlayEn();
+        if(!m_PlayEn){
+            continue;
+        }
+
         rc = 0;
         rc = snd_pcm_writei(m_handle, data, m_frameSize);
 

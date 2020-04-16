@@ -17,6 +17,7 @@ public:
 
 private:
     void registCtrl(CTRL_REGIST_VO pipe);
+    void sendRegistState(uint8_t regState, QHostAddress netAddr, uint32_t netPort);
 
 private slots:
     void onRev();

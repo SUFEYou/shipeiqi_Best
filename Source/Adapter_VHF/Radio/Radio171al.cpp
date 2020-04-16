@@ -191,7 +191,7 @@ void Radio171AL::onTimer()
         ++m_disconnectCnt;
         if (m_disconnectCnt > 10)
         {
-            radioState.radioConnect = 0;
+            radioState.errState = 0;
             m_connected = false;
         }
     }

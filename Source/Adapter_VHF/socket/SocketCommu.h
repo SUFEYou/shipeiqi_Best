@@ -75,7 +75,7 @@ typedef struct _RADIO_STATE
     uint64_t        rxFreq;             // 接受频点
     uint8_t         power;              // 发射功率
     uint8_t         squelch;            // 静噪
-    uint8_t         radioConnect;       // 0:电台通信异常 1：电台通信正常
+    uint8_t         errState;           // 0:电台通信正常 1：电台通信异常
     uint64_t        ext1;               // 预留1
     uint64_t        ext2;               // 预留2
 
@@ -111,6 +111,16 @@ typedef struct _DEV_REGIST_ACK
     uint8_t         regState;           // 注册状态
 
 }DEV_REGIST_ACK;
+
+
+#pragma pack(1)
+typedef enum _REGIST_STATE
+{
+    RegistOK         =0,        // 注册成功
+    RegistNG_NoMore  =1,		// 注册失败：已达上限
+    RegistNG_ErrRTyp =2,        // 注册失败：电台类型错误
+
+}REGIST_STATE;
 
 
 #pragma pack(1)
