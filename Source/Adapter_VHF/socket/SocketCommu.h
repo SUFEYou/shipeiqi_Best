@@ -33,6 +33,7 @@ typedef enum _FUNC_CODE
 
     Voice_Data      = 41,            // 语音数据
     PTT_set         = 42,            // PTT设置
+    PTT_state       = 43,            // PTT状态
 
 }FUNC_CODE;
 

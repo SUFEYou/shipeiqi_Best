@@ -97,7 +97,7 @@ void UDPVoice::onRev()
                 uint8_t priority = pttSet.Priority;
                 uint8_t pttOn    = pttSet.PttON;
 
-                qDebug()<<"Rev PTT-SET-------------------------" << priority << "_" <<pttOn;
+//                qDebug()<<"Rev PTT-SET-------------------------" << priority << "_" <<pttOn;
 
                 int playID = getRegistedID(sessionKey);
                 if(playID != -1){
@@ -244,6 +244,48 @@ void UDPVoice::sendRegistState(uint8_t regState, QHostAddress netAddr, uint32_t 
 
 }
 
+
+void UDPVoice::sendPTTState(int playID, int pttOccupy)
+{
+    int  sndLen = sizeof(MSG_HEADER) + sizeof(PTT_STATE);
+    char sndData[sndLen];
+
+    MSG_HEADER msgHeader;
+    msgHeader.ProgramType = ConfigLoader::getInstance()->getProgramType();
+    msgHeader.ProgramID   = ConfigLoader::getInstance()->getProgramID();
+    msgHeader.msgTyp      = MSG_TYP_VOIC;
+    msgHeader.DevID       = ConfigLoader::getInstance()->getRadioID();
+    msgHeader.RadioTyp    = ConfigLoader::getInstance()->getRadioTyp();
+    msgHeader.funCod      = PTT_state;
+
+    PTT_STATE pttState;
+    pttState.PttOccupy = pttOccupy;
+    if(pttOccupy == 0){
+        pttState.DevID = playID;
+
+        memcpy(sndData, &msgHeader, sizeof(MSG_HEADER));
+        memcpy(sndData + sizeof(MSG_HEADER), &pttState, sizeof(PTT_STATE));
+
+        sendData(sndData, sndLen);
+
+    } else {
+
+        for(int i=0; i<4; i++){
+            VOICE_REGIST_VO regVO = regArray[i];
+
+            if(regVO.PlayID == playID){
+
+                pttState.DevID = regVO.DevID;
+
+                memcpy(sndData, &msgHeader, sizeof(MSG_HEADER));
+                memcpy(sndData + sizeof(MSG_HEADER), &pttState, sizeof(PTT_STATE));
+
+                sendData(sndData, sndLen);
+                break;
+            }
+        }
+    }
+}
 
 void UDPVoice::onError(QAbstractSocket::SocketError socketError)
 {

@@ -1,6 +1,7 @@
 #include "AudioPtt.h"
 #include "Audio/AudioControl.h"
 #include "Audio/AudioPlayer.h"
+#include "socket/SocketManage.h"
 #include <QDebug>
 
 AudioPtt::AudioPtt()
@@ -101,7 +102,7 @@ void AudioPtt::run()
 
             if(!timoutStop){
                 //serial Ctrl-PttOn
-                sendPTTOn();
+                sendPTTOn(currIndex + 1);
 
                 for(int i=0; i<4; i++)
                 {
@@ -136,9 +137,10 @@ void AudioPtt::run()
     m_stop = false;
 }
 
-void AudioPtt::sendPTTOn()
+void AudioPtt::sendPTTOn(int playID)
 {
-    if(!PttONSended){
+//    qDebug()<<"Set PTT ON--------------------------!!!";
+    if(!pttONSended){
 
         char pttOnData[3];
         pttOnData[0] = 0xF0;
@@ -146,14 +148,36 @@ void AudioPtt::sendPTTOn()
         pttOnData[2] = 0x0A;
 
         pttCom->write(pttOnData, 3);
-        PttONSended = 1;
+        pttONSended = 1;
+        pttSendTim  = QDateTime::currentDateTimeUtc().toTime_t();
+
+        SocketManage::getInstance()->getVoicUdp()->sendPTTState(playID, 0x01);
+    } else {
+
+        int currTim = QDateTime::currentDateTimeUtc().toTime_t();
+        int diffTim = currTim - pttSendTim;
+
+        if(diffTim > 2){
+
+            char pttOnData[3];
+            pttOnData[0] = 0xF0;
+            pttOnData[1] = 0x31;
+            pttOnData[2] = 0x0A;
+
+            pttCom->write(pttOnData, 3);
+            pttONSended = 1;
+            pttSendTim  = QDateTime::currentDateTimeUtc().toTime_t();
+
+            SocketManage::getInstance()->getVoicUdp()->sendPTTState(playID, 0x01);
+        }
     }
 
 }
 
 void AudioPtt::sendPTTOff()
 {
-    if(PttONSended){
+//    qDebug()<<"Set PTT OFF--------------------------!!!";
+    if(pttONSended){
 
         char pttOffData[3];
         pttOffData[0] = 0xF0;
@@ -161,7 +185,28 @@ void AudioPtt::sendPTTOff()
         pttOffData[2] = 0x0A;
 
         pttCom->write(pttOffData, 3);
-        PttONSended = 0;
+        pttONSended = 0;
+        pttSendTim  = QDateTime::currentDateTimeUtc().toTime_t();
+
+        SocketManage::getInstance()->getVoicUdp()->sendPTTState(0, 0x00);
+    } else {
+
+        int currTim = QDateTime::currentDateTimeUtc().toTime_t();
+        int diffTim = currTim - pttSendTim;
+
+        if(diffTim > 2){
+
+            char pttOffData[3];
+            pttOffData[0] = 0xF0;
+            pttOffData[1] = 0x30;
+            pttOffData[2] = 0x0A;
+
+            pttCom->write(pttOffData, 3);
+            pttONSended = 0;
+            pttSendTim  = QDateTime::currentDateTimeUtc().toTime_t();
+
+            SocketManage::getInstance()->getVoicUdp()->sendPTTState(0, 0x00);
+        }
     }
 }
 

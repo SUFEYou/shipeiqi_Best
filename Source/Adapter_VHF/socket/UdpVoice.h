@@ -15,6 +15,7 @@ public:
     void init(int port);
     void sendData(char* pData,int nLen);
     void sendVoiceData(AudioData audioData);
+    void sendPTTState(int playID, int pttOccupy);
 
 private:
     void registVoice(QString sessionKey, VOICE_REGIST_VO regPipe);

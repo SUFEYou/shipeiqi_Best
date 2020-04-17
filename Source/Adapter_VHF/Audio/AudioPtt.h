@@ -19,7 +19,7 @@ class AudioPtt : public QThread
 public:
     AudioPtt();
     bool init();
-    void sendPTTOn();
+    void sendPTTOn(int playID);
     void sendPTTOff();
 
     void setPriority_PttOn(int pID, int priority, int pttOn);
@@ -39,7 +39,8 @@ private:
     int       pttOnTim;
     int       pttOnLim;
 
-    int       PttONSended;
+    int       pttONSended;
+    int       pttSendTim;
 
 };
 
