@@ -11,6 +11,7 @@ Radio220tcr::Radio220tcr()
             , m_RequestCount(0)
 {
     m_DycArrayData = new char[ARRAY_DATA_LEN];
+    radioState.errState = 1;
 }
 
 Radio220tcr::~Radio220tcr()
@@ -155,6 +156,9 @@ void Radio220tcr::parseData()
 
 void Radio220tcr::updateRadioState(const char* data, const int len)
 {
+    radioState.errState = 0;
+    updTim = QDateTime::currentDateTimeUtc().toTime_t();                     //秒级
+
     unsigned char CMDType = (unsigned char)(*(data+4));
     switch(CMDType)
     {
@@ -169,6 +173,35 @@ void Radio220tcr::updateRadioState(const char* data, const int len)
     case 0x17:		// 2.5 电台报告定频当前工作状态信息
     {
         // 解析定频工作状态信息
+        radioState.channel = (*(data+6)<<8) + (*(data+7));
+
+        uint32_t tmpFreq = 0;
+        uint8_t tmp = 0;
+        bcd2uint8(*(data+8), &tmp);
+        tmpFreq += tmp*1000000;
+        bcd2uint8(*(data+9), &tmp);
+        tmpFreq += tmp*10000;
+        bcd2uint8(*(data+10), &tmp);
+        tmpFreq += tmp*100;
+        bcd2uint8(*(data+11), &tmp);
+        tmpFreq += tmp;
+        radioState.rxFreq = tmpFreq*10;
+
+        tmpFreq = 0;
+        bcd2uint8(*(data+12), &tmp);
+        tmpFreq += tmp*1000000;
+        bcd2uint8(*(data+13), &tmp);
+        tmpFreq += tmp*10000;
+        bcd2uint8(*(data+14), &tmp);
+        tmpFreq += tmp*100;
+        bcd2uint8(*(data+15), &tmp);
+        tmpFreq += tmp;
+        radioState.txFreq = tmpFreq*10;
+
+        radioState.workTyp = *(data+16);
+        radioState.power = *(data+17);
+        radioState.squelch = *(data+18);
+        radioState.workMod = *(data+19);
     }
         break;
     case 0x21:		// 2.4.3 电台报告功率等级
@@ -179,16 +212,19 @@ void Radio220tcr::updateRadioState(const char* data, const int len)
         }
     }
         break;
-    case 0x22:
+    case 0x22://静噪等级
     {
-
+        if (*(data+5) == 0x03)
+        {
+            radioState.squelch = *(data+6);
+        }
     }
         break;
     case 0x23:		// 2.4.4 电台报告业务类型
     {
         if (*(data+5) == 0x03)
         {
-            radioState.workTyp = *(data+6);
+            radioState.workMod = *(data+6);
         }
     }
         break;
@@ -302,7 +338,6 @@ void Radio220tcr::updateRadioState(const char* data, const int len)
         {
             if (*(data+6) == 0x01)			// 定频模式
             {
-                radioState.workTyp = RADIOMODE_RCU;
                 switch((unsigned char)(*(data+7)))
                 {
                 case 0x10:		// 定频操作模式
@@ -356,7 +391,6 @@ void Radio220tcr::updateRadioState(const char* data, const int len)
             }
             else if ((unsigned char)(*(data+6)) == 0x04)	// 自动模式
             {
-                radioState.workTyp	= RADIOMODE_AUTO;
                 switch((unsigned char)(*(data+7)))
                 {
                 case 0x10:		// 自动扫描状态
@@ -598,7 +632,6 @@ void Radio220tcr::updateRadioState(const char* data, const int len)
     {
         if ((unsigned char)*(data+5) == 0xB0)
         {
-            radioState.workMod	= RADIOMODE_CONNECT;
             qDebug() << "Shake Hands Success";
         }
     }
@@ -714,9 +747,14 @@ int Radio220tcr::writeCtrlData(uint16_t funCode, char* data, int len)
         memcpy(&m_set, data, ctrlDataLen);
         switch (funCode)
         {
+        case Set_WorkTyp://设置工作方式
+        {
+            setWorkTyp(m_set.workTyp);
+        }
+            break;
         case Set_WorkMod://设置工作模式
         {
-
+            setWorkMod(m_set.workMod);
         }
             break;
         case Set_Channel://设置信道
@@ -724,14 +762,14 @@ int Radio220tcr::writeCtrlData(uint16_t funCode, char* data, int len)
             setChannel(m_set.channel);
         }
         break;
-        case Set_TxFreq:
+        case Set_TxFreq://设置发送频率
         {
-
+            setTxFreq(m_set.txFreq);
         }
             break;
-        case Set_RxFreq:
+        case Set_RxFreq://设置接收频率
         {
-
+            setRxFreq(m_set.rxFreq);
         }
             break;
         case Set_Power://设置发射功率
@@ -741,7 +779,7 @@ int Radio220tcr::writeCtrlData(uint16_t funCode, char* data, int len)
             break;
         case Set_Squelch://设置静噪
         {
-
+            setSquelch(m_set.squelch);
         }
             break;
         case Ask_State://状态问询
@@ -865,6 +903,8 @@ void Radio220tcr::onTimer()
     static uint16_t ChangeToDataModeCount = 0;
     static uint8_t QueryStateCount = 0;
 
+    checkDisconnect();
+
     if (ShakeHeadCount > 120)
     {
         if (m_nModemState != RADIOMODEMSTATE_SENDING)
@@ -915,6 +955,26 @@ void Radio220tcr::onTimer()
     ++QueryStateCount;
 }
 
+void Radio220tcr::setWorkTyp(const uint8_t nWorkTyp)
+{
+    char pPara[2];
+    pPara[0]	= 0x02;
+    pPara[1]	= nWorkTyp;
+
+    writeData(0x40, 0x20, pPara, 2);
+    radioState.workTyp = nWorkTyp;
+}
+
+void Radio220tcr::setWorkMod(const uint8_t nWorkMod)
+{
+    char pPara[2];
+    pPara[0]	= 0x02;
+    pPara[1]	= nWorkMod;
+
+    writeData(0x40, 0x23, pPara, 2);
+    radioState.workMod = nWorkMod;
+}
+
 void Radio220tcr::setChannel(const uint16_t nCHN)
 {
     char pPara[3];
@@ -934,4 +994,62 @@ void Radio220tcr::setPower(const uint8_t nPower)
 
     writeData(0x40, 0x21, pPara, 2);
     radioState.power = nPower;
+}
+
+void Radio220tcr::setSquelch(const uint8_t nSquelch)
+{
+    char pPara[2];
+    pPara[0]	= 0x02;
+    pPara[1]	= nSquelch;
+
+    writeData(0x40, 0x22, pPara, 2);
+    radioState.power = nSquelch;
+}
+
+void Radio220tcr::setTxFreq(const uint64_t nTxFreq)
+{
+    //传递设置的数据为khz*10000,转化为hz需除以10
+    uint64_t tmp = nTxFreq/10;
+
+    if (tmp < 1600000 || tmp > 30000000)
+        return;
+    char pPara[5];
+    pPara[0]	= 0x02;
+    uint82bcd(tmp/1000000, (uint8_t*)(&pPara[1]));
+    uint82bcd(tmp/10000%100, (uint8_t*)(&pPara[2]));
+    uint82bcd(tmp%10000/100, (uint8_t*)(&pPara[3]));
+    uint82bcd(tmp%10000%100, (uint8_t*)(&pPara[4]));
+
+    writeData(0x40, 0x18, pPara, 5);
+    radioState.txFreq = nTxFreq;
+}
+
+void Radio220tcr::setRxFreq(const uint64_t nRxFreq)
+{
+    //传递设置的数据为khz*10000,转化为hz需除以10
+    uint64_t tmp = nRxFreq/10;
+
+    if (tmp < 1600000 || tmp > 30000000)
+        return;
+    char pPara[5];
+    pPara[0]	= 0x01;
+    uint82bcd(tmp/1000000, (uint8_t*)(&pPara[1]));
+    uint82bcd(tmp/10000%100, (uint8_t*)(&pPara[2]));
+    uint82bcd(tmp%10000/100, (uint8_t*)(&pPara[3]));
+    uint82bcd(tmp%10000%100, (uint8_t*)(&pPara[4]));
+
+    writeData(0x40, 0x18, pPara, 5);
+    radioState.rxFreq = nRxFreq;
+}
+
+void Radio220tcr::checkDisconnect()
+{
+    long curTim = QDateTime::currentDateTimeUtc().toTime_t();         //秒级
+    long difTim = curTim - updTim;
+
+    if(difTim > 5)
+    {
+        updTim = curTim;
+        radioState.errState = 1;       // 电台通信异常
+    }
 }

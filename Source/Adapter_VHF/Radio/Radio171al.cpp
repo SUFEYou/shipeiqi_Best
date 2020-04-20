@@ -483,18 +483,6 @@ uint16_t Radio171AL::getCRC(unsigned char* buf, unsigned int len)
     return crc;
 }
 
-void Radio171AL::bcd2uint8(uint8_t src, uint8_t* dst)
-{
-    *dst = (src>>4)*10 + (src&0x0F);
-}
-
-void Radio171AL::uint82bcd(uint8_t src, uint8_t* dst)
-{
-    if (src > 99)
-        *dst = 0;
-    *dst = (src/10)<<4 | (src%10);
-}
-
 void Radio171AL::setChannelParam(char* data, const int len)
 {
     //更新状态

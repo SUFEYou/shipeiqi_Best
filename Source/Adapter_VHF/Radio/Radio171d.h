@@ -29,9 +29,6 @@ private:
     uint16_t getCRC(unsigned char* buf, unsigned int len);
     void setChannelParam(char* data, const int len);
 
-    void bcd2uint8(uint8_t src, uint8_t* dst);
-    void uint82bcd(uint8_t src, uint8_t* dst);
-
 private:
     QMutex                      m_dataMutex;
     QextSerialPort              *dataCom;

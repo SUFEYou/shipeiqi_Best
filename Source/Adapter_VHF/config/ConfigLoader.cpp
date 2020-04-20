@@ -79,13 +79,13 @@ void ConfigLoader::createConfig()
     settings.beginGroup("Apt-Static");
     settings.setValue("PROGRAMTYPE", 6);
     settings.setValue("PROGRAMID", 7998);
-    settings.setValue("RadioTyp", RADIO_220);
+    settings.setValue("RadioTyp", RADIO_181D);
     settings.setValue("RadioID", 12998);
     settings.endGroup();
 
     settings.beginGroup("Commu-TCP");
     settings.setValue("TcpIP",  "192.168.1.52");
-    settings.setValue("TcpPort", 12001);
+    settings.setValue("TcpPort", 12000);
     settings.endGroup();
 
     settings.beginGroup("Radio-Ctrl");

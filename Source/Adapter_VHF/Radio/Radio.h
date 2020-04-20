@@ -155,6 +155,9 @@ public:
     virtual int writeCtrlData(uint16_t funCode, char* data, int len) = 0;
     virtual int writeLinkData(char* data, int len) = 0;
 
+    void bcd2uint8(uint8_t src, uint8_t* dst);
+    void uint82bcd(uint8_t src, uint8_t* dst);
+
     inline RADIO_STATE getRadioState() const { return radioState; }
 
 
