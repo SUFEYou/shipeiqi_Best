@@ -28,8 +28,15 @@ private:
     void setModemNoticeSendEnd();
     void setModemNoticeCancel();
 
+    void setWorkTyp(const uint8_t nWorkTyp);
+    void setWorkMod(const uint8_t nWorkMod);
     void setChannel(const uint16_t nCHN);
     void setPower(const uint8_t nPower);
+    void setSquelch(const uint8_t nSquelch);
+    void setTxFreq(const uint64_t nTxFreq);
+    void setRxFreq(const uint64_t nRxFreq);
+
+    void checkDisconnect();
 
 
 private slots:
