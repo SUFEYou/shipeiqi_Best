@@ -23,7 +23,7 @@ Radio781TCP::~Radio781TCP()
 void Radio781TCP::serialInit()
 {
 #if WIN32
-    dataCom = new QextSerialPort("COM1");
+    dataCom = new QextSerialPort("COM10");
 #else
     dataCom = new QextSerialPort("/dev/ttymxc1");
 #endif
