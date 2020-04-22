@@ -1,6 +1,7 @@
 #include "RadioLink.h"
 #include "LinkCommon.h"
 #include "RadioLinkManage.h"
+#include "config/ConfigLoader.h"
 #include <QDateTime>
 #include <QDebug>
 
@@ -629,20 +630,35 @@ bool RadioLink::ActSenLAYMSG_MSGONCEPack(char* pdata,int nlength,int& nserial)
 
     m_pExData[0] = LAYMSG_MSGONCE;
 
-    // Serial
-    if (nserial <= 0)
+    uint32_t sysType = ConfigLoader::getInstance()->getSysType();
+    if (sysType == 0X0A03)
     {
-        m_pExData[1] = 0;
-        m_pExData[2] = 0;
+        // Serial
+        if (nserial <= 0)
+        {
+            m_pExData[1] = 0;
+            m_pExData[2] = 0;
+        }
+        else
+        {
+            m_pExData[1] = (nserial >> 8) &0xFF;
+            m_pExData[2] = nserial &0xFF;
+        }
+
+        memcpy(m_pExData+3,pdata,nlength);
+        m_pExDataLen = 3+nlength;
+    }
+    else if (sysType == 0X0A01)
+    {
+        if (nserial <= 0)
+            m_pExData[1] = 0;
+        else
+            m_pExData[1] = nserial &0xFF;
+        memcpy(m_pExData+2,pdata,nlength);
+        m_pExDataLen = 2+nlength;
     }
     else
-    {
-        m_pExData[1] = (nserial >> 8) &0xFF;
-        m_pExData[2] = nserial &0xFF;
-    }
-
-    memcpy(m_pExData+3,pdata,nlength);
-    m_pExDataLen = 3+nlength;
+        return false;
 
     return true;
 }
@@ -651,11 +667,24 @@ bool RadioLink::ActSenLAYMSG_MSGONCEUnpack(char* pchar,const int nlength)
 {
     memset(m_pMsgRecvData,0,512);
 
-    // Serial
-    m_pMsgRecvSn = (((unsigned char)pchar[1])<<8) | ((unsigned char)pchar[2]);
+    uint32_t sysType = ConfigLoader::getInstance()->getSysType();
+    if (sysType == 0X0A03)
+    {
+        // Serial
+        m_pMsgRecvSn = (((unsigned char)pchar[1])<<8) | ((unsigned char)pchar[2]);
 
-    memcpy(m_pMsgRecvData,pchar+3,nlength-3);
-    m_pMsgRecvLen = nlength-3;
+        memcpy(m_pMsgRecvData,pchar+3,nlength-3);
+        m_pMsgRecvLen = nlength-3;
+    }
+    else if (sysType == 0X0A01)
+    {
+        m_pMsgRecvSn = (unsigned char)pchar[1];
+
+        memcpy(m_pMsgRecvData,pchar+2,nlength-2);
+        m_pMsgRecvLen = nlength-2;
+    }
+    else
+        return false;
 
     return true;
 }
@@ -679,35 +708,61 @@ bool RadioLink::ActSenLAYMSG_MSGCALLPack(int nmaxlen)
     m_pExData[0] = LAYMSG_MSGCALL;
     m_pExDataLen = 1;
 
-    QList<pObjRecall>::iterator iter = m_nListRecall.begin();
     if (m_nListRecall.isEmpty())
-    {
         return false;
-    }
-    QList<pObjRecall>::iterator prvpos;
-    while(iter != m_nListRecall.end())
+
+    uint32_t sysType = ConfigLoader::getInstance()->getSysType();
+    if (sysType == 0X0A03)
     {
-        prvpos = iter;
-        pObjRecall msg = *iter;
-        ++iter;
-        if (m_pExDataLen+4 > len)
+        QList<pObjRecall>::iterator iter = m_nListRecall.begin();
+        QList<pObjRecall>::iterator prvpos;
+        while(iter != m_nListRecall.end())
         {
-            break;
+            prvpos = iter;
+            pObjRecall msg = *iter;
+            ++iter;
+            if (m_pExDataLen+4 > len)
+            {
+                break;
+            }
+            else
+            {
+                m_pExData[m_pExDataLen]		= int(msg->nSource/256);
+                m_pExData[m_pExDataLen+1]	= msg->nSource%256;
+                m_pExData[m_pExDataLen+2]	=(msg->nSerial >> 8) & 0xFF;
+                m_pExData[m_pExDataLen+3]   = msg->nSerial & 0xFF;
+
+                m_pExDataLen += 4;
+                m_nListRecall.erase(prvpos);
+            }
         }
-        else
-        {
-            m_pExData[m_pExDataLen]		= int(msg->nSource/256);
-            m_pExData[m_pExDataLen+1]	= msg->nSource%256;
-
-            m_pExData[m_pExDataLen+2]	=(msg->nSerial >> 8) & 0xFF;
-            m_pExData[m_pExDataLen+3]   = msg->nSerial & 0xFF;
-
-            m_pExDataLen += 4;
-
-            m_nListRecall.erase(prvpos);
-        }
-
     }
+    else if (sysType == 0X0A01)
+    {
+        QList<pObjRecall>::iterator iter = m_nListRecall.begin();
+        QList<pObjRecall>::iterator prvpos;
+        while(iter != m_nListRecall.end())
+        {
+            prvpos = iter;
+            pObjRecall msg = *iter;
+            ++iter;
+            if (m_pExDataLen+3 > len)
+            {
+                break;
+            }
+            else
+            {
+                m_pExData[m_pExDataLen]		= int(msg->nSource/256);
+                m_pExData[m_pExDataLen+1]	= msg->nSource%256;
+                m_pExData[m_pExDataLen+2]   = msg->nSerial & 0xFF;
+
+                m_pExDataLen += 3;
+                m_nListRecall.erase(prvpos);
+            }
+        }
+    }
+    else
+        return false;
 
     return true;
 }
@@ -717,23 +772,46 @@ bool RadioLink::ActSenLAYMSG_MSGCALLUnpack(char* pchar,const int nlength)
     m_nRecvCallList.clear();
 
     int len = 1;
-    while (1)
+
+    uint32_t sysType = ConfigLoader::getInstance()->getSysType();
+    if (sysType == 0X0A03)
     {
-        if (len+4 > nlength)
+        while (1)
         {
-            break;
+            if (len+4 > nlength)
+            {
+                break;
+            }
+
+            pObjRecall msg(new ObjRecall);
+
+            msg->nSource = (((unsigned char)pchar[len])<<8) | ((unsigned char)pchar[len+1]);
+            msg->nSerial = (((unsigned char)pchar[len+2])<<8) | ((unsigned char)pchar[len+3]);
+            len += 4;
+
+            m_nRecvCallList.push_back(msg);
         }
-
-        pObjRecall msg(new ObjRecall);
-
-        msg->nSource = (((unsigned char)pchar[len])<<8) | ((unsigned char)pchar[len+1]);
-
-        msg->nSerial = (((unsigned char)pchar[len+2])<<8) | ((unsigned char)pchar[len+3]);
-
-        m_nRecvCallList.push_back(msg);
-
-        len += 4;
     }
+    else if (sysType == 0X0A01)
+    {
+        while (1)
+        {
+            if (len+3 > nlength)
+            {
+                break;
+            }
+
+            pObjRecall msg(new ObjRecall);
+
+            msg->nSource = (((unsigned char)pchar[len])<<8) | ((unsigned char)pchar[len+1]);
+            msg->nSerial = (unsigned char)pchar[len+2];
+            len += 3;
+
+            m_nRecvCallList.push_back(msg);
+        }
+    }
+    else
+        return false;
 
     return true;
 }

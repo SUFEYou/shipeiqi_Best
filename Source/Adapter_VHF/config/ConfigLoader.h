@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QMutex>
+#include <QSharedPointer>
 #include <stdint.h>
 #include "ConfigRadio.h"
 #include "ConfigRadio171al.h"
@@ -11,6 +12,7 @@
 #include "ConfigRadio781tcp.h"
 #include "ConfigRadio212tcr.h"
 #include "ConfigRadio220.h"
+#include "ConfigRadio230.h"
 
 class ConfigLoader
 {
@@ -18,6 +20,7 @@ public:
     static ConfigLoader* getInstance();
     bool load();
 
+    uint32_t getSysType()     const;
     uint16_t getProgramType() const;
     uint16_t getProgramID()   const;
     uint32_t getRadioTyp()    const;
@@ -29,7 +32,7 @@ public:
     inline QString getTcpIP()  const { return TcpIP; }
     inline int getTcpPort()    const { return TcpPort; }
 
-    inline ConfigRadio* getConfigRadio() { return m_radio; }
+    QSharedPointer<ConfigRadio> getConfigRadio();
 
 private:
     ConfigLoader();
@@ -37,13 +40,14 @@ private:
 
     void createConfig();
     void loadConfig();
-    void loadRadioConfig(uint32_t tRadioTyp);
+    void loadRadioConfig();
 
 
 private:
     static ConfigLoader     *m_instance;
     static QMutex           m_Mutex;
 
+    uint32_t                sysType;
     uint16_t                programType;
     uint16_t                programID;
     uint32_t                radioTyp;
@@ -53,10 +57,16 @@ private:
     int                     voicPort;
 
     //与通信平台通信配置信息
-    QString                 TcpIP;
-    int                     TcpPort;
+    QString                                 TcpIP;
+    int                                     TcpPort;
 
-    ConfigRadio             *m_radio;
+    QSharedPointer<ConfigRadio>             m_radio171AL;
+    QSharedPointer<ConfigRadio>             m_radio171D;
+    QSharedPointer<ConfigRadio>             m_radio181D;
+    QSharedPointer<ConfigRadio>             m_radio212TCR;
+    QSharedPointer<ConfigRadio>             m_radio220;
+    QSharedPointer<ConfigRadio>             m_radio781TCP;
+    QSharedPointer<ConfigRadio>             m_radio230;
 };
 
 #endif // CONFIGLOADER_H

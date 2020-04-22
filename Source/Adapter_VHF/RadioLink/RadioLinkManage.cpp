@@ -6,6 +6,7 @@
 #include "config/ConfigLoader.h"
 #include <time.h>
 #include <QTimer>
+#include <QSharedPointer>
 #include <QDebug>
 
 RadioLinkManage* RadioLinkManage::m_instance = NULL;
@@ -87,8 +88,8 @@ void RadioLinkManage::init()
     m_radioLinkClient->setCodeMe(m_nIDMe);
     m_radioLinkMaster->setCodeMe(m_nIDMe);
 
-    ConfigRadio* tmp = ConfigLoader::getInstance()->getConfigRadio();
-    if (tmp != NULL)
+    QSharedPointer<ConfigRadio> tmp = ConfigLoader::getInstance()->getConfigRadio();
+    if (!tmp.isNull())
     {
         m_radioLinkClient->setDataMaxLen(1020);
         m_radioLinkMaster->setDataMaxLen(1020);

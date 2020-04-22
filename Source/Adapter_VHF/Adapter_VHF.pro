@@ -44,7 +44,9 @@ SOURCES += main.cpp \
     config/ConfigRadio781tcp.cpp \
     config/ConfigRadio.cpp \
     config/ConfigRadio212tcr.cpp \
-    config/ConfigRadio220.cpp
+    config/ConfigRadio220.cpp \
+    config/ConfigRadio230.cpp \
+    Radio/Radio230.cpp
 
 
 HEADERS += \
@@ -78,7 +80,9 @@ HEADERS += \
     config/ConfigRadio781tcp.h \
     config/ConfigRadio.h \
     config/ConfigRadio212tcr.h \
-    config/ConfigRadio220.h
+    config/ConfigRadio220.h \
+    config/ConfigRadio230.h \
+    Radio/Radio230.h
 
 win32{
     SOURCES += Uart/qextserialport_win.cpp
