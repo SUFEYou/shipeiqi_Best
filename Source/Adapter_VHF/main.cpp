@@ -12,6 +12,8 @@ int main(int argc, char *argv[])
     system("amixer sset 'MIXINR IN3R' on");
     system("amixer sset 'INPGAR IN3R' on");
 //    system("amixer cset name='Headphone Volume' 127,127");
+    //使用amixer control命令查询播放、录音的numID，具体硬件需要相应修改
+    system("amixer cset numID='1' 127");
     system("amixer cset numID='9' 127");
 #endif
 
