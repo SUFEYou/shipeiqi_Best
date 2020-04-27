@@ -5,6 +5,8 @@
 #include "UI/WidgeBase.h"
 #include "UI/WidgeVHF181d.h"
 #include "UI/WidgeVHF781tcp.h"
+#include "UI/WidgeVHF171d.h"
+#include "UI/WidgeVHF171al.h"
 #include "UI/WidgeSSB.h"
 #include "UI/WidgeMulti.h"
 

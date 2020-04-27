@@ -59,7 +59,9 @@ SOURCES += main.cpp\
     UI/WidgeVHF181d.cpp \
     UI/WidgeMulti.cpp \
     Socket/UdpRevCast.cpp \
-    UI/WidgeVHF781tcp.cpp
+    UI/WidgeVHF781tcp.cpp \
+    UI/WidgeVHF171d.cpp \
+    UI/WidgeVHF171al.cpp
 
 
 HEADERS  += \
@@ -86,7 +88,9 @@ HEADERS  += \
     Socket/SocketCommu.h \
     UI/WidgeMulti.h \
     Socket/UdpRevCast.h \
-    UI/WidgeVHF781tcp.h
+    UI/WidgeVHF781tcp.h \
+    UI/WidgeVHF171d.h \
+    UI/WidgeVHF171al.h
 
 
 FORMS    += \

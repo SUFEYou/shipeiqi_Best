@@ -64,11 +64,11 @@ bool UIManager::init()
         }
 
         if(radioTyp == 1714){
-            widge1 = new WidgeVHF181d();
+            widge1 = new WidgeVHF171d();
         }
 
         if(radioTyp == 1716){
-            widge1 = new WidgeVHF181d();
+            widge1 = new WidgeVHF171al();
         }
 
         if(radioTyp == 2124){
@@ -106,11 +106,11 @@ bool UIManager::init()
         }
 
         if(radioTyp == 1714){
-            widge2 = new WidgeVHF181d();
+            widge2 = new WidgeVHF171d();
         }
 
         if(radioTyp == 1716){
-            widge2 = new WidgeVHF181d();
+            widge2 = new WidgeVHF171al();
         }
 
         if(radioTyp == 2124){
@@ -148,11 +148,11 @@ bool UIManager::init()
         }
 
         if(radioTyp == 1714){
-            widge3 = new WidgeVHF181d();
+            widge3 = new WidgeVHF171d();
         }
 
         if(radioTyp == 1716){
-            widge3 = new WidgeVHF181d();
+            widge3 = new WidgeVHF171al();
         }
 
         if(radioTyp == 2124){
@@ -190,11 +190,11 @@ bool UIManager::init()
         }
 
         if(radioTyp == 1714){
-            widge4 = new WidgeVHF181d();
+            widge4 = new WidgeVHF171d();
         }
 
         if(radioTyp == 1716){
-            widge4 = new WidgeVHF181d();
+            widge4 = new WidgeVHF171al();
         }
 
         if(radioTyp == 2124){
