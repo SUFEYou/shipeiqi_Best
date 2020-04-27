@@ -7,6 +7,7 @@
 #include <time.h>
 #include <QTimer>
 #include <QSharedPointer>
+#include <QHash>
 #include <QDebug>
 
 RadioLinkManage* RadioLinkManage::m_instance = NULL;
@@ -225,15 +226,37 @@ bool RadioLinkManage::DeleteACCtoRSCMessageData(const int nSendID, const int nSe
     QMutexLocker locker(&m_listMutex);
     bool bFinder = false;
 
+    QHash<int, bool> serialHash;
+    serialHash.clear();
+    if (nSerialBegin <= nSerialEnd)
+    {
+        for (int i = nSerialBegin; i <= nSerialEnd; ++i)
+            serialHash.insert(i, true);
+    }
+    else
+    {
+        for (int i = 0; i <= nSerialEnd; ++i)
+            serialHash.insert(i, true);
+        if (ConfigLoader::getInstance()->getSysType() == 0x0A01)
+        {
+            for(int i = nSerialBegin; i <= 255; ++i)
+                serialHash.insert(i, true);
+        }
+        else if (ConfigLoader::getInstance()->getSysType() == 0x0A03)
+        {
+            for(int i = nSerialBegin; i <= 65535; ++i)
+                serialHash.insert(i, true);
+        }
+
+    }
+
     QList<pVHFMsg>::iterator iter = m_lMsgList.begin();
     while (iter != m_lMsgList.end())
     {
-        if (((*iter)->nSource == nSendID) && \
-            ((*iter)->nSerial >= nSerialBegin) && \
-            ((*iter)->nSerial <= nSerialEnd) )
+        if (((*iter)->nSource == nSendID) && serialHash.contains((*iter)->nSerial))
         {
             bFinder = true;
-            if ((*iter)->nSerial == nSerialEnd)
+            if (serialHash.size() == 1)
             {
                 m_lMsgList.erase(iter);
                 break;
@@ -241,6 +264,7 @@ bool RadioLinkManage::DeleteACCtoRSCMessageData(const int nSendID, const int nSe
             else
             {
                 iter = m_lMsgList.erase(iter);
+                serialHash.remove((*iter)->nSerial);
             }
         }
         else
