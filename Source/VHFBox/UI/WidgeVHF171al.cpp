@@ -134,25 +134,25 @@ void WidgeVHF171al::onTimer()
 
     //电台工作状态显示
     if(workModel >= 0) {
-       //工作模式,取值0：语音； 1：数传；
+       //工作模式,取值3：背负DFF明； 4：背负FCS明； 5:背负FH明
         QString workModTxt;
-       if(workModel == 0) {
-           workModTxt = QString::fromUtf8("语音");
+       if(workModel == 3) {
+           workModTxt = QString::fromUtf8("定频");
 
            if(lightLev != 0)
            ui->lblModeMsg->setStyleSheet("color:black;");
 
-       } else if(workModel == 1) {
-           workModTxt = QString::fromUtf8("数传");
+       } else if(workModel == 4) {
+           workModTxt = QString::fromUtf8("跳频");
 
            if(lightLev != 0)
            ui->lblModeMsg->setStyleSheet("color:black;");
 
        }
-//       else if(workModel == 2) {
-//           workModTxt = QString::fromUtf8("集群");
-//           ui->lblModeMsg->setStyleSheet("color:red;");
-//       }
+       else if(workModel == 5) {
+           workModTxt = QString::fromUtf8("模话");
+           ui->lblModeMsg->setStyleSheet("color:red;");
+       }
 
        ui->lblMode->setVisible(true);
        ui->lblModeMsg->setVisible(true);
