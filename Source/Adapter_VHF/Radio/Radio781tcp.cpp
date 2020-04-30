@@ -28,7 +28,7 @@ void Radio781TCP::serialInit()
     dataCom = new QextSerialPort("/dev/ttymxc1");
 #endif
     connect(dataCom, SIGNAL(readyRead()), this, SLOT(readDataCom()));
-    dataCom->setBaudRate(BAUD38400);    //设置波特率
+    dataCom->setBaudRate(BAUD19200);    //设置波特率
     dataCom->setDataBits(DATA_8);       //设置数据位
     dataCom->setParity(PAR_NONE);       //设置校验
     dataCom->setStopBits(STOP_1);       //设置停止位
@@ -49,7 +49,7 @@ void Radio781TCP::serialInit()
 #endif
 
     connect(ctrlCom, SIGNAL(readyRead()), this, SLOT(readCtrlCom()));
-    ctrlCom->setBaudRate(BAUD38400);    //设置波特率
+    ctrlCom->setBaudRate(BAUD19200);    //设置波特率
     ctrlCom->setDataBits(DATA_8);       //设置数据位
     ctrlCom->setParity(PAR_NONE);       //设置校验
     ctrlCom->setStopBits(STOP_1);       //设置停止位
@@ -194,9 +194,9 @@ void Radio781TCP::updateRadioState(char* data, int len)
 {
     char funCod = data[0];
     if((unsigned char)funCod == 0xF8 ){                //输出的电台查询状态
-        if(len != 9){
-            return;
-        }
+//        if(len != 9){
+//            return;
+//        }
 
         char  workMod  = data[1];
         float sndFreq = float(400.0+double(data[2]*256 + data[3])*0.025);
