@@ -50,7 +50,7 @@ bool ConfigLoader::load()
         loadConfig();
     }
 
-    qDebug() << "-----------------------------------";
+//    qDebug() << "-----------------------------------";
 
     return true;
 }

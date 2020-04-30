@@ -111,10 +111,10 @@ void UDPVoice::onRev()
                    DEV_RESTRICT_ACK restrictACK;
                    memcpy(&restrictACK, data + currLen, bodyLen);
 
-                   qDebug() << " Recv Dev_restrict_Ack----ctrlOut:" << index << ":" << restrictACK.ctrlOut;
-                   qDebug() << " Recv Dev_restrict_Ack----ctrlIn :" << index << ":" << restrictACK.ctrlIn;
-                   qDebug() << " Recv Dev_restrict_Ack----voicOut:" << index << ":" << restrictACK.voicOut;
-                   qDebug() << " Recv Dev_restrict_Ack----voicIn :" << index << ":" << restrictACK.voicIn;
+//                   qDebug() << " Recv Dev_restrict_Ack----ctrlOut:" << index << ":" << restrictACK.ctrlOut;
+//                   qDebug() << " Recv Dev_restrict_Ack----ctrlIn :" << index << ":" << restrictACK.ctrlIn;
+//                   qDebug() << " Recv Dev_restrict_Ack----voicOut:" << index << ":" << restrictACK.voicOut;
+//                   qDebug() << " Recv Dev_restrict_Ack----voicIn :" << index << ":" << restrictACK.voicIn;
 
                    WidgeBase *widget = UIManager::getInstance()->getWidge(index);
                    if(widget != NULL){

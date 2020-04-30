@@ -104,7 +104,7 @@ void UDPVoice::onRev()
 #if !WIN32
                     AudioPlayer* player = AudioControl::getInstance()->getPlayer(playID);
                     if(player != NULL && player->isBind()){
-  //                      qDebug()<<"-------------------------priority_pttOn" << priority << "_" <<pttOn;
+//                        qDebug()<<"-------------------------priority_pttOn" << priority << "_" <<pttOn;
                         AudioControl::getInstance()->getPtt()->setPriority_PttOn(playID, priority, pttOn);
                     }
 #endif
@@ -360,20 +360,21 @@ void UDPVoice::registVoice(QString sessionKey, VOICE_REGIST_VO registVO){
                 }
             }
         }
-
-
-        if(occupyOK){
-
-            QHostAddress netAddr(registVO.NetIPAddr);
-            sendRegistState(RegistOK,  netAddr, registVO.NetPort);
-        } else {
-
-            QHostAddress netAddr(registVO.NetIPAddr);
-            sendRegistState(RegistNG_NoMore,  netAddr, registVO.NetPort);
-        }
     }
 
 #endif
+
+    if(occupyOK){
+
+        QHostAddress netAddr(registVO.NetIPAddr);
+        sendRegistState(RegistOK,  netAddr, registVO.NetPort);
+//        qDebug()<<"Voice Regist ACK success--------------PlayID" << netAddr.toString();
+    } else {
+
+        QHostAddress netAddr(registVO.NetIPAddr);
+        sendRegistState(RegistNG_NoMore,  netAddr, registVO.NetPort);
+//        qDebug()<<"Voice Regist ACK noMore-------------PlayID" << netAddr.toString();
+    }
 
     /////////////////////////////////////////////////////////////////////////
 

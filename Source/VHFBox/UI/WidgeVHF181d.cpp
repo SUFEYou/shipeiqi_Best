@@ -204,6 +204,17 @@ void WidgeVHF181d::onTimer()
         ui->errMsg->setText(QString::fromUtf8("控制电台不匹配"));
     }
 
+    //受限状态显示
+
+    ui->lblAddr->setText(QString::fromUtf8("电台"));
+    if(lightLev != 0)
+        ui->lblAddr->setStyleSheet("color:black;");
+
+    if(ctrlOutRestrict > 0 || ctrlInRestrict > 0 || voicOutRestrict > 0 || voicInRestrict > 0) {
+        ui->lblAddr->setStyleSheet("color:red;");
+        ui->lblAddr->setText(QString::fromUtf8("受限"));
+    }
+
     //////////////////////////////////////////////////////////////////////////////////
 
     //遥控和语音注册

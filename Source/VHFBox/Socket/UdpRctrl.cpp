@@ -91,6 +91,31 @@ void UDPRctrl::onRev()
                    }
                 }
             }
+
+           if(msgHeader.funCod == Dev_restrict_Ack){
+
+//               qDebug() << " Recv Dev_restrict_Ack ------------!!!";
+
+               int bodyLen = sizeof(DEV_RESTRICT_ACK);
+               if(nLen == sizeof(MSG_HEADER) + bodyLen){
+
+                   DEV_RESTRICT_ACK restrictACK;
+                   memcpy(&restrictACK, data + currLen, bodyLen);
+
+//                   qDebug() << " Recv Dev_restrict_Ack----ctrlOut:" << index << ":" << restrictACK.ctrlOut;
+//                   qDebug() << " Recv Dev_restrict_Ack----ctrlIn :" << index << ":" << restrictACK.ctrlIn;
+//                   qDebug() << " Recv Dev_restrict_Ack----voicOut:" << index << ":" << restrictACK.voicOut;
+//                   qDebug() << " Recv Dev_restrict_Ack----voicIn :" << index << ":" << restrictACK.voicIn;
+
+                   WidgeBase *widget = UIManager::getInstance()->getWidge(index);
+                   if(widget != NULL){
+                       widget->setCtrlOutRestrict(restrictACK.ctrlOut);
+                       widget->setVoicOutRestrict(restrictACK.voicOut);
+                       widget->setCtrlInRestrict(restrictACK.ctrlIn);
+                       widget->setVoicInRestrict(restrictACK.voicIn);
+                   }
+               }
+           }
         }
     }
 }

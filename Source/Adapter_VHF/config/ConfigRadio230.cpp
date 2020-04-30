@@ -27,7 +27,7 @@ void ConfigRadio230::load()
         createConfig();
         loadConfig();
     }
-    qDebug() << "-----------------------------------";
+//    qDebug() << "-----------------------------------";
 }
 
 void ConfigRadio230::createConfig()

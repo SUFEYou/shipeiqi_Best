@@ -27,7 +27,7 @@ void ConfigRadio781tcp::load()
         createConfig();
         loadConfig();
     }
-    qDebug() << "-----------------------------------";
+//    qDebug() << "-----------------------------------";
 }
 
 void ConfigRadio781tcp::createConfig()

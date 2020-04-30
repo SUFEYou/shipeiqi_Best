@@ -24,9 +24,9 @@ Radio181D::~Radio181D()
 void Radio181D::serialInit()
 {
 #if WIN32
-    dataCom = new QextSerialPort("COM1");
+    dataCom = new QextSerialPort("COM10");
 #else
-    dataCom = new QextSerialPort("/dev/ttymxc2");
+    dataCom = new QextSerialPort("/dev/ttymxc1");
 #endif
     connect(dataCom, SIGNAL(readyRead()), this, SLOT(readDataCom()));
     dataCom->setBaudRate(BAUD38400);    //设置波特率
@@ -46,7 +46,7 @@ void Radio181D::serialInit()
 #if WIN32
     ctrlCom = new QextSerialPort("COM7");
 #else
-    ctrlCom = new QextSerialPort("/dev/ttymxc1");
+    ctrlCom = new QextSerialPort("/dev/ttymxc2");
 #endif
 
     connect(ctrlCom, SIGNAL(readyRead()), this, SLOT(readCtrlCom()));

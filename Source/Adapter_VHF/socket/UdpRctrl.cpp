@@ -190,7 +190,7 @@ void UDPRctrl::sendRegistState(uint8_t regState, QHostAddress netAddr, uint32_t 
     memcpy(sndData, &msgHeader, sizeof(MSG_HEADER));
     memcpy(sndData + sizeof(MSG_HEADER), &registACK, sizeof(DEV_REGIST_ACK));
 
-    qDebug()<<"Send Regist ACK--------------------------"<< netAddr << ":" << netPort;
+//    qDebug()<<"Send Regist ACK--------------------------"<< netAddr << ":" << netPort;
 
     m_udpSocket->writeDatagram(sndData, sndLen, netAddr, netPort);
 

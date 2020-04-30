@@ -27,7 +27,7 @@ void ConfigRadio212tcr::load()
         createConfig();
         loadConfig();
     }
-    qDebug() << "-----------------------------------";
+//    qDebug() << "-----------------------------------";
 }
 
 void ConfigRadio212tcr::createConfig()
