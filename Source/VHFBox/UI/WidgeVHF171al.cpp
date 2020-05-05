@@ -142,15 +142,24 @@ void WidgeVHF171al::onTimer()
            if(lightLev != 0)
            ui->lblModeMsg->setStyleSheet("color:black;");
 
-       } else if(workModel == 4) {
+       } else if(workModel == 5) {
            workModTxt = QString::fromUtf8("跳频");
 
            if(lightLev != 0)
            ui->lblModeMsg->setStyleSheet("color:black;");
 
        }
-       else if(workModel == 5) {
+       else if(workModel == 0) {
            workModTxt = QString::fromUtf8("模话");
+
+           if(lightLev != 0)
+           ui->lblModeMsg->setStyleSheet("color:black;");
+       }
+       else
+       {
+           qDebug() << "------------------------------------" << workModel;
+           workModTxt = QString::fromUtf8("未知");
+
            ui->lblModeMsg->setStyleSheet("color:red;");
        }
 
@@ -407,16 +416,17 @@ void WidgeVHF171al::onKey(int key)
 
 void WidgeVHF171al::onKeyA()
 {
-     qDebug()<<"A";
-     UDPRctrl *udpRctrl = SocketManage::getInstance()->getCtrlUdp(index);
-     if(udpRctrl != NULL) {
-         workModel = workModel+1;
-         if(workModel > 1)  {
-             workModel = 0;
-         }
-//         udpRctrl->sendSetChannel(workModel);
-         udpRctrl->sendRadioCtrl(Set_WorkMod, workModel);
-     }
+    qDebug()<<"A";
+    UDPRctrl *udpRctrl = SocketManage::getInstance()->getCtrlUdp(index);
+    if(udpRctrl != NULL) {
+        const static uint8_t mode[] = {0, 3, 5}; //0:模话 3:定频 5:跳频
+        static uint8_t curMode = 0;
+        ++curMode;
+        if(curMode >= sizeof(mode))
+            curMode = 0;
+        workModel = mode[curMode];
+        udpRctrl->sendRadioCtrl(Set_WorkMod, workModel);
+    }
 }
 
 void WidgeVHF171al::onKeyB()

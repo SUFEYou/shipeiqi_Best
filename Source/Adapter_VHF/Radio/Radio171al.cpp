@@ -161,7 +161,6 @@ void Radio171AL::writeData(uint16_t type, const char* data, const int len)
     dstData[dstLen+1] = 0xC0;
     dstLen += 2;
 
-    QMutexLocker locker(&m_dataMutex);
     dataCom->write(dstData, dstLen);
 }
 
@@ -169,7 +168,6 @@ void Radio171AL::writeData(uint16_t type, const char* data, const int len)
 
 void Radio171AL::onTimer()
 {
-    QMutexLocker locker(&m_dataMutex);
     //心跳机制
     if (!m_connected)
     {
@@ -186,7 +184,7 @@ void Radio171AL::onTimer()
         if (cnt > 5)
         {
             cnt = 0;
-            radioState.errState = 1;
+            radioState.errState = 0;
             writeData(0x0048, NULL, 0);
             writeData(0x0141, NULL, 0);
         }
@@ -194,10 +192,14 @@ void Radio171AL::onTimer()
         ++m_disconnectCnt;
         if (m_disconnectCnt > 10)
         {
-            radioState.errState = 0;
+            radioState.errState = 1;
             m_connected = false;
         }
     }
+
+    char ackData[sizeof(RADIO_STATE)];
+    memcpy(ackData, &radioState, sizeof(RADIO_STATE));
+    RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));
 }
 
 void Radio171AL::packageData()
@@ -287,7 +289,7 @@ void Radio171AL::parseData()
             return;
         }
         //消息类型
-        uint16_t msgType = (dstData[0]<<8) | (dstData[1]);
+        uint16_t msgType = (dstData[0]<<8) | (dstData[1]&0xFF);
         //数传
         if (msgType == 0X5500)
         {
@@ -359,9 +361,9 @@ void Radio171AL::updateRadioState(uint16_t type, char* data, const int len)
         break;
     case 0X0181://上报当前信道参数（0x0181）
     {
-        if (len != 13)
+        if (len != 14)
         {
-            qDebug() << "Recv Channel Parameters Len Err";
+            qDebug() << "Recv Channel Parameters Len Err, len = " << len;
         }
         else
         {
@@ -485,6 +487,8 @@ uint16_t Radio171AL::getCRC(unsigned char* buf, unsigned int len)
 
 void Radio171AL::setChannelParam(char* data, const int len)
 {
+    //更新信道
+    bcd2uint8(data[0], (uint8_t*)(&radioState.channel));
     //更新状态
     radioState.workMod = data[2];
     uint8_t m = 0;

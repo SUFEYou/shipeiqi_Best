@@ -229,7 +229,7 @@ void ConfigLoader::createConfig()
     settings.setValue("A6-boxVoicPort", 50201);
 
     settings.setValue("B1-radioID",  10001);
-    settings.setValue("B2-radioTyp", 1814);
+    settings.setValue("B2-radioTyp", 1714);
     settings.setValue("B3-radioIP",  "192.168.1.171");
     settings.setValue("B4-radioCtrlPort", 50018);
     settings.setValue("B5-radioVoicPort", 50017);

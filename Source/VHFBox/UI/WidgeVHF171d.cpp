@@ -132,6 +132,27 @@ void WidgeVHF171d::onTimer()
 
     //////////////////////////////////////////////////////////////////////////////////
 
+    //电台信道显示
+    if(isSettingChnl){
+        if(QTime::currentTime() > setChnlTim)
+        {
+              cancelTmpChannel();
+        }
+    } else {
+
+        if(channel > 0){
+            ui->lblChannel->setStyleSheet(DEF_CNANNEL_STYLE);
+            QString chanlTxt = QString("%1").arg(channel, 2, 10, QLatin1Char('0'));
+            ui->lblChannel->setText(chanlTxt);
+            curChannel = chanlTxt;
+            tmpChannel = "0";
+        } else {
+            ui->lblChannel->setText("");
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////
+
     //电台工作状态显示
     if(workModel >= 0) {
        //工作模式,取值3：背负DFF明； 4：背负FCS明； 5:背负FH明
@@ -142,15 +163,23 @@ void WidgeVHF171d::onTimer()
            if(lightLev != 0)
            ui->lblModeMsg->setStyleSheet("color:black;");
 
-       } else if(workModel == 4) {
+       } else if(workModel == 5) {
            workModTxt = QString::fromUtf8("跳频");
 
            if(lightLev != 0)
            ui->lblModeMsg->setStyleSheet("color:black;");
 
        }
-       else if(workModel == 5) {
+       else if(workModel == 0) {
            workModTxt = QString::fromUtf8("模话");
+
+           if(lightLev != 0)
+           ui->lblModeMsg->setStyleSheet("color:black;");
+       }
+       else
+       {
+           workModTxt = QString::fromUtf8("未知");
+
            ui->lblModeMsg->setStyleSheet("color:red;");
        }
 
@@ -161,7 +190,6 @@ void WidgeVHF171d::onTimer()
        ui->lblMode->setText(QString::fromUtf8("模式"));
        ui->lblModeMsg->setText(workModTxt);
     }
-
 
     //////////////////////////////////////////////////////////////////////////////////
 
@@ -410,11 +438,12 @@ void WidgeVHF171d::onKeyA()
      qDebug()<<"A";
      UDPRctrl *udpRctrl = SocketManage::getInstance()->getCtrlUdp(index);
      if(udpRctrl != NULL) {
-         workModel = workModel+1;
-         if(workModel > 1)  {
-             workModel = 0;
-         }
-//         udpRctrl->sendSetChannel(workModel);
+         const static uint8_t mode[] = {0, 3, 5}; //0:模话 3:定频 5:跳频
+         static uint8_t curMode = 0;
+         ++curMode;
+         if(curMode >= sizeof(mode))
+             curMode = 0;
+         workModel = mode[curMode];
          udpRctrl->sendRadioCtrl(Set_WorkMod, workModel);
      }
 }

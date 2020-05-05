@@ -87,12 +87,12 @@ void ConfigLoader::createConfig()
     settings.setValue("SYSTYPE", 0X0A01);
     settings.setValue("PROGRAMTYPE", 13);
     settings.setValue("PROGRAMID", 7999);
-    settings.setValue("RadioTyp", RADIO_181D);
+    settings.setValue("RadioTyp", RADIO_171D);
     settings.setValue("RadioID", 19999);
     settings.endGroup();
 
     settings.beginGroup("Commu-TCP");
-    settings.setValue("TcpIP",  "192.168.1.111");
+    settings.setValue("TcpIP",  "192.168.1.15");
     settings.setValue("TcpPort", 12000);
     settings.endGroup();
 
