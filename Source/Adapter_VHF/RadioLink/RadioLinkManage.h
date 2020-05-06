@@ -8,6 +8,7 @@
 class RadioLink;
 class RadioLinkMaster;
 class RadioLinkClient;
+class RadioLink_A01SSB;
 class QTimer;
 
 typedef QSharedPointer<ObjMsg> pVHFMsg;
@@ -74,8 +75,9 @@ public:
     //         1:Still Have Space to Add the Data
     //         2:No Data Need be Sended
     int sendDataFromListWait(int maxlength);
-
     void changeClientToMaster();
+
+    void sendDataFromListWait_A01SSB();
 
 private:
     RadioLinkManage();
@@ -103,6 +105,7 @@ private:
 
     RadioLinkMaster*                m_radioLinkMaster;
     RadioLinkClient*                m_radioLinkClient;
+    RadioLink_A01SSB*               m_radioLink_A01SSB;
 
     QTimer*                         m_timer;
     QTimer*                         m_listTimer;

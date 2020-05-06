@@ -1,6 +1,7 @@
 #include "RadioLinkManage.h"
 #include "RadioLinkMaster.h"
 #include "RadioLinkClient.h"
+#include "RadioLink_A01SSB.h"
 #include "Radio/RadioManage.h"
 #include "socket/TCPDataProcess.h"
 #include "config/ConfigLoader.h"
@@ -16,6 +17,7 @@ QMutex RadioLinkManage::m_mutex;
 RadioLinkManage::RadioLinkManage()
                 : m_radioLinkMaster(new RadioLinkMaster)
                 , m_radioLinkClient(new RadioLinkClient)
+                , m_radioLink_A01SSB(new RadioLink_A01SSB)
                 , m_timer(new QTimer(this))
                 , m_listTimer(new QTimer(this))
 {
@@ -47,6 +49,11 @@ RadioLinkManage::~RadioLinkManage()
     {
         delete m_radioLinkClient;
         m_radioLinkClient = NULL;
+    }
+    if (m_radioLink_A01SSB != NULL)
+    {
+        delete m_radioLink_A01SSB;
+        m_radioLink_A01SSB = NULL;
     }
     if (m_pBufSend != NULL)
     {
@@ -81,47 +88,58 @@ RadioLinkManage* RadioLinkManage::getInstance()
 void RadioLinkManage::init()
 {
     //////////////////////////////////////////////////////////////////////////
-        // 链路基本信息
+    // 链路基本信息
     m_sSendHead.ProgramType	= ConfigLoader::getInstance()->getProgramType();
     m_sSendHead.ProgramID	= ConfigLoader::getInstance()->getProgramID();
-
     m_nIDMe = ConfigLoader::getInstance()->getRadioID();
-    m_radioLinkClient->setCodeMe(m_nIDMe);
-    m_radioLinkMaster->setCodeMe(m_nIDMe);
 
-    QSharedPointer<ConfigRadio> tmp = ConfigLoader::getInstance()->getConfigRadio();
-    if (!tmp.isNull())
+    //A01短波电台220及230，不组网
+    if ((ConfigLoader::getInstance()->getSysType()) != 0X0A01 && \
+        (ConfigLoader::getInstance()->getRadioTyp() != RADIO_220 || \
+         ConfigLoader::getInstance()->getRadioTyp() != RADIO_230))
     {
-        m_radioLinkClient->setDataMaxLen(1020);
-        m_radioLinkMaster->setDataMaxLen(1020);
+        m_radioLinkClient->setCodeMe(m_nIDMe);
+        m_radioLinkMaster->setCodeMe(m_nIDMe);
 
-        m_radioLinkClient->setTimeFactor(tmp->getTimerFactor());
-        m_radioLinkMaster->setTimeFactor(tmp->getTimerFactor());
+        QSharedPointer<ConfigRadio> tmp = ConfigLoader::getInstance()->getConfigRadio();
+        if (!tmp.isNull())
+        {
+            m_radioLinkClient->setDataMaxLen(1020);
+            m_radioLinkMaster->setDataMaxLen(1020);
 
-        m_radioLinkClient->setCircleDrift(tmp->getCircleDrift());
-        m_radioLinkMaster->setCircleDrift(tmp->getCircleDrift());
+            m_radioLinkClient->setTimeFactor(tmp->getTimerFactor());
+            m_radioLinkMaster->setTimeFactor(tmp->getTimerFactor());
 
-        m_radioLinkClient->setNotInChainCtLmt(tmp->getNotInChainCtLmt());
+            m_radioLinkClient->setCircleDrift(tmp->getCircleDrift());
+            m_radioLinkMaster->setCircleDrift(tmp->getCircleDrift());
+
+            m_radioLinkClient->setNotInChainCtLmt(tmp->getNotInChainCtLmt());
+        }
+        else
+        {
+            m_radioLinkClient->setDataMaxLen(1020);
+            m_radioLinkMaster->setDataMaxLen(1020);
+
+            m_radioLinkClient->setTimeFactor(5);
+            m_radioLinkMaster->setTimeFactor(5);
+
+            m_radioLinkClient->setCircleDrift(1);
+            m_radioLinkMaster->setCircleDrift(1);
+
+            m_radioLinkClient->setNotInChainCtLmt(300);
+        }
+
+        m_radioLinkClient->SetAvailable(true);
+        m_radioLinkClient->setMonitorAll(true);
+
+        m_radioLinkMaster->SetAvailable(false);
+        m_radioLinkMaster->setMonitorAll(true);
     }
     else
     {
-        m_radioLinkClient->setDataMaxLen(1020);
-        m_radioLinkMaster->setDataMaxLen(1020);
-
-        m_radioLinkClient->setTimeFactor(5);
-        m_radioLinkMaster->setTimeFactor(5);
-
-        m_radioLinkClient->setCircleDrift(1);
-        m_radioLinkMaster->setCircleDrift(1);
-
-        m_radioLinkClient->setNotInChainCtLmt(300);
+        m_radioLink_A01SSB->SetAvailable(true);
     }
 
-    m_radioLinkClient->SetAvailable(true);
-    m_radioLinkClient->setMonitorAll(true);
-
-    m_radioLinkMaster->SetAvailable(false);
-    m_radioLinkMaster->setMonitorAll(true);
 
     m_timer->start(200);
     m_listTimer->start(1000);
@@ -424,6 +442,10 @@ void RadioLinkManage::OnCommRecData(const QByteArray &data)
     {
         m_radioLinkMaster->recvData(data.data(), data.length());
     }
+    else if (m_radioLink_A01SSB->GetAvailable())
+    {
+        m_radioLink_A01SSB->recvData(data.data(), data.length());
+    }
 }
 
 void RadioLinkManage::OnCommRecData(const char* data, const uint16_t len)
@@ -435,6 +457,10 @@ void RadioLinkManage::OnCommRecData(const char* data, const uint16_t len)
     else if (m_radioLinkMaster->GetAvailable())
     {
         m_radioLinkMaster->recvData(data, len);
+    }
+    else if (m_radioLink_A01SSB->GetAvailable())
+    {
+        m_radioLink_A01SSB->recvData(data, len);
     }
 }
 
@@ -571,6 +597,10 @@ void RadioLinkManage::dealTimer()
     {
         m_radioLinkClient->timerProcess();
     }
+    if (m_radioLink_A01SSB->GetAvailable())
+    {
+        m_radioLink_A01SSB->timerProcess();
+    }
 }
 
 void RadioLinkManage::msgListProcess()
@@ -600,5 +630,14 @@ void RadioLinkManage::msgListProcess()
             else
                 ++iter;
         }
+    }
+}
+
+void RadioLinkManage::sendDataFromListWait_A01SSB()
+{
+    while(!m_lMsgList.isEmpty())
+    {
+        pVHFMsg& msg = m_lMsgList.front();
+        m_lMsgList.pop_front();
     }
 }
