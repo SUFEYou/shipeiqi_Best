@@ -13,6 +13,9 @@ public:
     void timerProcess();
 
 private:
+    void packageData(const char type, const int sendid, const int recvid, const int serial, const char* data, const int datalen);
+
+private:
     bool        m_bAvailable;
 };
 

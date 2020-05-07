@@ -77,7 +77,7 @@ public:
     int sendDataFromListWait(int maxlength);
     void changeClientToMaster();
 
-    void sendDataFromListWait_A01SSB();
+    pVHFMsg sendDataFromListWait_A01SSB();
 
 private:
     RadioLinkManage();

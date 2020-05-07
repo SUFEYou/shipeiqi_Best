@@ -633,11 +633,13 @@ void RadioLinkManage::msgListProcess()
     }
 }
 
-void RadioLinkManage::sendDataFromListWait_A01SSB()
+pVHFMsg RadioLinkManage::sendDataFromListWait_A01SSB()
 {
-    while(!m_lMsgList.isEmpty())
+    if (!m_lMsgList.isEmpty())
     {
-        pVHFMsg& msg = m_lMsgList.front();
+        pVHFMsg msg = m_lMsgList.front();
         m_lMsgList.pop_front();
+        return msg;
     }
+    return pVHFMsg(NULL);
 }

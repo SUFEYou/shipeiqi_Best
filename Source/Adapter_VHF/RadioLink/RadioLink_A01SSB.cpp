@@ -37,6 +37,8 @@ void RadioLink_A01SSB::recvData(const char* pchar,const int nlength)
     if (type == 0 || type == 1)
     {
         RadioLinkManage::getInstance()->PackToSendRMTtoRSCMessageData(sendID, recvID, (char*)(&pchar[13]), nlength-13, false);
+        //接收到报文后，发送回复报
+        packageData(2, sendID, recvID, serial, NULL, 0);
     }
     else if (type == 2)//回复报
     {
@@ -47,12 +49,42 @@ void RadioLink_A01SSB::recvData(const char* pchar,const int nlength)
 void RadioLink_A01SSB::timerProcess()
 {
     static uint8_t sendCnt = 0;
-    //定时器一个周期为200ms,sendCnt控制发送频率，暂定为5s
-    if (sendCnt < 25)
+    //定时器一个周期为200ms,sendCnt控制发送频率，暂定为3s
+    if (sendCnt < 15)
     {
-        RadioLinkManage::getInstance()->sendDataFromListWait_A01SSB();
+        pVHFMsg msg = RadioLinkManage::getInstance()->sendDataFromListWait_A01SSB();
         ++sendCnt;
+        if (!msg.isNull())
+            packageData(msg->pData[0], msg->nSource, msg->nReceive, msg->nSerial, &(msg->pData[1]), msg->nDataLen-1);
     }
     else
         sendCnt = 0;
+}
+
+void RadioLink_A01SSB::packageData(const char type, const int sendid, const int recvid, const int serial, const char* data, const int datalen)
+{
+    char tmp[512];
+    memset(tmp, 0, sizeof(tmp));
+    uint16_t offset = 0;
+    //发送ID(4字节)
+    tmp[offset++] = (sendid>>24) & 0xFF;
+    tmp[offset++] = (sendid>>16) & 0xFF;
+    tmp[offset++] = (sendid>>8)  & 0xFF;
+    tmp[offset++] =  sendid      & 0xFF;
+    //接收ID(4字节)
+    tmp[offset++] = (recvid>>24) & 0xFF;
+    tmp[offset++] = (recvid>>16) & 0xFF;
+    tmp[offset++] = (recvid>>8)  & 0xFF;
+    tmp[offset++] =  recvid      & 0xFF;
+    //序号(4字节)
+    tmp[offset++] = (serial>>24) & 0xFF;
+    tmp[offset++] = (serial>>16) & 0xFF;
+    tmp[offset++] = (serial>>8)  & 0xFF;
+    tmp[offset++] =  serial      & 0xFF;
+    //数据类型(1字节)
+    tmp[offset++] = type;
+    //数据
+    memcpy(&tmp[offset], data, datalen);
+    offset += datalen;
+    RadioLinkManage::getInstance()->PortCommSendOutData(tmp, offset);
 }
