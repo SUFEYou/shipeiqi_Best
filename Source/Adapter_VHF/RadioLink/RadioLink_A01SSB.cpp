@@ -55,7 +55,11 @@ void RadioLink_A01SSB::timerProcess()
         pVHFMsg msg = RadioLinkManage::getInstance()->sendDataFromListWait_A01SSB();
         ++sendCnt;
         if (!msg.isNull())
+        {
             packageData(msg->pData[0], msg->nSource, msg->nReceive, msg->nSerial, &(msg->pData[1]), msg->nDataLen-1);
+            msg->nSendtimes += 1;
+        }
+
     }
     else
         sendCnt = 0;
