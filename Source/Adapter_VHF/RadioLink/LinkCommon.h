@@ -46,6 +46,7 @@ typedef enum VLN_Messaage	{
     VLNMSG_RSC_UPDATEMRT,				// 基站控制台上报移动终端状态
     //------------------- 2012.12.24 V1.0.0.0  End Line ------------------------//
     VLNMSG_MSGEX_DELETED,				// 删除短报文信息
+    VLNMSG_MSGEX_SETLINKMODE,           // 设置链路模式 对应设置项中，0:自动，链路自动切换主副台 1:强制切换链路为主台
 }VLN_Messaage;
 
 // Network Message Header

@@ -294,6 +294,16 @@ void TCPDataProcess::analyzeNetMsg(char* pData,const int nLen)
             RadioLinkManage::getInstance()->DeleteACCtoRSCMessageData(dObject.SendID, dObject.SerialBegin, dObject.SerialEnd);
         }
         break;
+    case VLNMSG_MSGEX_SETLINKMODE:
+    {
+        // 设置链路模式 对应设置项中，0:自动，链路自动切换主副台 1:强制切换链路为主台
+        char modeType = pData+nCurLen;
+        if (modeType == 1)
+        {
+            RadioLinkManage::getInstance()->changeClientToMaster();
+        }
+    }
+        break;
     case VLNMSG_MSGEX_RECALLCODE:			// 二进制短报文回馈序号
         break;
     case VLNMSG_RSC_UPDATEMRT:				// 基站控制台上报移动终端状态:
