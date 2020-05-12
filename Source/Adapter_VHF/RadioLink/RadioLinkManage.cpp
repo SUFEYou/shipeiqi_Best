@@ -94,9 +94,13 @@ void RadioLinkManage::init()
     m_nIDMe = ConfigLoader::getInstance()->getRadioID();
 
     //A01短波电台220及230，不组网
-    if ((ConfigLoader::getInstance()->getSysType()) != 0X0A01 && \
-        (ConfigLoader::getInstance()->getRadioTyp() != RADIO_220 || \
-         ConfigLoader::getInstance()->getRadioTyp() != RADIO_230))
+    if ((ConfigLoader::getInstance()->getSysType()) == 0X0A01 && \
+        (ConfigLoader::getInstance()->getRadioTyp() == RADIO_220 || \
+         ConfigLoader::getInstance()->getRadioTyp() == RADIO_230))
+    {
+        m_radioLink_A01SSB->SetAvailable(true);
+    }
+    else
     {
         m_radioLinkClient->setCodeMe(m_nIDMe);
         m_radioLinkMaster->setCodeMe(m_nIDMe);
@@ -135,11 +139,6 @@ void RadioLinkManage::init()
         m_radioLinkMaster->SetAvailable(false);
         m_radioLinkMaster->setMonitorAll(true);
     }
-    else
-    {
-        m_radioLink_A01SSB->SetAvailable(true);
-    }
-
 
     m_timer->start(200);
     m_listTimer->start(1000);

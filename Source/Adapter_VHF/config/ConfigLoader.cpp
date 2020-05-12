@@ -87,7 +87,7 @@ void ConfigLoader::createConfig()
     settings.setValue("SYSTYPE", 0X0A01);
     settings.setValue("PROGRAMTYPE", 13);
     settings.setValue("PROGRAMID", 7999);
-    settings.setValue("RadioTyp", RADIO_220);
+    settings.setValue("RadioTyp", RADIO_181D);
     settings.setValue("RadioID", 19999);
     settings.endGroup();
 
