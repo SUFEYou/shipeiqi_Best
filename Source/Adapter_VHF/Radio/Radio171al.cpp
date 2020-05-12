@@ -74,7 +74,10 @@ int Radio171AL::writeCtrlData(uint16_t funCode, char* data, int len)
             break;
         case Set_Channel://设置信道
         {
-            writeData(0x0100, (char*)(&m_set.channel), 1);
+            //信道设置应为BCD码
+            uint8_t tmp;
+            uint82bcd(m_set.channel, &tmp);
+            writeData(0x0100, (char*)(&tmp), 1);
         }
         break;
         case Set_TxFreq:
@@ -181,7 +184,7 @@ void Radio171AL::onTimer()
         //定时查询状态
         static uint8_t cnt = 0;
         ++cnt;
-        if (cnt > 5)
+        if (cnt > 1)
         {
             cnt = 0;
             radioState.errState = 0;
@@ -508,6 +511,10 @@ void Radio171AL::setChannelParam(char* data, const int len)
         {
             m_workModFlag = false;
             data[2] = m_workMod;
+            //data[1]波形类型固定为0：新一代背负
+            data[1] = 0;
+            //data[13]网络模式固定为0：PRN
+            data[13] = 0;
         }
         if (m_freqFlag)
         {

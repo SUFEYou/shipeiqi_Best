@@ -168,17 +168,15 @@ void WidgeSSB::onTimer()
 
     //电台工作状态显示
     if(workModel >= 0) {
-
-       //TODO:: ※※※ 注意，此处为临时设置，需要根据实际情况修改 ※※※
-       //工作模式,取值0：数据； 1：模话，
+       //工作模式,取值1：数话； 2：模话，
         QString workModTxt;
-       if(workModel == 0) {
-           workModTxt = QString::fromUtf8("数据");
+       if(workModel == 1) {
+           workModTxt = QString::fromUtf8("数话");
 
            if(lightLev != 0)
            ui->lblModeMsg->setStyleSheet("color:black;");
 
-       } else if(workModel == 1) {
+       } else if(workModel == 2) {
            workModTxt = QString::fromUtf8("模话");
 
            if(lightLev != 0)
@@ -612,7 +610,7 @@ void WidgeSSB::onKeyA()
      //qDebug()<<"A";
      UDPRctrl *udpRctrl = SocketManage::getInstance()->getCtrlUdp(index);
      if(udpRctrl != NULL) {
-         const static uint8_t mode[] = {0, 1}; //0:数据 1:模话
+         const static uint8_t mode[] = {1, 2}; //1:数话 2:模话
          static uint8_t curMode = 0;
          ++curMode;
          if(curMode >= sizeof(mode))
@@ -714,15 +712,19 @@ void WidgeSSB::onKeyConfirm()
             //TODO::
             if(freqTyp == "RX") {
                 //qDebug()<<"待设RX频点为："<<tmpFreq;
+                udpRctrl->sendRadioCtrl(Set_RxFreq, tmpFreq.toInt());
             }
 
             if(freqTyp == "TX") {
                 //qDebug()<<"待设TX频点为："<<tmpFreq;
+                udpRctrl->sendRadioCtrl(Set_TxFreq, tmpFreq.toInt());
             }
 
             if(freqTyp == "ALL") {
                 //qDebug()<<"待设RX频点为："<<tmpFreq;
                 //qDebug()<<"待设TX频点为："<<tmpFreq;
+                udpRctrl->sendRadioCtrl(Set_TxFreq, tmpFreq.toInt());
+                udpRctrl->sendRadioCtrl(Set_RxFreq, tmpFreq.toInt());
             }
 
             cancelTmpFreq();
