@@ -213,6 +213,7 @@ void WidgeMulti::setBkLight(int bkLightLev)
     QString btnStyle  = "color:#FF5809;";
     QString lineStyle = "border-top:1px solid #FF5809;";
     QString lblStyle  = "color:#FF5809;";
+    QString processBarStyle = "background-color:#B93B00;";
 
     if(bkLightLev == 0){
 
@@ -227,12 +228,15 @@ void WidgeMulti::setBkLight(int bkLightLev)
         btnStyle  = "color:#000000;";
         lineStyle = "border-top:1px solid #000000;";
         lblStyle  = "color:#000000;";
+        processBarStyle = "background-color:#ffffff;";
 
     }
 
     ui->lblMute->setStyleSheet(lblStyle);
     ui->lblRadioName1->setStyleSheet(lblStyle);
     ui->lblRadioName2->setStyleSheet(lblStyle);
+
+    ui->barSound->setStyleSheet(processBarStyle);
 }
 
 

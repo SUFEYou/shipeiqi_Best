@@ -1,6 +1,14 @@
 #include "WidgeSSB.h"
 #include "ui_SsbCtrl.h"
+#include <QObject>
 #include <QDebug>
+#include <QSize>
+#include "Audio/AudioControl.h"
+#include "Audio/AudioMixer.h"
+#include "Socket/SocketManage.h"
+#include "Socket/UdpRctrl.h"
+#include "Util/RadioUtil.h"
+#include "UI/UIManager.h"
 
 WidgeSSB::WidgeSSB()
 {
@@ -32,6 +40,12 @@ WidgeSSB::WidgeSSB()
 
     tCount = 0;                      // 注册计数器
 
+    minChnl =  0;
+    maxChnl = 255;
+
+    minFreq =  0;
+    maxFreq = 300000;
+
     iconSelf  = new QMovie("images/voice_green.gif");
     iconOthr  = new QMovie("images/voice.gif");
 
@@ -47,10 +61,12 @@ void WidgeSSB::init()
 {
 
     curChannel = "";
-    tmpChannel = "0";
+    tmpChannel = "000";
 
-//    DEF_CNANNEL_STYLE = "color:black;font-size:100px;line-height:150px;";
-//    SET_CNANNEL_STYLE = "color:#00FF00;font-size:100px;line-height:150px;";//font-family:Microsoft YaHei;
+    tmpFreq = "";
+
+    SET_CNANNEL_STYLE = "color:#00FF00;font-weight:bold;font-size:25px;";
+    SET_FREQ_STYLE = "color:#00FF00;font-weight:bold;font-size:30px;";
 
     ui->lblAddrVal->setText(radioTyp);
     ui->lblTime   ->setText("");
@@ -62,35 +78,21 @@ void WidgeSSB::init()
     ui->btnC->setFlat(true);
     ui->btnD->setFlat(true);
 
+
+
+    ui->lblChnlErr->setText(QString::fromUtf8("信道超出范围"));
+
+    ui->lblFreqErr->setText(QString::fromUtf8("频率超出范围"));
+    ui->lblFreqErr->setWordWrap(true);
+    ui->lblFreqErr->setAlignment(Qt::AlignTop);
+
+    this->showChnlErr(false);
+    this->showFreqErr(false);
+
     this->setBkLight(lightLev);
 
-//    // Update Ui Style
-//    QString defaultFontStyle = "color:black;font-weight:520;";
-
-//    ui->lblAddr->setStyleSheet(defaultFontStyle);
-//    ui->lblAddrVal->setStyleSheet(defaultFontStyle);
-//    ui->lblMode->setStyleSheet(defaultFontStyle);
-//    ui->lblModeMsg->setStyleSheet("color:red;");
-
-//    QString smallStyle = "color:black;font-weight:420;font-size:16px;";
-//    ui->lblModeMsg->setStyleSheet("color:red;");
-//    ui->lblLat->setStyleSheet(smallStyle);
-//    ui->lblLon->setStyleSheet(smallStyle);
-//    ui->lblTime->setStyleSheet(smallStyle);
-//    ui->lblBD->setStyleSheet(smallStyle);
-//    ui->lblNoise->setStyleSheet(smallStyle);
-//    ui->lblPower->setStyleSheet(smallStyle);
-//    ui->lblTx->setStyleSheet(smallStyle);
-//    ui->lblRx->setStyleSheet(smallStyle);
-
-//    ui->lblRadioName->setText(radioNm);
-
-//    QString style = NULL;
-//    style.append("QProgressBar{border-top: 1px solid black;border-left: 1px solid black;background-color:transparent;}");
-//    style.append("QProgressBar::chunk {background:url(\"images/processBar.png\");}");
-//    ui->barSound->setStyleSheet(style);
-//    ui->barRx->setStyleSheet(style);
-//    ui->barTx->setStyleSheet(style);
+    // 初始化 Timer
+    setChnlTim = QTime::currentTime();
 
     timer = new QTimer(this);
     timer->stop();
@@ -103,6 +105,200 @@ void WidgeSSB::init()
 void WidgeSSB::onTimer()
 {
 
+    //////////////////////////////////////////////////////////////////////////////////
+    if(pttAck == 1) {
+        ui->voiceIcon->setMovie(iconSelf);
+        ui->voiceIcon->setVisible(true);
+
+        ui->lblRx->setVisible(false);
+        ui->barRx->setVisible(false);
+        ui->lblTx->setVisible(false);
+        ui->barTx->setVisible(false);
+
+    } else if(pttAck == 2) {
+        ui->voiceIcon->setMovie(iconOthr);
+        ui->voiceIcon->setVisible(true);
+
+        ui->lblRx->setVisible(false);
+        ui->barRx->setVisible(false);
+        ui->lblTx->setVisible(false);
+        ui->barTx->setVisible(false);
+
+    } else {
+        ui->voiceIcon->hide();
+
+        ui->lblRx->setVisible(true);
+        ui->barRx->setVisible(true);
+        ui->lblTx->setVisible(true);
+        ui->barTx->setVisible(true);
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////
+
+    //电台信道显示
+    if(isSettingChnl){
+        if(QTime::currentTime() > setChnlTim)
+        {
+            cancelTmpChannel();
+        }
+    } else {
+
+        if(channel > 0){
+            ui->lblChnlVal->setStyleSheet(DEF_CNANNEL_STYLE);
+            QString chanlTxt = QString("%1").arg(channel, 3, 10, QLatin1Char('0'));
+            ui->lblChnlVal->setText(chanlTxt);
+            curChannel = chanlTxt;
+            tmpChannel = "000";
+        } else {
+            ui->lblChnlVal->setText("");
+        }
+    }
+
+    //错误提示信息
+    if(isShowChnlErr) {
+
+        if(QTime::currentTime() > showChnlErrTim)
+        {
+            //电台信道错误提示信息
+            showChnlErr(false);
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////
+
+    //电台工作状态显示
+    if(workModel >= 0) {
+
+       //TODO:: ※※※ 注意，此处为临时设置，需要根据实际情况修改 ※※※
+       //工作模式,取值0：数据； 1：模话，
+        QString workModTxt;
+       if(workModel == 0) {
+           workModTxt = QString::fromUtf8("数据");
+
+           if(lightLev != 0)
+           ui->lblModeMsg->setStyleSheet("color:black;");
+
+       } else if(workModel == 1) {
+           workModTxt = QString::fromUtf8("模话");
+
+           if(lightLev != 0)
+           ui->lblModeMsg->setStyleSheet("color:black;");
+
+       } else {
+           //qDebug() << "------------------------------------" << workModel;
+           workModTxt = QString::fromUtf8("未知");
+
+           ui->lblModeMsg->setStyleSheet("color:red;");
+       }
+
+       ui->lblMode->setVisible(true);
+       ui->lblModeMsg->setVisible(true);
+       ui->errMsg->setVisible(false);
+
+       ui->lblMode->setText(QString::fromUtf8("模式"));
+       ui->lblModeMsg->setText(workModTxt);
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////
+
+    //电台频点显示
+    if(isSettingFreq){
+        if(QTime::currentTime() > setFreqTim)
+        {
+            cancelTmpFreq();
+        }
+    } else {
+
+        //TODO:: 需要转换显示格式
+        if(sndFreq > 0){
+            ui->lblTxFreq->setStyleSheet(DEF_FREQ_STYLE);
+            QString chanlTxt = QString("%1").arg(sndFreq, 6, 10, QLatin1Char('0'));
+            ui->lblTxFreq->setText(chanlTxt);
+            curTxFreq = chanlTxt;
+            tmpFreq = "";
+        } else {
+            ui->lblTxFreq->setText("");
+        }
+
+        if(revFreq > 0){
+            ui->lblRxFreq->setStyleSheet(DEF_FREQ_STYLE);
+            QString chanlTxt = QString("%1").arg(revFreq, 6, 10, QLatin1Char('0'));
+            ui->lblRxFreq->setText(chanlTxt);
+            curRxFreq = chanlTxt;
+            tmpFreq = "";
+        } else {
+            ui->lblRxFreq->setText("");
+        }
+    }
+
+    //错误提示信息
+    if(isShowFreqErr) {
+
+        if(QTime::currentTime() > showFreqErrTim)
+        {
+            //电台信道错误提示信息
+            showFreqErr(false);
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////
+   //断连状态显示
+   if(state == -1){
+       ui->lblMode->setVisible(true);
+       ui->lblModeMsg->setVisible(true);
+       ui->errMsg->setVisible(false);
+
+       ui->lblMode->setText(QString::fromUtf8("模式"));
+       ui->lblModeMsg->setStyleSheet("QLabel{color:red;}");
+       ui->lblModeMsg->setText(QString::fromUtf8("无网络"));
+   }
+
+   //电台状态显示
+   if(state == 1){
+       ui->lblMode->setVisible(false);
+       ui->lblModeMsg->setVisible(false);
+       ui->errMsg->setVisible(true);
+
+       ui->errMsg->setStyleSheet("QLabel{color:red;}");
+       ui->errMsg->setText(QString::fromUtf8("电台控制异常"));
+   }
+
+   //注册状态显示
+   if(registACK == 1){
+       ui->lblMode->setVisible(false);
+       ui->lblModeMsg->setVisible(false);
+       ui->errMsg->setVisible(true);
+
+       ui->errMsg->setStyleSheet("QLabel{color:red;}");
+       ui->errMsg->setText(QString::fromUtf8("通道注册已上限"));
+   }
+
+   if(registACK == 2){
+       ui->lblMode->setVisible(false);
+       ui->lblModeMsg->setVisible(false);
+       ui->errMsg->setVisible(true);
+
+       ui->errMsg->setStyleSheet("QLabel{color:red;}");
+       ui->errMsg->setText(QString::fromUtf8("控制电台不匹配"));
+   }
+
+   //////////////////////////////////////////////////////////////////////////////////
+
+   //遥控和语音注册
+   tCount ++;
+   if(tCount >= 2){
+       tCount = 0;
+
+//        //qDebug()<<"Widget"<< index << " " << radioTyp << "----------registApply" <<QTime::currentTime();
+       SocketManage::getInstance()->registApplySocket(index);
+   }
+
+   //判断是否断连
+   int currTim = QDateTime::currentDateTimeUtc().toTime_t();   //秒级
+   int diffTim = currTim - regAckTim;
+   if(diffTim > 7){
+       state = -1;
+   }
 }
 
 
@@ -128,9 +324,15 @@ void WidgeSSB::setBkLight(int bkLightLev)
     // 面板背景
     this->setAutoFillBackground(true);
     QPalette p = this ->palette();
-    QString btnStyle  = "color:#FF5809;";
+    QString btnStyle  = "color:#FF5809;font-size:18px";
     QString lineStyle = "border-top:1px solid #FF5809;";
     QString lblStyle  = "color:#FF5809;";
+    QString lblSmallStyle = "color:#FF5809;";
+    QString processBarStyle = "background-color:#B93B00;";
+    QString freqErrMsgStyle = "color:#FF5809;font-weight:bold;font-size:40px;";
+    DEF_CNANNEL_LBL_STYLE = "color:#FF5809;";
+    DEF_CNANNEL_STYLE = "QLabel{color:#FF5809;font-size:25px;}";
+    DEF_FREQ_STYLE = "color:#FF5809;font-size:30px;";
 
     if(bkLightLev == 0){
 
@@ -142,26 +344,190 @@ void WidgeSSB::setBkLight(int bkLightLev)
         p.setColor(QPalette::Window,Qt::white);
         this->setPalette(p);
 
-        btnStyle  = "color:#000000;";
+        btnStyle  = "color:#000000;font-size:18px;";
         lineStyle = "border-top:1px solid #000000;";
         lblStyle  = "color:#000000;";
+        lblSmallStyle= "color:#000000;";
+        processBarStyle = "background-color:#ffffff;";
+        freqErrMsgStyle = "color:#000000;font-weight:bold;font-size:40px;";
+        DEF_CNANNEL_LBL_STYLE = "color:#000000;";
+        DEF_CNANNEL_STYLE = "color:#000000;font-weight:bold;font-size:25px;";
+        DEF_FREQ_STYLE = "color:#000000;font-weight:bold;font-size:30px;";
     }
 
-    ui->lblAddr->setStyleSheet(lblStyle);
-    ui->lblAddrVal->setStyleSheet(lblStyle);
+    cancelTmpFreq();
+    cancelTmpChannel();
 
-    ui->lblMode->setStyleSheet(lblStyle);
-    ui->lblModeMsg->setStyleSheet(lblStyle);
-    ui->lblNoise->setStyleSheet(lblStyle);
-    ui->lblPower->setStyleSheet(lblStyle);
-    ui->lblTx->setStyleSheet(lblStyle);
-    ui->lblRx->setStyleSheet(lblStyle);
+    ui->btnC   ->setStyleSheet(btnStyle);
+    ui->btnB   ->setStyleSheet(btnStyle);
+    ui->btnA   ->setStyleSheet(btnStyle);
+    ui->btnD   ->setStyleSheet(btnStyle);
+    ui->line_1 ->setStyleSheet(lineStyle);
+    ui->line_2 ->setStyleSheet(lineStyle);
+    ui->line_3 ->setStyleSheet(lineStyle);
 
-    ui->lblBD->setStyleSheet(lblStyle);
-    ui->lblTime->setStyleSheet(lblStyle);
-    ui->lblLat->setStyleSheet(lblStyle);
-    ui->lblLon->setStyleSheet(lblStyle);
+    ui->lblChnlErr  ->setStyleSheet(lblStyle);
+    ui->lblChnl     ->setStyleSheet(lblStyle);
+    ui->lblChnlVal  ->setStyleSheet(DEF_CNANNEL_STYLE);
+    ui->lblNoise    ->setStyleSheet(lblStyle);
+    ui->lblPower    ->setStyleSheet(lblStyle);
+    ui->lblMode     ->setStyleSheet(lblStyle);
+    ui->lblModeMsg  ->setStyleSheet(lblStyle);
+    ui->lblRecv     ->setStyleSheet(lblStyle);
+    ui->lblMute     ->setStyleSheet(lblStyle);
+    ui->lblRx       ->setStyleSheet(lblSmallStyle);
+    ui->lblTx       ->setStyleSheet(lblSmallStyle);
+    ui->lblFreqErr  ->setStyleSheet(freqErrMsgStyle);
 
+    ui->lblRxFreq  ->setStyleSheet(DEF_FREQ_STYLE);
+    ui->lblTxFreq  ->setStyleSheet(DEF_FREQ_STYLE);
+
+    ui->lblAddr     ->setStyleSheet(lblStyle);
+    ui->lblAddrVal  ->setStyleSheet(lblStyle);
+
+    ui->lblBD     ->setStyleSheet(lblSmallStyle);
+    ui->lblTime   ->setStyleSheet(lblSmallStyle);
+    ui->lblLat    ->setStyleSheet(lblSmallStyle);
+    ui->lblLatVal ->setStyleSheet(lblSmallStyle);
+    ui->lblLon    ->setStyleSheet(lblSmallStyle);
+    ui->lblLonVal ->setStyleSheet(lblSmallStyle);
+
+    ui->barSound->setStyleSheet(processBarStyle);
+    ui->barRx   ->setStyleSheet(processBarStyle);
+    ui->barTx   ->setStyleSheet(processBarStyle);
+
+}
+
+void WidgeSSB::setTmpChannel(QString param)
+{
+    setChnlTim = QTime::currentTime().addSecs(3);
+    isSettingChnl = true;
+    ui->lblChnl->setStyleSheet("color:#00FF00");
+    ui->lblChnlVal->setStyleSheet(SET_CNANNEL_STYLE);
+
+    if(!param.isNull() && !param.isEmpty() ) {
+        tmpChannel = tmpChannel.append(param);
+        tmpChannel = tmpChannel.mid(tmpChannel.length()-3,tmpChannel.length());
+        ui->lblChnlVal->setText(tmpChannel);
+    } else {
+        QString currChannl = ui->lblChnlVal->text();
+        if(currChannl.isNull() || currChannl.isEmpty()) {
+            ui->lblChnlVal->setText("");
+        }
+    }
+
+}
+
+void WidgeSSB::cancelTmpChannel()
+{
+    ui->lblChnlVal->setText(curChannel);
+    ui->lblChnlVal->setStyleSheet(DEF_CNANNEL_STYLE);
+
+    showChnlErr(false);
+}
+
+void WidgeSSB::showChnlErr(bool isErr) {
+    // 恢复临时默认信道
+    tmpChannel = "000";
+    isSettingChnl = false;
+    ui->lblChnl->setStyleSheet(DEF_CNANNEL_LBL_STYLE);
+
+    if(isErr) {
+        this->isShowChnlErr = true;
+        ui->lblChnl->setVisible(false);
+        ui->lblChnlVal->setVisible(false);
+        ui->lblChnlErr->setVisible(true);
+        showChnlErrTim = QTime::currentTime().addSecs(3);
+    } else {
+        this->isShowChnlErr = false;
+        ui->lblChnl->setVisible(true);
+        ui->lblChnlVal->setVisible(true);
+        ui->lblChnlErr->setVisible(false);
+    }
+}
+
+void WidgeSSB::setTmpFreq(QString param)
+{
+    setFreqTim = QTime::currentTime().addSecs(3);
+    isSettingFreq = true;
+    if(lblRxFreq != NULL) {
+        lblRxFreq->setStyleSheet(SET_FREQ_STYLE);
+    }
+    if(lblTxFreq != NULL) {
+        lblTxFreq->setStyleSheet(SET_FREQ_STYLE);
+    }
+
+
+    if(!param.isNull() && !param.isEmpty() ) {
+        //qDebug()<<"param----"<<param;
+        tmpFreq = tmpFreq.append(param);
+        if(tmpFreq.length() > 6) {
+            tmpFreq = tmpFreq.mid(tmpFreq.length()-6,tmpFreq.length());
+        }
+
+        //qDebug()<<"tmpFreq----"<<tmpFreq;
+        QString freqTxt = QString("%1").arg(tmpFreq.toInt(), 6, 10, QLatin1Char('0'));
+        QString pLeft = freqTxt.mid(0, 5);
+        QString pRight = freqTxt.mid(5);
+        QString freqView = pLeft.append(".").append(pRight);
+        //qDebug()<<"freqView----"<<freqView;
+
+        if(lblRxFreq != NULL) {
+             lblRxFreq->setText(freqView);
+        }
+        if(lblTxFreq != NULL) {
+             lblTxFreq->setText(freqView);
+        }
+
+    } else {
+         QString currRxFreq = curRxFreq;
+         if(currRxFreq.isNull() || currRxFreq.isEmpty()) {
+             if(lblRxFreq != NULL) {
+                  lblRxFreq->setText("");
+             }
+
+         }
+
+         QString currTxFreq = curTxFreq;
+         if(currTxFreq.isNull() || currTxFreq.isEmpty()) {
+             if(lblTxFreq != NULL) {
+                  lblTxFreq->setText("");
+             }
+         }
+    }
+
+}
+
+void WidgeSSB::cancelTmpFreq()
+{
+    ui->lblRxFreq->setText(curRxFreq);
+    ui->lblTxFreq->setText(curTxFreq);
+    ui->lblRxFreq->setStyleSheet(DEF_FREQ_STYLE);
+    ui->lblTxFreq->setStyleSheet(DEF_FREQ_STYLE);
+
+    showFreqErr(false);
+}
+
+void WidgeSSB::showFreqErr(bool isErr) {
+    lblRxFreq = NULL;
+    lblTxFreq = NULL;
+    // 恢复临时值
+    tmpFreq = "";
+    isSettingFreq = false;
+    freqTyp="";
+
+    if(isErr) {
+        isShowFreqErr = true;
+        ui->lblRxFreq->setVisible(false);
+        ui->lblTxFreq->setVisible(false);
+        ui->lblFreqErr->setVisible(true);
+        showFreqErrTim = QTime::currentTime().addSecs(3);
+    } else {
+        isShowFreqErr = false;
+        ui->lblRxFreq->setVisible(true);
+        ui->lblTxFreq->setVisible(true);
+        ui->lblFreqErr->setVisible(false);
+    }
 }
 
 
@@ -243,32 +609,71 @@ void WidgeSSB::onKey(int key)
 
 void WidgeSSB::onKeyA()
 {
-     qDebug()<<"A";
+     //qDebug()<<"A";
+     UDPRctrl *udpRctrl = SocketManage::getInstance()->getCtrlUdp(index);
+     if(udpRctrl != NULL) {
+         const static uint8_t mode[] = {0, 1}; //0:数据 1:模话
+         static uint8_t curMode = 0;
+         ++curMode;
+         if(curMode >= sizeof(mode))
+             curMode = 0;
+         workModel = mode[curMode];
+         udpRctrl->sendRadioCtrl(Set_WorkMod, workModel);
+     }
 }
 
 void WidgeSSB::onKeyB()
 {
-    qDebug()<<"B";
+     //qDebug()<<"B";
 }
 
 void WidgeSSB::onKeyC()
 {
-
+    //qDebug()<<"C";
 }
 
 void WidgeSSB::onKeyD()
 {
+    //qDebug()<<"D";
+    WidgeBase::volumnLev  = 0;
 
+    int volALSA = this->getVolumnALSA(WidgeBase::volumnLev);
+    AudioControl::getInstance()->getMixer()->volumn(volALSA);
+    UIManager::getInstance()->updateAllMute();
 }
 
 void WidgeSSB::onKeyChannelUp()
 {
+    int currChanl = tmpChannel.toInt();
+    if(!isSettingChnl){
+        currChanl = curChannel.toInt();
+    }
 
+    currChanl = currChanl + 1;
+    if(currChanl > maxChnl ) {
+        currChanl = 1;
+    }
+
+    //qDebug()<<"onBtnChannelUp" << currChanl;
+
+    setTmpChannel(QString("%1").arg(currChanl, 3, 10, QLatin1Char('0')));
 }
 
 void WidgeSSB::onKeyChannelDw()
 {
+    int currChanl = tmpChannel.toInt();
+    if(!isSettingChnl){
+        currChanl = curChannel.toInt();
+    }
 
+    currChanl = currChanl - 1;
+    if(currChanl < 1 ) {
+        currChanl = 1;
+    }
+
+    //qDebug()<<"onBtnChannelDw" << currChanl;
+
+    setTmpChannel(QString("%1").arg(currChanl, 3, 10, QLatin1Char('0')));
 }
 
 
@@ -276,80 +681,192 @@ void WidgeSSB::onKeyChannelDw()
 
 void WidgeSSB::onKeyCancel()
 {
-
+    cancelTmpFreq();
+    cancelTmpChannel();
 }
 
 void WidgeSSB::onKeyConfirm()
 {
+    //qDebug()<<"待设置信道号为："<<tmpChannel.toInt();
+    if(!tmpChannel.isNull() && !tmpChannel.isEmpty() && isSettingChnl == true) {
+        // 信道超出范围
+        if(tmpChannel.toInt() > maxChnl) {
+            showChnlErr(true);
+        } else {
+            //TODO::
+            UDPRctrl *udpRctrl = SocketManage::getInstance()->getCtrlUdp(index);
+            if(udpRctrl != NULL) {
+        //        udpRctrl->sendSetChannel(tmpChannel.toInt());
+                udpRctrl->sendRadioCtrl(Set_Channel, tmpChannel.toInt());
+            }
+
+            cancelTmpChannel();
+        }
+
+    } else {
+        cancelTmpChannel();
+    }
+
+    if(!tmpFreq.isNull() && !tmpFreq.isEmpty() && isSettingFreq == true) {
+        if(tmpFreq.toInt() > maxFreq) {
+            showFreqErr(true);
+        } else {
+            //TODO::
+            if(freqTyp == "RX") {
+                //qDebug()<<"待设RX频点为："<<tmpFreq;
+            }
+
+            if(freqTyp == "TX") {
+                //qDebug()<<"待设TX频点为："<<tmpFreq;
+            }
+
+            if(freqTyp == "ALL") {
+                //qDebug()<<"待设RX频点为："<<tmpFreq;
+                //qDebug()<<"待设TX频点为："<<tmpFreq;
+            }
+
+            cancelTmpFreq();
+        }
+
+
+    } else {
+        cancelTmpFreq();
+    }
 
 }
 
 void WidgeSSB::onKey0()
 {
-
+    keyInputParam("0");
 }
 
 void WidgeSSB::onKey1()
 {
-
+    keyInputParam("1");
 }
 
 void WidgeSSB::onKey2()
 {
-
+    keyInputParam("2");
 }
 
 void WidgeSSB::onKey3()
 {
-
+    keyInputParam("3");
 }
 
 void WidgeSSB::onKey4()
 {
-
+    keyInputParam("4");
 }
 
 void WidgeSSB::onKey5()
 {
-
+    keyInputParam("5");
 }
 
 void WidgeSSB::onKey6()
 {
-
+    keyInputParam("6");
 }
 
 void WidgeSSB::onKey7()
 {
-
+    keyInputParam("7");
 }
 
 void WidgeSSB::onKey8()
 {
-
+    keyInputParam("8");
 }
 
 void WidgeSSB::onKey9()
 {
-
+    keyInputParam("9");
 }
 
 void WidgeSSB::onKeyUp()
 {
+    isSettingChnl = false;
+    cancelTmpFreq();
 
+    lblRxFreq = ui->lblRxFreq;
+    freqTyp = "RX";
+    setTmpFreq(curRxFreq);
 }
 
 void WidgeSSB::onKeyDw()
 {
+    isSettingChnl = false;
+    cancelTmpFreq();
 
+    lblTxFreq = ui->lblTxFreq;
+    freqTyp = "TX";
+    setTmpFreq(curTxFreq);
 }
 
 void WidgeSSB::onKeyLeft()
 {
+    isSettingChnl = false;
+    cancelTmpFreq();
 
+    lblRxFreq = ui->lblRxFreq;
+    lblTxFreq = ui->lblTxFreq;
+    freqTyp = "ALL";
+    setTmpFreq(curRxFreq);
+    setTmpFreq(curTxFreq);
 }
 
 void WidgeSSB::onKeyRight()
 {
+   isSettingFreq = false;
 
+   cancelTmpChannel();
+   setTmpChannel(curChannel);
+}
+
+
+void WidgeSSB::keyInputParam(QString param)
+{
+    if(isSettingChnl) {
+        setTmpChannel(param);
+    }
+
+    if(isSettingFreq) {
+        setTmpFreq(param);
+    }
+
+}
+
+void WidgeSSB::setRxFreq(int param)
+{
+    int freqBar = this->getFreqBar(param);
+    ui->barRx->setValue(freqBar);
+}
+
+void WidgeSSB::setTxFreq(int param)
+{
+    int freqBar = this->getFreqBar(param);
+    ui->barTx->setValue(freqBar);
+}
+
+int WidgeSSB::getFreqBar(int param)
+{
+    if(param >=16000 && param <60000){
+        return 0;
+    }
+    if(param >=60000 && param <120000){
+        return 40;
+    }
+    if(param >=120000 && param <180000){
+        return 60;
+    }
+    if(param >=180000 && param <240000){
+        return 80;
+    }
+    if(param >=240000 && param <300000){
+        return 100;
+    }
+
+    return 100;
 }

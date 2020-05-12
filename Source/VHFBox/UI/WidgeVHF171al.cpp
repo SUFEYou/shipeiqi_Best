@@ -260,9 +260,10 @@ void WidgeVHF171al::setBkLight(int bkLightLev)
     this->setAutoFillBackground(true);
     QPalette p = this ->palette();
 
-    QString btnStyle  = "color:#FF5809;";
+    QString btnStyle  = "color:#FF5809;font-size:18px;";
     QString lineStyle = "border-top:1px solid #FF5809;";
     QString lblStyle  = "color:#FF5809;";
+    QString processBarStyle = "background-color:#B93B00;";
     DEF_CNANNEL_STYLE = "QLabel{color:#FF5809;font-weight:bold;font-size:90px;line-height:150px;}";
 
     if(bkLightLev == 0){
@@ -275,9 +276,10 @@ void WidgeVHF171al::setBkLight(int bkLightLev)
         p.setColor(QPalette::Window,Qt::white);
         this->setPalette(p);
 
-        btnStyle  = "color:#000000;";
+        btnStyle  = "color:#000000;font-size:18px;";
         lineStyle = "border-top:1px solid #000000;";
         lblStyle  = "color:#000000;";
+        processBarStyle = "background-color:#ffffff;";
         DEF_CNANNEL_STYLE = "color:#000000;font-weight:bold;font-size:90px;line-height:150px;";
 
     }
@@ -305,6 +307,8 @@ void WidgeVHF171al::setBkLight(int bkLightLev)
     ui->lblLatVal ->setStyleSheet(lblStyle);
     ui->lblLon    ->setStyleSheet(lblStyle);
     ui->lblLonVal ->setStyleSheet(lblStyle);
+
+    ui->barSound->setStyleSheet(processBarStyle);
 }
 
 
@@ -314,7 +318,7 @@ void WidgeVHF171al::setTmpChannel(QString param)
     isSettingChnl = true;
     ui->lblChannel->setStyleSheet(SET_CNANNEL_STYLE);
 
-    if(!param.isNull() && !param.isEmpty() ) {
+    if(!param.isNull() && !param.isEmpty()) {
         tmpChannel = tmpChannel.append(param);
         tmpChannel = tmpChannel.mid(tmpChannel.length()-2,tmpChannel.length());
         ui->lblChannel->setText(tmpChannel);

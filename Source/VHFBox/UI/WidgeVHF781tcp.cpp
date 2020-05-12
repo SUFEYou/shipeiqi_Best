@@ -57,7 +57,7 @@ void WidgeVHF781tcp::init()
     curChannel = "";
     tmpChannel = "0";
 
-    SET_CNANNEL_STYLE = "color:#00FF00;font-weight:bold;font-size:90px;line-height:150px;";      //font-family:Microsoft YaHei;
+    SET_CNANNEL_STYLE = "color:#00FF00;font-weight:bold;font-size:90px;";      //font-family:Microsoft YaHei;
 
     ui->lblAddrVal->setText(radioTyp);
     ui->lblTime   ->setText("");
@@ -251,10 +251,11 @@ void WidgeVHF781tcp::setBkLight(int bkLightLev)
     this->setAutoFillBackground(true);
     QPalette p = this ->palette();
 
-    QString btnStyle  = "color:#FF5809;";
+    QString btnStyle  = "color:#FF5809;font-size:18px;";
     QString lineStyle = "border-top:1px solid #FF5809;";
     QString lblStyle  = "color:#FF5809;";
-    DEF_CNANNEL_STYLE = "QLabel{color:#FF5809;font-weight:bold;font-size:90px;line-height:150px;}";
+    QString processBarStyle = "background-color:#B93B00;";
+    DEF_CNANNEL_STYLE = "QLabel{color:#FF5809;font-weight:bold;font-size:90px;}";
 
     if(bkLightLev == 0){
 
@@ -266,10 +267,11 @@ void WidgeVHF781tcp::setBkLight(int bkLightLev)
         p.setColor(QPalette::Window,Qt::white);
         this->setPalette(p);
 
-        btnStyle  = "color:#000000;";
+        btnStyle  = "color:#000000;font-size:18px;";
         lineStyle = "border-top:1px solid #000000;";
         lblStyle  = "color:#000000;";
-        DEF_CNANNEL_STYLE = "color:#000000;font-weight:bold;font-size:90px;line-height:150px;";
+        processBarStyle = "background-color:#ffffff;";
+        DEF_CNANNEL_STYLE = "color:#000000;font-weight:bold;font-size:90px;";
 
     }
 
@@ -296,6 +298,8 @@ void WidgeVHF781tcp::setBkLight(int bkLightLev)
     ui->lblLatVal ->setStyleSheet(lblStyle);
     ui->lblLon    ->setStyleSheet(lblStyle);
     ui->lblLonVal ->setStyleSheet(lblStyle);
+
+    ui->barSound->setStyleSheet(processBarStyle);
 }
 
 

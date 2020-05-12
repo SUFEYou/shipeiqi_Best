@@ -29,7 +29,7 @@ AudioPtt::AudioPtt()
 
 bool AudioPtt::init()
 {
-    pttCom = new QextSerialPort("/dev/ttymxc3");
+    pttCom = new QextSerialPort("/dev/ttymxc4");
 
     connect(pttCom, SIGNAL(readyRead()), this, SLOT(readCom()));
     pttCom->setBaudRate(BAUD9600);    //设置波特率

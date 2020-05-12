@@ -30,8 +30,10 @@ int main(int argc, char *argv[])
     if(id != -1) {
         QString simsun = QFontDatabase::applicationFontFamilies(id).at(0);
         qDebug()<<endl<<"The Gloal Font is:"+simsun<<endl;
-        QFont f(simsun,13);
-        a.setFont(f);
+        QFont m_font(simsun,13);
+        int pointsize = m_font.pointSize();
+        m_font.setPixelSize(pointsize*90/72); //设置字体大小单位为像素大小，而不是以磅为单位
+        a.setFont(m_font);
     } else {
         qDebug()<<"Doesn't set Gloal Font";
     }
