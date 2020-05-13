@@ -177,6 +177,7 @@ void Radio171AL::onTimer()
     {
         static unsigned char str[] = {0xC0, 0x00, 0x0A, 0x00, 0x01, 0x00, 0x0E, 0x03, 0xC0};
         dataCom->write((char*)str, sizeof(str));
+        radioState.errState = 1;
     }
     else
     {
