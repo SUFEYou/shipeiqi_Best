@@ -207,10 +207,10 @@ void WidgeSSB::onTimer()
         }
     } else {
 
-        //TODO:: 需要转换显示格式
+        //电台传输频率格式为KHZ*10000
         if(sndFreq > 0){
             ui->lblTxFreq->setStyleSheet(DEF_FREQ_STYLE);
-            QString chanlTxt = QString("%1").arg(sndFreq, 6, 10, QLatin1Char('0'));
+            QString chanlTxt = QString("%1.%2").arg(sndFreq/10000, 5, 10, QLatin1Char('0')).arg(sndFreq%10000/1000);
             ui->lblTxFreq->setText(chanlTxt);
             curTxFreq = chanlTxt;
             tmpFreq = "";
@@ -220,7 +220,8 @@ void WidgeSSB::onTimer()
 
         if(revFreq > 0){
             ui->lblRxFreq->setStyleSheet(DEF_FREQ_STYLE);
-            QString chanlTxt = QString("%1").arg(revFreq, 6, 10, QLatin1Char('0'));
+            //QString chanlTxt = QString("%1").arg(revFreq, 6, 10, QLatin1Char('0'));
+            QString chanlTxt = QString("%1").arg(revFreq/10000, 5, 10, QLatin1Char('0')).arg(revFreq%10000/1000);
             ui->lblRxFreq->setText(chanlTxt);
             curRxFreq = chanlTxt;
             tmpFreq = "";
@@ -615,8 +616,8 @@ void WidgeSSB::onKeyA()
          ++curMode;
          if(curMode >= sizeof(mode))
              curMode = 0;
-         workModel = mode[curMode];
-         udpRctrl->sendRadioCtrl(Set_WorkMod, workModel);
+         //workModel = mode[curMode];
+         udpRctrl->sendRadioCtrl(Set_WorkMod, mode[curMode]);
      }
 }
 
@@ -711,21 +712,23 @@ void WidgeSSB::onKeyConfirm()
         } else {
             //TODO::
             UDPRctrl *udpRctrl = SocketManage::getInstance()->getCtrlUdp(index);
+            //频率发送按照KHZ*10000发送至适配器
+            uint64_t freq = tmpFreq.toInt()*1000;
             if(freqTyp == "RX") {
                 //qDebug()<<"待设RX频点为："<<tmpFreq;
-                udpRctrl->sendRadioCtrl(Set_RxFreq, tmpFreq.toInt());
+                udpRctrl->sendRadioCtrl(Set_RxFreq, freq);
             }
 
             if(freqTyp == "TX") {
                 //qDebug()<<"待设TX频点为："<<tmpFreq;
-                udpRctrl->sendRadioCtrl(Set_TxFreq, tmpFreq.toInt());
+                udpRctrl->sendRadioCtrl(Set_TxFreq, freq);
             }
 
             if(freqTyp == "ALL") {
                 //qDebug()<<"待设RX频点为："<<tmpFreq;
                 //qDebug()<<"待设TX频点为："<<tmpFreq;
-                udpRctrl->sendRadioCtrl(Set_TxFreq, tmpFreq.toInt());
-                udpRctrl->sendRadioCtrl(Set_RxFreq, tmpFreq.toInt());
+                udpRctrl->sendRadioCtrl(Set_TxFreq, freq);
+                udpRctrl->sendRadioCtrl(Set_RxFreq, freq);
             }
 
             cancelTmpFreq();

@@ -309,7 +309,8 @@ void Radio171D::parseData()
 void Radio171D::updateRadioState(uint16_t type, char* data, const int len)
 {
     //接收到电台数据，断连计数清零
-    m_disconnectCnt = 0;
+    if (type != 0X0381)
+        m_disconnectCnt = 0;
     switch (type) {
     case 0X0081://上报时间（0x0081）
     {
