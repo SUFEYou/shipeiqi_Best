@@ -22,7 +22,7 @@ public:
     // 上报状态信息
     void RSCtoACCUpdateStateInfo();
 
-    inline int getRSCID() { return m_nRSCID; }
+    int getRSCID();
 
 private:
     TCPDataProcess();

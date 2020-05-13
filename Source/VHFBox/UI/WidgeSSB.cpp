@@ -710,6 +710,7 @@ void WidgeSSB::onKeyConfirm()
             showFreqErr(true);
         } else {
             //TODO::
+            UDPRctrl *udpRctrl = SocketManage::getInstance()->getCtrlUdp(index);
             if(freqTyp == "RX") {
                 //qDebug()<<"待设RX频点为："<<tmpFreq;
                 udpRctrl->sendRadioCtrl(Set_RxFreq, tmpFreq.toInt());

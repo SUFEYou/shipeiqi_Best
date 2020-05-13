@@ -70,8 +70,8 @@ void ConfigLoader::loadConfig()
     qDebug() << "Commu Server TcpPort: "    << TcpPort;
 
     this->sysType     = settings.value("Apt-Static/SYSTYPE").toInt();
-    this->programType = settings.value("Apt-Static/ProgramType").toInt();
-    this->programID   = settings.value("Apt-Static/ProgramID").toInt();
+    this->programType = settings.value("Apt-Static/PROGRAMTYPE").toInt();
+    this->programID   = settings.value("Apt-Static/PROGRAMID").toInt();
     this->radioTyp    = settings.value("Apt-Static/RadioTyp").toInt();
     this->radioID     = settings.value("Apt-Static/RadioID").toInt();
     loadRadioConfig();
@@ -84,7 +84,7 @@ void ConfigLoader::createConfig()
     QSettings settings("Apt-Config.ini", QSettings::IniFormat);
 
     settings.beginGroup("Apt-Static");
-    settings.setValue("SYSTYPE", 0X0A01);
+    settings.setValue("SYSTYPE", 0X0A03);
     settings.setValue("PROGRAMTYPE", 13);
     settings.setValue("PROGRAMID", 7999);
     settings.setValue("RadioTyp", RADIO_181D);

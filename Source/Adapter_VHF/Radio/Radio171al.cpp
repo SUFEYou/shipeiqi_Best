@@ -14,6 +14,7 @@ Radio171AL::Radio171AL()
 {
     memset(&radioState, 0, sizeof(RADIO_STATE));
     connect(m_timer, SIGNAL(timeout()), this, SLOT(onTimer()));
+    radioState.errState = 1;
 }
 
 Radio171AL::~Radio171AL()
@@ -513,8 +514,8 @@ void Radio171AL::setChannelParam(char* data, const int len)
             data[2] = m_workMod;
             //data[1]波形类型固定为0：新一代背负
             data[1] = 0;
-            //data[13]网络模式固定为0：PRN
-            data[13] = 0;
+            //data[13]网络模式固定为2：CNR
+            data[13] = 2;
         }
         if (m_freqFlag)
         {

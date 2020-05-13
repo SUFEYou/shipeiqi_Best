@@ -1,6 +1,7 @@
 #include "TCPDataProcess.h"
 #include "socket/SocketManage.h"
 #include "RadioLink/RadioLinkManage.h"
+#include "config/ConfigLoader.h"
 #include <time.h>
 #include <QDebug>
 
@@ -17,6 +18,8 @@ TCPDataProcess::TCPDataProcess()
     m_MRTPosData = new char[256];			//rodar of data
     memset(m_MRTPosData, 0, 256);
     m_MRTPosDataLen = 0;
+    //暂时设置为固定值
+    m_nRSCID = 10001;
 }
 
 TCPDataProcess::~TCPDataProcess()
@@ -336,6 +339,8 @@ void TCPDataProcess::RSCtoACCUpdateBaseInfo()
     time_t ltime;
     time(&ltime);
     NET_MSG_HEADER sendHead;
+    sendHead.ProgramType = ConfigLoader::getInstance()->getProgramType();
+    sendHead.ProgramID   = ConfigLoader::getInstance()->getProgramID();
     sendHead.MessageLen		= send_len;
     sendHead.MessageSerial	= (unsigned long)(ltime);
     sendHead.MessageType		= VLNMSG_RSC_BASEINFO;
@@ -365,10 +370,17 @@ void TCPDataProcess::RSCtoACCUpdateStateInfo()
 
     // Header Information
     NET_MSG_HEADER sendHead;
+    sendHead.ProgramType = ConfigLoader::getInstance()->getProgramType();
+    sendHead.ProgramID   = ConfigLoader::getInstance()->getProgramID();
     sendHead.MessageLen = send_len;
     sendHead.MessageSerial = (unsigned long)(ltime);
     sendHead.MessageType = VLNMSG_RSC_STATE;
     memcpy(send_data, &sendHead, sizeof(NET_MSG_HEADER));
 
     packageAndSendData(send_data, send_len);
+}
+
+int TCPDataProcess::getRSCID()
+{
+    return m_nRSCID;
 }

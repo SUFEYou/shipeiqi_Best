@@ -447,8 +447,8 @@ void WidgeVHF171d::onKeyA()
          ++curMode;
          if(curMode >= sizeof(mode))
              curMode = 0;
-         workModel = mode[curMode];
-         udpRctrl->sendRadioCtrl(Set_WorkMod, workModel);
+         //workModel = mode[curMode];
+         udpRctrl->sendRadioCtrl(Set_WorkMod, mode[curMode]);
      }
 }
 

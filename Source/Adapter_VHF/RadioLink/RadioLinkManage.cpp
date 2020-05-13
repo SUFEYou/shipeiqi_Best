@@ -317,6 +317,8 @@ void RadioLinkManage::PackToSendRMTtoRSCMessageData(const int nSendID,const int 
     // Header Information
     time_t ltime;
     time(&ltime);
+    m_sSendHead.ProgramType     = ConfigLoader::getInstance()->getProgramType();
+    m_sSendHead.ProgramID       = ConfigLoader::getInstance()->getProgramID();
     m_sSendHead.MessageLen		= m_nBufSendLen;
     m_sSendHead.MessageSerial	= (unsigned long)(ltime);
     m_sSendHead.MessageType		= VLNMSG_MSGEX_TEXT;
@@ -345,6 +347,8 @@ void RadioLinkManage::PackToSendRMTtoRSCMessageSerial(const int nSendID,const in
         // Header Information
         time_t ltime;
         time(&ltime);
+        m_sSendHead.ProgramType     = ConfigLoader::getInstance()->getProgramType();
+        m_sSendHead.ProgramID       = ConfigLoader::getInstance()->getProgramID();
         m_sSendHead.MessageLen		= m_nBufSendLen;
         m_sSendHead.MessageSerial	= (unsigned long)(ltime);
         m_sSendHead.MessageType		= VLNMSG_MSGEX_RECALLCODE;
@@ -395,6 +399,8 @@ void RadioLinkManage::RSCtoACCChainState()
     }
 
     // Header Information
+    m_sSendHead.ProgramType     = ConfigLoader::getInstance()->getProgramType();
+    m_sSendHead.ProgramID       = ConfigLoader::getInstance()->getProgramID();
     m_sSendHead.MessageLen		= m_nBufSendLen;
     m_sSendHead.MessageSerial	= (unsigned long)(ltime);
     m_sSendHead.MessageType		= VLNMSG_RSC_UPDATEMRT;
