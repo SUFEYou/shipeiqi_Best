@@ -439,11 +439,19 @@ void WidgeVHF171d::onKey(int key)
 
 void WidgeVHF171d::onKeyA()
 {
-     qDebug()<<"A";
+     //qDebug()<<"A";
      UDPRctrl *udpRctrl = SocketManage::getInstance()->getCtrlUdp(index);
      if(udpRctrl != NULL) {
          const static uint8_t mode[] = {0, 3, 5}; //0:模话 3:定频 5:跳频
          static uint8_t curMode = 0;
+         for (int i = 0; i < sizeof(mode); ++i)
+         {
+             if (workModel == mode[i])
+             {
+                 curMode = i;
+                 break;
+             }
+         }
          ++curMode;
          if(curMode >= sizeof(mode))
              curMode = 0;
