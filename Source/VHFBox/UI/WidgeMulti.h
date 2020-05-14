@@ -50,6 +50,8 @@ public:
     void onKeyLeft();
     void onKeyRight();
 
+private:
+    void resetIconMovie();
 
 
 private slots:
@@ -68,11 +70,23 @@ private:
     QMovie                  *icon1_inAct;
     QMovie                  *icon1_inRes;
 
+    QMovie                  *icon1_outActSelf_Dark;
+    QMovie                  *icon1_outActOthr_Dark;
+    QMovie                  *icon1_outRes_Dark;
+    QMovie                  *icon1_inAct_Dark;
+    QMovie                  *icon1_inRes_Dark;
+
     QMovie                  *icon2_outActSelf;
     QMovie                  *icon2_outActOthr;
     QMovie                  *icon2_outRes;
     QMovie                  *icon2_inAct;
     QMovie                  *icon2_inRes;
+
+    QMovie                  *icon2_outActSelf_Dark;
+    QMovie                  *icon2_outActOthr_Dark;
+    QMovie                  *icon2_outRes_Dark;
+    QMovie                  *icon2_inAct_Dark;
+    QMovie                  *icon2_inRes_Dark;
 
     QTimer*                 timer;
 

@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QDebug>
 #include <QSize>
+#include <QPainter>
 #include "Audio/AudioControl.h"
 #include "Audio/AudioMixer.h"
 #include "Socket/SocketManage.h"
@@ -16,6 +17,8 @@ WidgeSSB::WidgeSSB()
     ui->setupUi(this);
     // 去标题栏
     this->setWindowFlags(Qt::FramelessWindowHint);
+
+
 
     index = 0;
     workModel = -1;
@@ -46,15 +49,20 @@ WidgeSSB::WidgeSSB()
     minFreq =  0;
     maxFreq = 300000;
 
-    iconSelf  = new QMovie("images/voice_green.gif");
-    iconOthr  = new QMovie("images/voice.gif");
+    QSize iconSize(64,64);
+    iconSelf_Day  = new QMovie("images/mic-green-lt.gif");
+    iconOthr_Day  = new QMovie("images/mic-orange-lt.gif");
+    iconSelf_Day->setScaledSize(iconSize);
+    iconOthr_Day->setScaledSize(iconSize);
+    iconSelf_Day->start();
+    iconOthr_Day->start();
 
-    QSize iconSize(100,100);
-    iconSelf->setScaledSize(iconSize);
-    iconOthr->setScaledSize(iconSize);
-
-    iconSelf->start();
-    iconOthr->start();
+    iconSelf_Dark  = new QMovie("images/mic-green-dk.gif");
+    iconOthr_Dark  = new QMovie("images/mic-orange-dk.gif");
+    iconSelf_Dark->setScaledSize(iconSize);
+    iconOthr_Dark->setScaledSize(iconSize);
+    iconSelf_Dark->start();
+    iconOthr_Dark->start();
 }
 
 void WidgeSSB::init()
@@ -106,23 +114,26 @@ void WidgeSSB::onTimer()
 {
 
     //////////////////////////////////////////////////////////////////////////////////
+    resetIconMovie();
     if(pttAck == 1) {
-        ui->voiceIcon->setMovie(iconSelf);
         ui->voiceIcon->setVisible(true);
 
         ui->lblRx->setVisible(false);
         ui->barRx->setVisible(false);
         ui->lblTx->setVisible(false);
         ui->barTx->setVisible(false);
+
+        ui->lblRecv->setText(QString::fromUtf8("发射"));
 
     } else if(pttAck == 2) {
-        ui->voiceIcon->setMovie(iconOthr);
         ui->voiceIcon->setVisible(true);
 
         ui->lblRx->setVisible(false);
         ui->barRx->setVisible(false);
         ui->lblTx->setVisible(false);
         ui->barTx->setVisible(false);
+
+        ui->lblRecv->setText(QString::fromUtf8("发射"));
 
     } else {
         ui->voiceIcon->hide();
@@ -131,6 +142,8 @@ void WidgeSSB::onTimer()
         ui->barRx->setVisible(true);
         ui->lblTx->setVisible(true);
         ui->barTx->setVisible(true);
+
+        ui->lblRecv->setText(QString::fromUtf8("接收"));
     }
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -333,7 +346,9 @@ void WidgeSSB::setBkLight(int bkLightLev)
     DEF_CNANNEL_STYLE = "QLabel{color:#FF5809;font-size:25px;}";
     DEF_FREQ_STYLE = "color:#FF5809;font-size:30px;";
 
-    if(bkLightLev == 0){
+    resetIconMovie();
+
+    if(bkLightLev == 0) {
 
         p.setColor(QPalette::Window,Qt::black);
         this->setPalette(p);
@@ -883,4 +898,26 @@ int WidgeSSB::getFreqBar(int param)
     }
 
     return 100;
+}
+
+void WidgeSSB::resetIconMovie()
+{
+    if(lightLev == 0){
+        if(pttAck == 1) {
+             ui->voiceIcon->setMovie(iconSelf_Dark);
+        } else if(pttAck == 2) {
+            ui->voiceIcon->setMovie(iconOthr_Dark);
+        } else {
+            ui->voiceIcon->setMovie(iconSelf_Dark);
+        }
+    } else {
+        if(pttAck == 1) {
+            ui->voiceIcon->setMovie(iconSelf_Day);
+        } else if(pttAck == 2) {
+            ui->voiceIcon->setMovie(iconOthr_Day);
+        }  else {
+            ui->voiceIcon->setMovie(iconSelf_Day);
+        }
+    }
+
 }

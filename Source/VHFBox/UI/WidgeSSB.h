@@ -66,6 +66,8 @@ private:
     void setTxFreq(int param);
     int  getFreqBar(int param);
 
+    void resetIconMovie();
+
 signals:
 
 private slots:
@@ -114,8 +116,10 @@ private:
     QTimer*                 timer;
     int                     tCount;         // 注册计数器
 
-    QMovie                  *iconSelf;
-    QMovie                  *iconOthr;
+    QMovie                  *iconSelf_Day;
+    QMovie                  *iconOthr_Day;
+    QMovie                  *iconSelf_Dark;
+    QMovie                  *iconOthr_Dark;
 
 };
 

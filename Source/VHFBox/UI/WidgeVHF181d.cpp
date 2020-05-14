@@ -39,15 +39,25 @@ WidgeVHF181d::WidgeVHF181d()
 
     tCount = 0;                      // 注册计数器
 
-    iconSelf  = new QMovie("images/voice_green.gif");
-    iconOthr  = new QMovie("images/voice.gif");
+    iconSelf_Day  = new QMovie("images/mic-green-lt.gif");
+    iconOthr_Day  = new QMovie("images/mic-orange-lt.gif");
 
-    QSize iconSize(100,100);
-    iconSelf->setScaledSize(iconSize);
-    iconOthr->setScaledSize(iconSize);
+    QSize iconSize(64,64);
+    iconSelf_Day->setScaledSize(iconSize);
+    iconOthr_Day->setScaledSize(iconSize);
 
-    iconSelf->start();
-    iconOthr->start();
+    iconSelf_Day->start();
+    iconOthr_Day->start();
+
+    iconSelf_Dark  = new QMovie("images/mic-green-dk.gif");
+    iconOthr_Dark  = new QMovie("images/mic-orange-dk.gif");
+
+
+    iconSelf_Dark->setScaledSize(iconSize);
+    iconOthr_Dark->setScaledSize(iconSize);
+
+    iconSelf_Dark->start();
+    iconOthr_Dark->start();
 
 }
 
@@ -95,13 +105,14 @@ void WidgeVHF181d::onTimer()
 {
 //    qDebug()<<"Widget"<< index << " " << radioTyp << "----------" <<pttAck;
     //////////////////////////////////////////////////////////////////////////////////
+    resetIconMovie();
 
     if(pttAck == 1) {
-        ui->voiceIcon->setMovie(iconSelf);
+        ui->voiceIcon->setMovie(iconSelf_Day);
         ui->voiceIcon->setVisible(true);
 
     } else if(pttAck == 2) {
-        ui->voiceIcon->setMovie(iconOthr);
+        ui->voiceIcon->setMovie(iconOthr_Day);
         ui->voiceIcon->setVisible(true);
 
     } else {
@@ -266,6 +277,8 @@ void WidgeVHF181d::setBkLight(int bkLightLev)
     QString lblStyle  = "color:#FF5809;";
     QString processBarStyle = "background-color:#B93B00;";
     DEF_CNANNEL_STYLE = "QLabel{color:#FF5809;font-weight:bold;font-size:90px;line-height:150px;}";
+
+    resetIconMovie();
 
     if(bkLightLev == 0){
 
@@ -585,4 +598,27 @@ void WidgeVHF181d::onKeyRight()
 {
     qDebug()<<"右";
 }
+
+void WidgeVHF181d::resetIconMovie()
+{
+    if(lightLev == 0){
+        if(pttAck == 1) {
+             ui->voiceIcon->setMovie(iconSelf_Dark);
+        } else if(pttAck == 2) {
+            ui->voiceIcon->setMovie(iconOthr_Dark);
+        } else {
+            ui->voiceIcon->setMovie(iconSelf_Dark);
+        }
+    } else {
+        if(pttAck == 1) {
+            ui->voiceIcon->setMovie(iconSelf_Day);
+        } else if(pttAck == 2) {
+            ui->voiceIcon->setMovie(iconOthr_Day);
+        }  else {
+            ui->voiceIcon->setMovie(iconSelf_Day);
+        }
+    }
+
+}
+
 
