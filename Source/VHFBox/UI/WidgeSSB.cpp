@@ -99,6 +99,8 @@ void WidgeSSB::init()
 
     this->setBkLight(lightLev);
 
+    ui->voiceIcon->hide();
+
     // 初始化 Timer
     setChnlTim = QTime::currentTime();
 
@@ -115,6 +117,7 @@ void WidgeSSB::onTimer()
 
     //////////////////////////////////////////////////////////////////////////////////
     resetIconMovie();
+
     if(pttAck == 1) {
         ui->voiceIcon->setVisible(true);
 
@@ -179,7 +182,6 @@ void WidgeSSB::onTimer()
 
     //////////////////////////////////////////////////////////////////////////////////
 
-    //qDebug() << "----------------------------" << workModel;
     //电台工作状态显示
     if(workModel >= 0) {
        //工作模式,取值1：数话； 2：模话，
@@ -813,7 +815,7 @@ void WidgeSSB::onKey9()
 
 void WidgeSSB::onKeyUp()
 {
-    isSettingChnl = false;
+    cancelTmpChannel();
     cancelTmpFreq();
 
     lblRxFreq = ui->lblRxFreq;
@@ -823,7 +825,7 @@ void WidgeSSB::onKeyUp()
 
 void WidgeSSB::onKeyDw()
 {
-    isSettingChnl = false;
+    cancelTmpChannel();
     cancelTmpFreq();
 
     lblTxFreq = ui->lblTxFreq;
@@ -833,7 +835,7 @@ void WidgeSSB::onKeyDw()
 
 void WidgeSSB::onKeyLeft()
 {
-    isSettingChnl = false;
+    cancelTmpChannel();
     cancelTmpFreq();
 
     lblRxFreq = ui->lblRxFreq;
@@ -845,9 +847,9 @@ void WidgeSSB::onKeyLeft()
 
 void WidgeSSB::onKeyRight()
 {
-   isSettingFreq = false;
-
+   cancelTmpFreq();
    cancelTmpChannel();
+
    setTmpChannel(curChannel);
 }
 

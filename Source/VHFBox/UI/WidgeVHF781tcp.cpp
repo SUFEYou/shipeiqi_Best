@@ -108,11 +108,9 @@ void WidgeVHF781tcp::onTimer()
     resetIconMovie();
 
     if(pttAck == 1) {
-        ui->voiceIcon->setMovie(iconSelf_Day);
         ui->voiceIcon->setVisible(true);
 
     } else if(pttAck == 2) {
-        ui->voiceIcon->setMovie(iconOthr_Day);
         ui->voiceIcon->setVisible(true);
 
     } else {
