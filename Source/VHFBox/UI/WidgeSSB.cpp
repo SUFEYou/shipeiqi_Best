@@ -156,7 +156,7 @@ void WidgeSSB::onTimer()
         }
     } else {
 
-        if(channel > 0){
+        if(channel >= 0){
             ui->lblChnlVal->setStyleSheet(DEF_CNANNEL_STYLE);
             QString chanlTxt = QString("%1").arg(channel, 3, 10, QLatin1Char('0'));
             ui->lblChnlVal->setText(chanlTxt);
@@ -179,6 +179,7 @@ void WidgeSSB::onTimer()
 
     //////////////////////////////////////////////////////////////////////////////////
 
+    //qDebug() << "----------------------------" << workModel;
     //电台工作状态显示
     if(workModel >= 0) {
        //工作模式,取值1：数话； 2：模话，
@@ -221,8 +222,9 @@ void WidgeSSB::onTimer()
     } else {
 
         //电台传输频率格式为KHZ*10000
-        if(sndFreq > 0){
+        if(sndFreq >= 0){
             ui->lblTxFreq->setStyleSheet(DEF_FREQ_STYLE);
+            //QString chanlTxt = QString("%1.%2").arg(sndFreq/10000, 5, 10, QLatin1Char('0')).arg(sndFreq%10000/1000);
             QString chanlTxt = QString("%1.%2").arg(sndFreq/10000, 5, 10, QLatin1Char('0')).arg(sndFreq%10000/1000);
             ui->lblTxFreq->setText(chanlTxt);
             curTxFreq = chanlTxt;
@@ -231,10 +233,11 @@ void WidgeSSB::onTimer()
             ui->lblTxFreq->setText("");
         }
 
-        if(revFreq > 0){
+        if(revFreq >= 0){
             ui->lblRxFreq->setStyleSheet(DEF_FREQ_STYLE);
             //QString chanlTxt = QString("%1").arg(revFreq, 6, 10, QLatin1Char('0'));
-            QString chanlTxt = QString("%1").arg(revFreq/10000, 5, 10, QLatin1Char('0')).arg(revFreq%10000/1000);
+            //QString chanlTxt = QString("%1").arg(revFreq/10000, 5, 10, QLatin1Char('0')).arg(revFreq%10000/1000);
+            QString chanlTxt = QString("%1.%2").arg(revFreq/10000, 5, 10, QLatin1Char('0')).arg(revFreq%10000/1000);
             ui->lblRxFreq->setText(chanlTxt);
             curRxFreq = chanlTxt;
             tmpFreq = "";
@@ -478,13 +481,15 @@ void WidgeSSB::setTmpFreq(QString param)
         if(tmpFreq.length() > 6) {
             tmpFreq = tmpFreq.mid(tmpFreq.length()-6,tmpFreq.length());
         }
-
+        tmpFreq = tmpFreq.remove(".");
         //qDebug()<<"tmpFreq----"<<tmpFreq;
-        QString freqTxt = QString("%1").arg(tmpFreq.toInt(), 6, 10, QLatin1Char('0'));
-        QString pLeft = freqTxt.mid(0, 5);
-        QString pRight = freqTxt.mid(5);
-        QString freqView = pLeft.append(".").append(pRight);
+        //QString freqTxt = QString("%1").arg(tmpFreq.toInt(), 6, 10, QLatin1Char('0'));
+        //QString pLeft = freqTxt.mid(0, 5);
+        //QString pRight = freqTxt.mid(5);
+        //QString freqView = pLeft.append(".").append(pRight);
         //qDebug()<<"freqView----"<<freqView;
+
+        QString freqView = QString("%1.%2").arg(tmpFreq.toInt()/10, 5, 10, QLatin1Char('0')).arg(tmpFreq.toInt()%10);
 
         if(lblRxFreq != NULL) {
              lblRxFreq->setText(freqView);
@@ -628,14 +633,6 @@ void WidgeSSB::onKeyA()
      if(udpRctrl != NULL) {
          const static uint8_t mode[] = {1, 2}; //1:数话 2:模话
          static uint8_t curMode = 0;
-         for (int i = 0; i < sizeof(mode); ++i)
-         {
-             if (workModel == mode[i])
-             {
-                 curMode = i;
-                 break;
-             }
-         }
          ++curMode;
          if(curMode >= sizeof(mode))
              curMode = 0;
@@ -689,8 +686,8 @@ void WidgeSSB::onKeyChannelDw()
     }
 
     currChanl = currChanl - 1;
-    if(currChanl < 1 ) {
-        currChanl = 1;
+    if(currChanl < 0 ) {
+        currChanl = 0;
     }
 
     //qDebug()<<"onBtnChannelDw" << currChanl;

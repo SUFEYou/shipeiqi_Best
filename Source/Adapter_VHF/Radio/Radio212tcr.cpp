@@ -33,7 +33,7 @@ void Radio212TCR::serialInit()
 #if WIN32
     dataCom = new QextSerialPort("COM1");
 #else
-    dataCom = new QextSerialPort("/dev/ttymxc1");
+    dataCom = new QextSerialPort("/dev/ttymxc2");
 #endif
     connect(dataCom, SIGNAL(readyRead()), this, SLOT(readCom()));
     dataCom->setBaudRate(BAUD38400);    //设置波特率
@@ -194,7 +194,9 @@ void Radio212TCR::updateRadioState(const char* data, const int len)
 
             radioState.workTyp = *(data+16);
             radioState.power = *(data+17);
-            radioState.workMod = *(data+18);
+            //radioState.workMod = *(data+18);
+            //协议中标注，最后一个字节上送的为静噪等级
+            radioState.squelch = *(data+18);
         }
     }
         break;
@@ -993,6 +995,19 @@ void Radio212TCR::onTimer()
     ++ChangeToDataModeCount;
     ++QueryStateCount;
 
+    //定时查询业务类型、信道信息
+    {
+        char pPara[3];
+
+        pPara[0]	= 0x01;
+        writeData(0x40, 0x23, pPara, 1);
+
+        pPara[0]	= 0x01;
+        pPara[1]	= radioState.channel/256;
+        pPara[2]	= radioState.channel%256;
+        writeData(0x40, 0x12, pPara, 3);
+    }
+
     char ackData[sizeof(RADIO_STATE)];
     memcpy(ackData, &radioState, sizeof(RADIO_STATE));
     RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));
@@ -1005,52 +1020,52 @@ void Radio212TCR::setWorkTyp(const uint8_t nWorkTyp)
     pPara[1]	= nWorkTyp;
 
     writeData(0x40, 0x20, pPara, 2);
-    radioState.workTyp = nWorkTyp;
+    //radioState.workTyp = nWorkTyp;
 }
 
 void Radio212TCR::setWorkMod(const uint8_t nWorkMod)
 {
-//    char pPara[2];
-//    pPara[0]	= 0x02;
-//    pPara[1]	= nWorkMod;
-
-//    writeData(0x40, 0x23, pPara, 2);
-//    radioState.workMod = nWorkMod;
-    char pPara[14];
+    char pPara[2];
     pPara[0]	= 0x02;
-    pPara[1]	= radioState.channel/256;
-    pPara[2]	= radioState.channel%256;
-    //传递设置的数据为khz*10000,转化为hz需除以10
-    uint64_t tmp = radioState.rxFreq/10;
-    if (tmp < 1600000 || tmp > 30000000)
-        memset(&pPara[3], 0, 4);
-    else
-    {
-        uint82bcd(tmp/1000000, (uint8_t*)(&pPara[3]));
-        uint82bcd(tmp/10000%100, (uint8_t*)(&pPara[4]));
-        uint82bcd(tmp%10000/100, (uint8_t*)(&pPara[5]));
-        uint82bcd(tmp%10000%100, (uint8_t*)(&pPara[6]));
-    }
+    pPara[1]	= nWorkMod;
 
-    tmp = radioState.txFreq/10;
-    if (tmp < 1600000 || tmp > 30000000)
-        memset(&pPara[7], 0, 4);
-    else
-    {
-        uint82bcd(tmp/1000000, (uint8_t*)(&pPara[7]));
-        uint82bcd(tmp/10000%100, (uint8_t*)(&pPara[8]));
-        uint82bcd(tmp%10000/100, (uint8_t*)(&pPara[9]));
-        uint82bcd(tmp%10000%100, (uint8_t*)(&pPara[10]));
-    }
-    //工作方式
-    pPara[11] = radioState.workTyp;
-    //功率等级
-    pPara[12] = radioState.power;
-    //业务类型
-    pPara[13] = nWorkMod;
+    writeData(0x40, 0x23, pPara, 2);
+//    radioState.workMod = nWorkMod;
+//    char pPara[14];
+//    pPara[0]	= 0x02;
+//    pPara[1]	= radioState.channel/256;
+//    pPara[2]	= radioState.channel%256;
+//    //传递设置的数据为khz*10000,转化为hz需除以10
+//    uint64_t tmp = radioState.rxFreq/10;
+//    if (tmp < 1600000 || tmp > 30000000)
+//        memset(&pPara[3], 0, 4);
+//    else
+//    {
+//        uint82bcd(tmp/1000000, (uint8_t*)(&pPara[3]));
+//        uint82bcd(tmp/10000%100, (uint8_t*)(&pPara[4]));
+//        uint82bcd(tmp%10000/100, (uint8_t*)(&pPara[5]));
+//        uint82bcd(tmp%10000%100, (uint8_t*)(&pPara[6]));
+//    }
 
-    writeData(0x40, 0x12, pPara, 14);
-    radioState.workMod = nWorkMod;
+//    tmp = radioState.txFreq/10;
+//    if (tmp < 1600000 || tmp > 30000000)
+//        memset(&pPara[7], 0, 4);
+//    else
+//    {
+//        uint82bcd(tmp/1000000, (uint8_t*)(&pPara[7]));
+//        uint82bcd(tmp/10000%100, (uint8_t*)(&pPara[8]));
+//        uint82bcd(tmp%10000/100, (uint8_t*)(&pPara[9]));
+//        uint82bcd(tmp%10000%100, (uint8_t*)(&pPara[10]));
+//    }
+//    //工作方式
+//    pPara[11] = radioState.workTyp;
+//    //功率等级
+//    pPara[12] = radioState.power;
+//    //业务类型
+//    pPara[13] = nWorkMod;
+
+//    writeData(0x40, 0x12, pPara, 14);
+    //radioState.workMod = nWorkMod;
 }
 
 void Radio212TCR::setChannel(const uint16_t nCHN)
@@ -1061,7 +1076,7 @@ void Radio212TCR::setChannel(const uint16_t nCHN)
     pPara[2]	= nCHN%256;
 
     writeData(0x40, 0x14, pPara, 3);
-    radioState.channel = nCHN;
+    //radioState.channel = nCHN;
 }
 
 void Radio212TCR::setPower(const uint8_t nPower)
@@ -1071,7 +1086,7 @@ void Radio212TCR::setPower(const uint8_t nPower)
     pPara[1]	= nPower;
 
     writeData(0x40, 0x21, pPara, 2);
-    radioState.power = nPower;
+    //radioState.power = nPower;
 }
 
 void Radio212TCR::setSquelch(const uint8_t nSquelch)
@@ -1081,7 +1096,7 @@ void Radio212TCR::setSquelch(const uint8_t nSquelch)
     pPara[1]	= nSquelch;
 
     writeData(0x40, 0x22, pPara, 2);
-    radioState.power = nSquelch;
+    //radioState.power = nSquelch;
 }
 
 void Radio212TCR::setTxFreq(const uint64_t nTxFreq)
@@ -1134,7 +1149,7 @@ void Radio212TCR::setTxFreq(const uint64_t nTxFreq)
     pPara[13] = radioState.workMod;
 
     writeData(0x40, 0x12, pPara, 14);
-    radioState.txFreq = nTxFreq;
+    //radioState.txFreq = nTxFreq;
 }
 
 void Radio212TCR::setRxFreq(const uint64_t nRxFreq)
@@ -1187,7 +1202,7 @@ void Radio212TCR::setRxFreq(const uint64_t nRxFreq)
     pPara[13] = radioState.workMod;
 
     writeData(0x40, 0x12, pPara, 14);
-    radioState.rxFreq = nRxFreq;
+    //radioState.rxFreq = nRxFreq;
 }
 
 void Radio212TCR::checkDisconnect()

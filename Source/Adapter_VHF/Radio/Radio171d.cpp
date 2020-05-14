@@ -30,7 +30,7 @@ void Radio171D::serialInit()
 #if WIN32
     dataCom = new QextSerialPort("COM10");
 #else
-    dataCom = new QextSerialPort("/dev/ttymxc1");
+    dataCom = new QextSerialPort("/dev/ttymxc2");
 #endif
     connect(dataCom, SIGNAL(readyRead()), this, SLOT(readCom()));
     dataCom->setBaudRate(BAUD115200);    //设置波特率
