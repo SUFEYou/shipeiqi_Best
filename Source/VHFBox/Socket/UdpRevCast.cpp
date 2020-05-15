@@ -47,10 +47,21 @@ void UdpRevCast::onRev()
                qDebug("Mi:  %d\n",  locaInfo.Min);
                qDebug("SS:  %d\n",  locaInfo.Sec);
 
-               QString tim;
-               tim.append(locaInfo.Hour).append(":").append(locaInfo.Min).append(":").append(locaInfo.Sec);
 
+               QString tim;
+               tim.append(QString("%1").arg(locaInfo.Hour, 2, 10, QLatin1Char('0')))
+                       .append(":")
+                       .append(QString("%1").arg(locaInfo.Min, 2, 10, QLatin1Char('0')))
+                       .append(":")
+                       .append(QString("%1").arg(locaInfo.Sec, 2, 10, QLatin1Char('0')));
                UIManager::getInstance()->updateAllCurTim(tim);
+
+               QString lon;
+               lon.append(QString::number(locaInfo.Lon));
+               QString lat;
+               lat.append(QString::number(locaInfo.Lat));
+               UIManager::getInstance()->updateAllCurLon(lon);
+               UIManager::getInstance()->updateAllCurLat(lat);
            }
        }
     }

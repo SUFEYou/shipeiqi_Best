@@ -18,6 +18,7 @@ WidgeVHF171al::WidgeVHF171al()
 
     index = 0;
     workModel = -1;
+    workTyp   = -1;
     channel   = -1;
     revFreq   = -1;
     sndFreq   = -1;
@@ -104,6 +105,21 @@ void WidgeVHF171al::init()
 void WidgeVHF171al::onTimer()
 {
 //    qDebug()<<"Widget"<< index << " " << radioTyp << "----------" <<pttAck;
+
+    //////////////////////////////////////////////////////////////////////////////////
+    // 经纬度 时间
+    if(!curTim.isNull() && !curTim.isEmpty()) {
+        ui->lblTime->setText(curTim);
+    }
+
+    if(!curLat.isNull() && !curLat.isEmpty()) {
+        ui->lblLatVal->setText(curLat);
+    }
+
+    if(!curLon.isNull() && !curLon.isEmpty()) {
+        ui->lblLonVal->setText(curLon);
+    }
+
     //////////////////////////////////////////////////////////////////////////////////
     resetIconMovie();
 

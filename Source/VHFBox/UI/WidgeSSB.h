@@ -78,6 +78,11 @@ private:
 
     //////////////////////////////////////////////////////
 
+    int                     tmpPower;
+    int                     tmpSquelch;
+    int                     tmpWorkTyp;
+
+
     int                     minFreq;
     int                     maxFreq;
 

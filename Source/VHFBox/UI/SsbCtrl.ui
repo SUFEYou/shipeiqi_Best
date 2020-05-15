@@ -119,10 +119,10 @@
   <widget class="QLabel" name="lblLatVal">
    <property name="geometry">
     <rect>
-     <x>111</x>
-     <y>210</y>
+     <x>120</x>
+     <y>211</y>
      <width>86</width>
-     <height>18</height>
+     <height>20</height>
     </rect>
    </property>
    <property name="sizePolicy">
@@ -138,10 +138,10 @@
   <widget class="QLabel" name="lblTime">
    <property name="geometry">
     <rect>
-     <x>250</x>
-     <y>209</y>
-     <width>59</width>
-     <height>17</height>
+     <x>240</x>
+     <y>210</y>
+     <width>70</width>
+     <height>20</height>
     </rect>
    </property>
    <property name="text">
@@ -153,7 +153,7 @@
     <rect>
      <x>130</x>
      <y>0</y>
-     <width>40</width>
+     <width>45</width>
      <height>25</height>
     </rect>
    </property>
@@ -164,16 +164,16 @@
     </sizepolicy>
    </property>
    <property name="text">
-    <string>功率</string>
+    <string/>
    </property>
   </widget>
   <widget class="QLabel" name="lblLonVal">
    <property name="geometry">
     <rect>
-     <x>111</x>
-     <y>190</y>
+     <x>120</x>
+     <y>184</y>
      <width>86</width>
-     <height>18</height>
+     <height>20</height>
     </rect>
    </property>
    <property name="sizePolicy">
@@ -244,7 +244,7 @@
     <rect>
      <x>74</x>
      <y>0</y>
-     <width>40</width>
+     <width>45</width>
      <height>25</height>
     </rect>
    </property>
@@ -255,7 +255,7 @@
     </sizepolicy>
    </property>
    <property name="text">
-    <string>静噪</string>
+    <string/>
    </property>
   </widget>
   <widget class="QLabel" name="lblBD">
@@ -664,7 +664,7 @@
     <string>地址:</string>
    </property>
   </widget>
-  <widget class="QLabel" name="lblRecv">
+  <widget class="QLabel" name="lblWorkTyp">
    <property name="geometry">
     <rect>
      <x>190</x>
@@ -674,7 +674,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>接收</string>
+    <string/>
    </property>
   </widget>
   <widget class="QLabel" name="lblAddrVal">

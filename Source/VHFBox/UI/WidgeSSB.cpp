@@ -18,16 +18,19 @@ WidgeSSB::WidgeSSB()
     // 去标题栏
     this->setWindowFlags(Qt::FramelessWindowHint);
 
-
-
     index = 0;
     workModel = -1;
+    workTyp   = -1;
     channel   = -1;
     revFreq   = -1;
     sndFreq   = -1;
     power     = -1;
     squelch   = -1;
     state     = -1;
+
+    tmpPower     = -1;
+    tmpSquelch   = -1;
+    tmpWorkTyp   = -1;
 
     regAckTim = QDateTime::currentDateTimeUtc().toTime_t();   //秒级
     registACK   = 0;
@@ -116,6 +119,20 @@ void WidgeSSB::onTimer()
 {
 
     //////////////////////////////////////////////////////////////////////////////////
+    // 经纬度 时间
+    if(!curTim.isNull() && !curTim.isEmpty()) {
+        ui->lblTime->setText(curTim);
+    }
+
+    if(!curLat.isNull() && !curLat.isEmpty()) {
+        ui->lblLatVal->setText(curLat);
+    }
+
+    if(!curLon.isNull() && !curLon.isEmpty()) {
+        ui->lblLonVal->setText(curLon);
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////
     resetIconMovie();
 
     if(pttAck == 1) {
@@ -126,8 +143,6 @@ void WidgeSSB::onTimer()
         ui->lblTx->setVisible(false);
         ui->barTx->setVisible(false);
 
-        ui->lblRecv->setText(QString::fromUtf8("发射"));
-
     } else if(pttAck == 2) {
         ui->voiceIcon->setVisible(true);
 
@@ -136,8 +151,6 @@ void WidgeSSB::onTimer()
         ui->lblTx->setVisible(false);
         ui->barTx->setVisible(false);
 
-        ui->lblRecv->setText(QString::fromUtf8("发射"));
-
     } else {
         ui->voiceIcon->hide();
 
@@ -145,8 +158,6 @@ void WidgeSSB::onTimer()
         ui->barRx->setVisible(true);
         ui->lblTx->setVisible(true);
         ui->barTx->setVisible(true);
-
-        ui->lblRecv->setText(QString::fromUtf8("接收"));
     }
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -228,6 +239,7 @@ void WidgeSSB::onTimer()
             ui->lblTxFreq->setStyleSheet(DEF_FREQ_STYLE);
             //QString chanlTxt = QString("%1.%2").arg(sndFreq/10000, 5, 10, QLatin1Char('0')).arg(sndFreq%10000/1000);
             QString chanlTxt = QString("%1.%2").arg(sndFreq/10000, 5, 10, QLatin1Char('0')).arg(sndFreq%10000/1000);
+            setTxFreq(sndFreq/10000);
             ui->lblTxFreq->setText(chanlTxt);
             curTxFreq = chanlTxt;
             tmpFreq = "";
@@ -240,6 +252,7 @@ void WidgeSSB::onTimer()
             //QString chanlTxt = QString("%1").arg(revFreq, 6, 10, QLatin1Char('0'));
             //QString chanlTxt = QString("%1").arg(revFreq/10000, 5, 10, QLatin1Char('0')).arg(revFreq%10000/1000);
             QString chanlTxt = QString("%1.%2").arg(revFreq/10000, 5, 10, QLatin1Char('0')).arg(revFreq%10000/1000);
+            setRxFreq(revFreq/10000);
             ui->lblRxFreq->setText(chanlTxt);
             curRxFreq = chanlTxt;
             tmpFreq = "";
@@ -256,6 +269,44 @@ void WidgeSSB::onTimer()
             //电台信道错误提示信息
             showFreqErr(false);
         }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////
+    // 工作方式
+    if (workTyp >= 0) {
+        if(workTyp == 0) {
+             ui->lblWorkTyp->setText(QString::fromUtf8("USB"));    //0:USB(上边带)
+        }
+        if(workTyp == 1) {
+             ui->lblWorkTyp->setText(QString::fromUtf8("LSB"));    //1:LSB(下边带)
+        }
+        if(workTyp == 2) {
+             ui->lblWorkTyp->setText(QString::fromUtf8("AM"));     //2:AM(调幅报)
+        }
+        if(workTyp == 3) {
+             ui->lblWorkTyp->setText(QString::fromUtf8("CW"));     //3:CW(等幅报)
+        }
+    }
+
+    // 功率
+    if (power >= 0) {
+        if(power == 0) {
+             ui->lblPower->setText(QString::fromUtf8("高"));    //0:高
+        }
+        if(power == 1) {
+             ui->lblPower->setText(QString::fromUtf8("低"));    //1:低
+        }
+        if(power == 2) {
+             ui->lblPower->setText(QString::fromUtf8("中"));    //2:中
+        }
+        if(power == 3) {
+             ui->lblPower->setText(QString::fromUtf8("微"));    //3:微
+        }
+    }
+
+    // 静噪
+    if (squelch >= 0) {
+         ui->lblNoise->setText(QString::fromUtf8("静噪") + QString::number(squelch));    //0~5
     }
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -392,7 +443,7 @@ void WidgeSSB::setBkLight(int bkLightLev)
     ui->lblPower    ->setStyleSheet(lblStyle);
     ui->lblMode     ->setStyleSheet(lblStyle);
     ui->lblModeMsg  ->setStyleSheet(lblStyle);
-    ui->lblRecv     ->setStyleSheet(lblStyle);
+    ui->lblWorkTyp  ->setStyleSheet(lblStyle);
     ui->lblMute     ->setStyleSheet(lblStyle);
     ui->lblRx       ->setStyleSheet(lblSmallStyle);
     ui->lblTx       ->setStyleSheet(lblSmallStyle);
@@ -627,7 +678,6 @@ void WidgeSSB::onKey(int key)
 
 }
 
-
 void WidgeSSB::onKeyA()
 {
      //qDebug()<<"A";
@@ -653,22 +703,44 @@ void WidgeSSB::onKeyA()
 
 void WidgeSSB::onKeyB()
 {
-     //qDebug()<<"B";
+    //qDebug()<<"B";
+    // 静噪
+    tmpSquelch = tmpSquelch + 1;
+    if(tmpSquelch > 5 ) {
+        tmpSquelch = 0;
+    }
+    qDebug()<<"静噪:"<<tmpSquelch;
+    UDPRctrl *udpRctrl = SocketManage::getInstance()->getCtrlUdp(index);
+    if(udpRctrl != NULL)
+    udpRctrl->sendRadioCtrl(Set_Squelch, tmpSquelch);
 }
 
 void WidgeSSB::onKeyC()
 {
     //qDebug()<<"C";
+    // 功率
+    tmpPower = tmpPower + 1;
+    if(tmpPower > 3 ) {
+        tmpPower = 0;
+    }
+    qDebug()<<"功率:"<<tmpPower;
+    UDPRctrl *udpRctrl = SocketManage::getInstance()->getCtrlUdp(index);
+    if(udpRctrl != NULL)
+    udpRctrl->sendRadioCtrl(Set_Power, tmpPower);
 }
 
 void WidgeSSB::onKeyD()
 {
     //qDebug()<<"D";
-    WidgeBase::volumnLev  = 0;
-
-    int volALSA = this->getVolumnALSA(WidgeBase::volumnLev);
-    AudioControl::getInstance()->getMixer()->volumn(volALSA);
-    UIManager::getInstance()->updateAllMute();
+    // 方式
+    tmpWorkTyp = tmpWorkTyp + 1;
+    if(tmpWorkTyp > 3 ) {
+        tmpWorkTyp = 0;
+    }
+    qDebug()<<"方式:"<<tmpWorkTyp;
+    UDPRctrl *udpRctrl = SocketManage::getInstance()->getCtrlUdp(index);
+    if(udpRctrl != NULL)
+    udpRctrl->sendRadioCtrl(Set_WorkTyp, tmpWorkTyp);
 }
 
 void WidgeSSB::onKeyChannelUp()
@@ -888,23 +960,23 @@ void WidgeSSB::setTxFreq(int param)
 
 int WidgeSSB::getFreqBar(int param)
 {
-    if(param >=16000 && param <60000){
-        return 0;
+    if(param >=100 && param <6000){
+        return 20;
     }
-    if(param >=60000 && param <120000){
+    if(param >=6000 && param <12000){
         return 40;
     }
-    if(param >=120000 && param <180000){
+    if(param >=12000 && param <18000){
         return 60;
     }
-    if(param >=180000 && param <240000){
+    if(param >=18000 && param <24000){
         return 80;
     }
-    if(param >=240000 && param <300000){
+    if(param >=24000 && param <30000){
         return 100;
     }
 
-    return 100;
+    return 0;
 }
 
 void WidgeSSB::resetIconMovie()
