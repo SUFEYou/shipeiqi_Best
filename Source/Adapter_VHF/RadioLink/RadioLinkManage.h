@@ -76,6 +76,7 @@ public:
     //         2:No Data Need be Sended
     int sendDataFromListWait(int maxlength);
     void changeClientToMaster();
+    void changeMasterToClient();
 
     pVHFMsg sendDataFromListWait_A01SSB();
 

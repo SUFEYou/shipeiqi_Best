@@ -1,5 +1,6 @@
 #include "RadioLinkClient.h"
 #include "RadioLinkManage.h"
+#include "config/ConfigLoader.h"
 #include <QDebug>
 
 RadioLinkClient::RadioLinkClient()
@@ -425,7 +426,8 @@ void RadioLinkClient::timerProcess()
     {
         // Not int the Chain
         m_nTNotInChainCt++;
-        if (m_nTNotInChainCt >= m_nTNotInChainCtLmt)
+        //A01不主动切换主台，只在A03实现超时切换主台
+        if ((m_nTNotInChainCt >= m_nTNotInChainCtLmt) && (ConfigLoader::getInstance()->getSysType() == 0x0A03))
         {
             RadioLinkManage::getInstance()->changeClientToMaster();
         }

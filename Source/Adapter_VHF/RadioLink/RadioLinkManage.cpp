@@ -193,6 +193,19 @@ void RadioLinkManage::changeClientToMaster()
     }
 }
 
+//切换主台至副台
+void RadioLinkManage::changeMasterToClient()
+{
+    if (m_radioLinkMaster->GetAvailable())
+    {
+        m_radioLinkMaster->SetAvailable(false);
+        m_radioLinkMaster->LinkLayerCircleMomentToDrift();
+
+        m_radioLinkClient->SetAvailable(true);
+        m_radioLinkClient->LinkLayerCircleMomentToBegin();
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////
 // 信息交互操作
 //////////////////////////////////////////////////////////////////////////

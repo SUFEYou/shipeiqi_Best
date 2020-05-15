@@ -299,11 +299,15 @@ void TCPDataProcess::analyzeNetMsg(char* pData,const int nLen)
         break;
     case VLNMSG_MSGEX_SETLINKMODE:
     {
-        // 设置链路模式 对应设置项中，0:自动，链路自动切换主副台 1:强制切换链路为主台
+        // 设置链路模式 对应设置项中，0:自动，链路自动切换主副台 1:强制切换链路为主台 2:强制切换链路为副台
         char modeType = pData+nCurLen;
         if (modeType == 1)
         {
             RadioLinkManage::getInstance()->changeClientToMaster();
+        }
+        else if (modeType == 2)
+        {
+            RadioLinkManage::getInstance()->changeMasterToClient();
         }
     }
         break;
