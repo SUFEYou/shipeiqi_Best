@@ -635,6 +635,14 @@ void WidgeSSB::onKeyA()
      if(udpRctrl != NULL) {
          const static uint8_t mode[] = {1, 2}; //1:数话 2:模话
          static uint8_t curMode = 0;
+         for (int i = 0; i < sizeof(mode); ++i)
+         {
+             if (workModel == mode[i])
+             {
+                 curMode = i;
+                 break;
+             }
+         }
          ++curMode;
          if(curMode >= sizeof(mode))
              curMode = 0;
