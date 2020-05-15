@@ -1020,7 +1020,7 @@ void Radio212TCR::setWorkTyp(const uint8_t nWorkTyp)
     pPara[1]	= nWorkTyp;
 
     writeData(0x40, 0x20, pPara, 2);
-    //radioState.workTyp = nWorkTyp;
+    radioState.workTyp = nWorkTyp;
 }
 
 void Radio212TCR::setWorkMod(const uint8_t nWorkMod)
@@ -1030,7 +1030,7 @@ void Radio212TCR::setWorkMod(const uint8_t nWorkMod)
     pPara[1]	= nWorkMod;
 
     writeData(0x40, 0x23, pPara, 2);
-//    radioState.workMod = nWorkMod;
+    radioState.workMod = nWorkMod;
 //    char pPara[14];
 //    pPara[0]	= 0x02;
 //    pPara[1]	= radioState.channel/256;
@@ -1076,7 +1076,7 @@ void Radio212TCR::setChannel(const uint16_t nCHN)
     pPara[2]	= nCHN%256;
 
     writeData(0x40, 0x14, pPara, 3);
-    //radioState.channel = nCHN;
+    radioState.channel = nCHN;
 }
 
 void Radio212TCR::setPower(const uint8_t nPower)
@@ -1086,7 +1086,7 @@ void Radio212TCR::setPower(const uint8_t nPower)
     pPara[1]	= nPower;
 
     writeData(0x40, 0x21, pPara, 2);
-    //radioState.power = nPower;
+    radioState.power = nPower;
 }
 
 void Radio212TCR::setSquelch(const uint8_t nSquelch)
@@ -1096,7 +1096,7 @@ void Radio212TCR::setSquelch(const uint8_t nSquelch)
     pPara[1]	= nSquelch;
 
     writeData(0x40, 0x22, pPara, 2);
-    //radioState.power = nSquelch;
+    radioState.power = nSquelch;
 }
 
 void Radio212TCR::setTxFreq(const uint64_t nTxFreq)
@@ -1149,7 +1149,7 @@ void Radio212TCR::setTxFreq(const uint64_t nTxFreq)
     pPara[13] = radioState.workMod;
 
     writeData(0x40, 0x12, pPara, 14);
-    //radioState.txFreq = nTxFreq;
+    radioState.txFreq = nTxFreq;
 }
 
 void Radio212TCR::setRxFreq(const uint64_t nRxFreq)
@@ -1202,7 +1202,7 @@ void Radio212TCR::setRxFreq(const uint64_t nRxFreq)
     pPara[13] = radioState.workMod;
 
     writeData(0x40, 0x12, pPara, 14);
-    //radioState.rxFreq = nRxFreq;
+    radioState.rxFreq = nRxFreq;
 }
 
 void Radio212TCR::checkDisconnect()
