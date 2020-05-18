@@ -211,9 +211,9 @@ void WidgeSSB::onTimer()
 
        } else {
            //qDebug() << "------------------------------------" << workModel;
-           workModTxt = QString::fromUtf8("未知");
+//           workModTxt = QString::fromUtf8("未知");
 
-           ui->lblModeMsg->setStyleSheet("color:red;");
+//           ui->lblModeMsg->setStyleSheet("color:red;");
        }
 
        ui->lblMode->setVisible(true);
@@ -293,14 +293,11 @@ void WidgeSSB::onTimer()
         if(power == 0) {
              ui->lblPower->setText(QString::fromUtf8("高"));    //0:高
         }
-        if(power == 1) {
-             ui->lblPower->setText(QString::fromUtf8("低"));    //1:低
-        }
         if(power == 2) {
              ui->lblPower->setText(QString::fromUtf8("中"));    //2:中
         }
-        if(power == 3) {
-             ui->lblPower->setText(QString::fromUtf8("微"));    //3:微
+        if(power == 1) {
+             ui->lblPower->setText(QString::fromUtf8("低"));    //3:低
         }
     }
 
@@ -705,6 +702,7 @@ void WidgeSSB::onKeyB()
 {
     //qDebug()<<"B";
     // 静噪
+    tmpSquelch = squelch;
     tmpSquelch = tmpSquelch + 1;
     if(tmpSquelch > 5 ) {
         tmpSquelch = 0;
@@ -719,8 +717,9 @@ void WidgeSSB::onKeyC()
 {
     //qDebug()<<"C";
     // 功率
+    tmpPower = power;
     tmpPower = tmpPower + 1;
-    if(tmpPower > 3 ) {
+    if(tmpPower > 2 ) {
         tmpPower = 0;
     }
     qDebug()<<"功率:"<<tmpPower;
@@ -733,6 +732,7 @@ void WidgeSSB::onKeyD()
 {
     //qDebug()<<"D";
     // 方式
+    tmpWorkTyp = workTyp;
     tmpWorkTyp = tmpWorkTyp + 1;
     if(tmpWorkTyp > 3 ) {
         tmpWorkTyp = 0;

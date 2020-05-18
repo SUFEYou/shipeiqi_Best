@@ -66,6 +66,7 @@ public:
     virtual void setRegistAck(int regAck);
     virtual void setPttAck(int pttAck);
 
+    virtual void uptWorkTyp(int param);
     virtual void uptChannel(int param);
     virtual void uptWorkMode(int param);
     virtual void uptRevFreq(int param);

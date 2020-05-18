@@ -144,6 +144,10 @@ void WidgeBase::setVoicInRestrict(int value)
     voicInRestrict = value;
 }
 
+void WidgeBase::uptWorkTyp(int param)
+{
+    workTyp = param;
+}
 
 void WidgeBase::uptChannel(int param)
 {

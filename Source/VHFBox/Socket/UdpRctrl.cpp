@@ -81,6 +81,7 @@ void UDPRctrl::onRev()
 
                    WidgeBase *widget = UIManager::getInstance()->getWidge(index);
                    if(widget != NULL){
+                       widget->uptWorkTyp(ackState.workTyp);        //工作方式
                        widget->uptChannel(ackState.channel);        //工作信道
                        widget->uptWorkMode(ackState.workMod);       //工作模式
                        widget->uptRevFreq(ackState.rxFreq);         //接受频率
