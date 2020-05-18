@@ -14,17 +14,17 @@ WidgeMulti::WidgeMulti()
 
     icon1_outActSelf = new QMovie("images/mic-green-lt.gif");
     icon1_outActOthr = new QMovie("images/mic-orange-lt.gif");
-    icon1_outRes     = new QMovie("images/mic-grey-lt.gif");
+    icon1_outRes     = new QMovie("images/mic-disabled-lt.jpg");
 
     icon2_outActSelf = new QMovie("images/mic-green-lt.gif");
-    icon2_outActOthr = new QMovie("images/mic-disabled-lt.jpg");
-    icon2_outRes     = new QMovie("images/mic-grey-lt.gif");
+    icon2_outActOthr = new QMovie("images/mic-orange-lt.jpg");
+    icon2_outRes     = new QMovie("images/mic-disabled-lt.jpg");
 
     icon1_inAct  = new QMovie("images/vol-green-lt.jpg");
-    icon1_inRes  = new QMovie("images/vol-grey-lt.jpg");
+    icon1_inRes  = new QMovie("images/vol-disabled-lt.jpg");
 
-    icon2_inAct  = new QMovie("images/vol-disabled-lt.jpg");
-    icon2_inRes  = new QMovie("images/vol-grey-lt.jpg");
+    icon2_inAct  = new QMovie("images/vol-green-lt.jpg");
+    icon2_inRes  = new QMovie("images/vol-disabled-lt.jpg");
 
     QSize iconSize1(64,64);
     QSize iconSize2(64,64);
@@ -59,17 +59,17 @@ WidgeMulti::WidgeMulti()
     //Dark
     icon1_outActSelf_Dark = new QMovie("images/mic-green-dk.gif");
     icon1_outActOthr_Dark = new QMovie("images/mic-orange-dk.gif");
-    icon1_outRes_Dark     = new QMovie("images/mic-grey-dk.gif");
+    icon1_outRes_Dark     = new QMovie("images/mic-disabled-dk.jpg");
 
     icon2_outActSelf_Dark = new QMovie("images/mic-green-dk.gif");
     icon2_outActOthr_Dark = new QMovie("images/mic-orange-dk.gif");
-    icon2_outRes_Dark     = new QMovie("images/mic-grey-dk.gif");
+    icon2_outRes_Dark     = new QMovie("images/mic-disabled-dk.jpg");
 
     icon1_inAct_Dark  = new QMovie("images/vol-green-dk.jpg");
-    icon1_inRes_Dark  = new QMovie("images/vol-grey-dk.jpg");
+    icon1_inRes_Dark  = new QMovie("images/vol-disabled-dk.jpg");
 
-    icon2_inAct_Dark  = new QMovie("images/vol-disabled-dk.jpg");
-    icon2_inRes_Dark  = new QMovie("images/vol-grey-dk.jpg");
+    icon2_inAct_Dark  = new QMovie("images/vol-green-dk.jpg");
+    icon2_inRes_Dark  = new QMovie("images/vol-disabled-dk.jpg");
 
 
 
@@ -436,15 +436,15 @@ void WidgeMulti::resetIconMovie()
         if(widget1 != NULL){
             int pttACK = widget1->getPttACK();
             if(pttACK == 0){
-                icon1_outActSelf->stop();
+                icon1_outActSelf_Dark->stop();
                 ui->lblVoice1_1->setMovie(icon1_outActSelf_Dark);
             }
             if(pttACK == 1){
-                icon1_outActSelf->start();
+                icon1_outActSelf_Dark->start();
                 ui->lblVoice1_1->setMovie(icon1_outActSelf_Dark);
             }
             if(pttACK == 2){
-                icon1_outActOthr->start();
+                icon1_outActOthr_Dark->start();
                 ui->lblVoice1_1->setMovie(icon1_outActOthr_Dark);
             }
         }
@@ -452,15 +452,15 @@ void WidgeMulti::resetIconMovie()
         if(widget2 != NULL){
             int pttACK = widget2->getPttACK();
             if(pttACK == 0){
-                icon2_outActSelf->stop();
+                icon2_outActSelf_Dark->stop();
                 ui->lblVoice2_1->setMovie(icon2_outActSelf_Dark);
             }
             if(pttACK == 1){
-                icon2_outActSelf->start();
+                icon2_outActSelf_Dark->start();
                 ui->lblVoice2_1->setMovie(icon2_outActSelf_Dark);
             }
             if(pttACK == 2){
-                icon2_outActOthr->start();
+                icon2_outActOthr_Dark->start();
                 ui->lblVoice2_1->setMovie(icon2_outActOthr_Dark);
             }
 

@@ -163,6 +163,12 @@ void TCPDataProcess::TCPDataParse()
         QByteArray tmpArray = m_contentList.first();
         m_contentList.pop_front();
 
+        if (tmpArray.length() < 2 || tmpArray.length() > MAXDATALENGTH)
+        {
+            qDebug() << "In TCPDataParse(), Recv TCP Data Len Err, Too Short or Too Long";
+            continue;
+        }
+
         char tmp[MAXDATALENGTH];
         memset(tmp, 0, MAXDATALENGTH);
         memcpy(tmp, tmpArray.data(), tmpArray.length());
