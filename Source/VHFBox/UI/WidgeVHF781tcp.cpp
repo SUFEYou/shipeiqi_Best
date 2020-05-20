@@ -87,6 +87,8 @@ void WidgeVHF781tcp::init()
 
     this->setBkLight(lightLev);
 
+    ui->voiceIcon->hide();
+
     // 初始化 Timer
     setChnlTim = QTime::currentTime();
 

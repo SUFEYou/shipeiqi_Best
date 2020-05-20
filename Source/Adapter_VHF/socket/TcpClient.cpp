@@ -18,7 +18,7 @@ void TcpClient::init()
     m_nACCCloseCt		= 0;			// 断链计数
     m_nACCCloseCtLmt	= 30;			// 断链计数限制
     m_nACCUpdateCt		= 0;			// 上报状态计数
-    m_nACCUpdateCtLmt	= 60;			// 上报状态计数限制
+    m_nACCUpdateCtLmt	= 6;			// 上报状态计数限制
 
     QString serIP = ConfigLoader::getInstance()->getTcpIP();
     int serPort   = ConfigLoader::getInstance()->getTcpPort();
