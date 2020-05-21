@@ -76,6 +76,7 @@ void UDPRctrl::onRev()
 
 //                   qDebug() << " Recv ACKWORKMODE radioID   :" << ackState.RadioID;
 //                   qDebug() << " Recv ACKWORKMODE cmd       :" << ackState.funCod;
+//                   qDebug() << " Recv ACKCHAN errState       :" << ackState.errState;
 //                   qDebug() << " Recv ACKWORKMODE workMode  :" << ackState.workMod;
 //                   qDebug() << " Recv ACKCHAN Channel       :" << ackState.channel;
 

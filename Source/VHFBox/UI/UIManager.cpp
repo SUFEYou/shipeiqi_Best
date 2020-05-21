@@ -71,15 +71,18 @@ bool UIManager::init()
             widge1 = new WidgeVHF171al();
         }
 
-        if(radioTyp == 2124){
+        if(radioTyp == 2124 || radioTyp == 2204 || radioTyp == 2304){
             widge1 = new WidgeSSB();
         }
 
-        widge1->setIndex(1);
-        widge1->setRadioTypInt(radioTyp);
-        widge1->setRadioTyp(RadioUtil::getRadioTypStr(radioTyp));
-        widge1->setBoxID(QString::number(boxConf1->getBoxID()));
-        widge1->init();
+        if (widge1 != NULL)
+        {
+            widge1->setIndex(1);
+            widge1->setRadioTypInt(radioTyp);
+            widge1->setRadioTyp(RadioUtil::getRadioTypStr(radioTyp));
+            widge1->setBoxID(QString::number(boxConf1->getBoxID()));
+            widge1->init();
+        }
 
         if(curWidgetID <0){
             curWidgetID = 1;
@@ -113,15 +116,18 @@ bool UIManager::init()
             widge2 = new WidgeVHF171al();
         }
 
-        if(radioTyp == 2124){
+        if(radioTyp == 2124 || radioTyp == 2204 || radioTyp == 2304){
             widge2 = new WidgeSSB();
         }
 
-        widge2->setIndex(2);
-        widge2->setRadioTypInt(radioTyp);
-        widge2->setRadioTyp(RadioUtil::getRadioTypStr(radioTyp));
-        widge2->setBoxID(QString::number(boxConf2->getBoxID()));
-        widge2->init();
+        if (widge2 != NULL)
+        {
+            widge2->setIndex(1);
+            widge2->setRadioTypInt(radioTyp);
+            widge2->setRadioTyp(RadioUtil::getRadioTypStr(radioTyp));
+            widge2->setBoxID(QString::number(boxConf2->getBoxID()));
+            widge2->init();
+        }
 
         if(curWidgetID <0){
             curWidgetID = 2;
@@ -155,15 +161,18 @@ bool UIManager::init()
             widge3 = new WidgeVHF171al();
         }
 
-        if(radioTyp == 2124){
+        if(radioTyp == 2124 || radioTyp == 2204 || radioTyp == 2304){
             widge3 = new WidgeSSB();
         }
 
-        widge3->setIndex(3);
-        widge3->setRadioTypInt(radioTyp);
-        widge3->setRadioTyp(RadioUtil::getRadioTypStr(radioTyp));
-        widge3->setBoxID(QString::number(boxConf3->getBoxID()));
-        widge3->init();
+        if (widge3 != NULL)
+        {
+            widge3->setIndex(1);
+            widge3->setRadioTypInt(radioTyp);
+            widge3->setRadioTyp(RadioUtil::getRadioTypStr(radioTyp));
+            widge3->setBoxID(QString::number(boxConf3->getBoxID()));
+            widge3->init();
+        }
 
         if(curWidgetID <0){
             curWidgetID = 3;
@@ -197,15 +206,18 @@ bool UIManager::init()
             widge4 = new WidgeVHF171al();
         }
 
-        if(radioTyp == 2124){
+        if(radioTyp == 2124 || radioTyp == 2204 || radioTyp == 2304){
             widge4 = new WidgeSSB();
         }
 
-        widge4->setIndex(4);
-        widge4->setRadioTypInt(radioTyp);
-        widge4->setRadioTyp(RadioUtil::getRadioTypStr(radioTyp));
-        widge4->setBoxID(QString::number(boxConf4->getBoxID()));
-        widge4->init();
+        if (widge4 != NULL)
+        {
+            widge4->setIndex(1);
+            widge4->setRadioTypInt(radioTyp);
+            widge4->setRadioTyp(RadioUtil::getRadioTypStr(radioTyp));
+            widge4->setBoxID(QString::number(boxConf4->getBoxID()));
+            widge4->init();
+        }
 
         if(curWidgetID <0){
             curWidgetID = 4;

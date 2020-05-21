@@ -936,14 +936,7 @@ void Radio212TCR::onTimer()
     static uint16_t ShakeHeadCount = 0;
     static uint16_t ChangeToDataModeCount = 0;
     static uint8_t QueryStateCount = 0;
-    //查询信道信息
-    {
-        char tmp[3];
-        tmp[0] = 0x01;
-        tmp[1] = radioState.channel/255;
-        tmp[2] = radioState.channel%255;
-        writeData(0x40, 0x12, tmp, 3);
-    }
+
     checkDisconnect();
 
     if (ShakeHeadCount > 120)
