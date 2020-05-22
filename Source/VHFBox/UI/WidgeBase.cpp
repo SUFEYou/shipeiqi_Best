@@ -3,8 +3,8 @@
 #include "Audio/AudioControl.h"
 #include "Audio/AudioMixer.h"
 
-int WidgeBase::volumnLev  = 4;
-int WidgeBase::lightLev = 4;
+int WidgeBase::volumnLev = 2;
+int WidgeBase::lightLev  = 4;
 
 WidgeBase::WidgeBase(QWidget *parent) : QWidget(parent)
 {
@@ -76,13 +76,13 @@ int WidgeBase::getVolumnALSA(int volumnLev)
         return 0;
     }
     if(volumnLev == 1){
-        return 67;
+        return 97;
     }
     if(volumnLev == 2){
-        return 87;
+        return 107;
     }
     if(volumnLev == 3){
-        return 107;
+        return 117;
     }
     if(volumnLev == 4){
         return 127;

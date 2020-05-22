@@ -1,5 +1,6 @@
 #include "AudioRecoder.h"
 #include "AudioControl.h"
+#include "AudioPtt.h"
 #include <QDebug>
 #include <QTime>
 #include "socket/SocketManage.h"
@@ -87,6 +88,12 @@ void AudioRecoder::run()
         static AudioData audioData;
         memcpy(audioData.data, data, rc*2);
         audioData.dataLen = rc*2;
+
+        AudioPtt *Ptt = AudioControl::getInstance()->getPtt();
+        if(Ptt->getPttStatus() == 1)                                // PttON时，发送静音
+        {
+            memset(audioData.data, 0, rc*2);
+        }
 
         SocketManage::getInstance()->getVoicUdp()->sendVoiceData(audioData);
 

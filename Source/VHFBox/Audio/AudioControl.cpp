@@ -15,11 +15,11 @@ AudioControl* AudioControl::m_instance = NULL;
 QMutex AudioControl::m_getMutex;
 
 AudioControl::AudioControl()
-             : m_recoder(new AudioRecoder)
-             , m_mixer(new AudioMixer)
+             : m_mixer(new AudioMixer)
 {
     m_mixMap.clear();
 
+    m_recoder = NULL;
     m_player1 = NULL;
     m_player2 = NULL;
     m_player3 = NULL;
@@ -28,6 +28,7 @@ AudioControl::AudioControl()
 
 AudioControl::~AudioControl()
 {
+    delete m_recoder;
     delete m_player1;
     delete m_player2;
     delete m_player3;
@@ -52,6 +53,7 @@ bool AudioControl::init(QString& status)
     qDebug() << "//////////////////////////////////////////////////////////////";
 
     /*---------- Audio Recoder Init ---------*/
+    m_recoder = new AudioRecoder();
     if (!m_recoder->init(status))
     {
         qDebug() << "Audio Capture Init err";

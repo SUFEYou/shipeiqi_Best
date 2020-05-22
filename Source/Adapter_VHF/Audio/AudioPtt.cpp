@@ -215,6 +215,11 @@ void AudioPtt::readCom()
 
 }
 
+int AudioPtt::getPttStatus()
+{
+    return pttONSended;
+}
+
 
 void AudioPtt::setPriority_PttOn(int pID, int priority, int pttOn)
 {

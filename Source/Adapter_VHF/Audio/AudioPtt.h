@@ -25,6 +25,8 @@ public:
     void setPriority_PttOn(int pID, int priority, int pttOn);
     int getPttOn(int pID);
     int getPriority(int pID);
+    int getPttStatus();
+
 protected:
     virtual void run();
 
@@ -39,8 +41,8 @@ private:
     int       pttOnTim;
     int       pttOnLim;
 
-    int       pttONSended;
-    int       pttSendTim;
+    int       pttONSended;      // 0:PttOff  1:PttOn
+    int       pttSendTim;           
 
 };
 

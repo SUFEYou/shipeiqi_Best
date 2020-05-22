@@ -1,6 +1,7 @@
 #include <QApplication>
 #include <stdlib.h>
 #include "Audio/AudioControl.h"
+#include "Audio/AudioMixer.h"
 #include "Config/ConfigLoader.h"
 #include "Socket/SocketManage.h"
 #include <QFontDatabase>
@@ -42,13 +43,23 @@ int main(int argc, char *argv[])
 //    QTextCodec::setCodecForTr(QTextCodec::codecForName("utf8"));    //tr 使用的编码
 //    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf8"));
 
+    SocketManage::getInstance();
+    UIManager::getInstance();
+    KeyUart::getInstance();
+    SocketManage::getInstance();
+
     QString status;
-    ConfigLoader::getInstance()->load();
+    ConfigLoader::getInstance()->load();   
     AudioControl::getInstance()->init(status);
 
     UIManager::getInstance()->init();
     KeyUart::getInstance()->serialInit();
     SocketManage::getInstance()->init();
+
+    int volumnLev = WidgeBase::getVolumnLev();
+    int volALSA = WidgeBase::getVolumnALSA(volumnLev);
+    AudioControl::getInstance()->getMixer()->volumn(volALSA);           // 设置启动放音音量
+    UIManager::getInstance()->updateAllVolume(volumnLev);               // 设置启动UI音量
 
     WidgeBase *widget = UIManager::getInstance()->getCurrWidge();
     widget->show();

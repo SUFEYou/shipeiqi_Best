@@ -36,7 +36,7 @@ void RadioLink_A01SSB::recvData(const char* pchar,const int nlength)
     //报文 文件
     if (type == 0 || type == 1)
     {
-        RadioLinkManage::getInstance()->PackToSendRMTtoRSCMessageData(sendID, recvID, (char*)(&pchar[13]), nlength-13, false);
+        RadioLinkManage::getInstance()->PackToSendRMTtoRSCMessageData(sendID, recvID, (char*)(&pchar[12]), nlength-12, false);
         //接收到报文后，发送回复报
         packageData(2, sendID, recvID, serial, NULL, 0);
     }

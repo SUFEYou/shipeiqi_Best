@@ -289,11 +289,13 @@ bool RadioLinkManage::DeleteACCtoRSCMessageData(const int nSendID, const int nSe
             if (serialHash.size() == 1)
             {
                 m_lMsgList.erase(iter);
+                qDebug() << "---------------VLNMSG_MSGEX_DELETED----------------, delete Serial: " << (*iter)->nSerial;
                 break;
             }
             else
             {
                 iter = m_lMsgList.erase(iter);
+                qDebug() << "---------------VLNMSG_MSGEX_DELETED----------------, delete Serial: " << (*iter)->nSerial;
                 serialHash.remove((*iter)->nSerial);
             }
         }
