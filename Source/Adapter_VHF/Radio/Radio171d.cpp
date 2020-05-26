@@ -283,7 +283,8 @@ void Radio171D::parseData()
         if ( t_crc != recv_crc)
         {
             qDebug() << "In Radio171D::recvDataParse(), CRC Err";
-            return;
+            //return;
+            continue;
         }
         //数据长度校验
         uint16_t msgLen = (dstData[2]<<8) | (dstData[3]);
@@ -291,7 +292,8 @@ void Radio171D::parseData()
         if (msgLen != (dstLen-6))
         {
             qDebug() << "In Radio171D::recvDataParse(), Message Len Err";
-            return;
+            //return;
+            continue;
         }
         //消息类型
         uint16_t msgType = (dstData[0]<<8) | (dstData[1]&0xFF);

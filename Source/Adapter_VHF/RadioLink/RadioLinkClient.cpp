@@ -114,7 +114,7 @@ void RadioLinkClient::recvDataAnalyze(ObjMsg &recvMsg)
                 msg->nSource = recvMsg.nSource;
                 msg->nSerial = m_pMsgRecvSn;
                 m_nListRecall.push_back(msg);
-                qDebug() << "CLIENT LAYMSG_MSGONCE msg.nSource " << msg->nSource << " msg.nSerial " << msg->nSerial;
+                qDebug() << "CLIENT LAYMSG_MSGONCE msg.nSource " << msg->nSource << " msg.nSerial " << msg->nSerial << " nVersion " << recvMsg.nVersion;
                 // to Main Exchange Class do with the Data
                 // 处理接收到的报文
                 RadioLinkManage::getInstance()->PackToSendRMTtoRSCMessageData(recvMsg.nSource,recvMsg.nReceive,\

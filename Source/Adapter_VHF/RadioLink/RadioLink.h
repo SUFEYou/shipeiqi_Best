@@ -48,6 +48,7 @@ public:
     // Set the class is or not Available
     void SetAvailable(bool available);
     bool GetAvailable();
+    void setCodeVer(int x);
 
     void recvData(const char* pchar,const int nlength);
 

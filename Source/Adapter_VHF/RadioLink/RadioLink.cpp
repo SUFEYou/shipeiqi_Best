@@ -106,6 +106,11 @@ bool RadioLink::GetAvailable()
     return m_bAvailable;
 }
 
+void RadioLink::setCodeVer(int x)
+{
+    m_nCodeVer = x;
+}
+
 void RadioLink::recvData(const char* pchar,const int nlength)
 {
     m_recvDataArray.append(pchar, nlength);

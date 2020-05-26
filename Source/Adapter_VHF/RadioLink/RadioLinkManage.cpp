@@ -568,6 +568,8 @@ int RadioLinkManage::setDataAppend(ObjMsg& stumsg, int maxlength)
         memset(m_pExDataSend,0,RADIORTCCMDLEN);
         m_nExDataSLen = 0;
 
+        //调试A01，需nVersion
+        m_pLayer->setCodeVer(stumsg.nSendtimes + 1);
         m_pLayer->onceMessageEncode(stumsg.pData,stumsg.nDataLen,
                                              false,stumsg.nSource,stumsg.nReceive,m_pExDataSend,m_nExDataSLen,stumsg.nSerial);
 

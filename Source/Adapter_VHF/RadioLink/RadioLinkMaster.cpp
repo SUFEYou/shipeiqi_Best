@@ -154,7 +154,7 @@ void RadioLinkMaster::recvDataAnalyze(ObjMsg &recvMsg)
                 msg->nSerial = m_pMsgRecvSn;
                 m_nListRecall.push_back(msg);
 
-                qDebug() << QString("HEAD LAYMSG_MSGONCE msg.nSource %1 msg.nSerial %2").arg(msg->nSource).arg(msg->nSerial);
+                qDebug() << QString("HEAD LAYMSG_MSGONCE msg.nSource %1 msg.nSerial %2").arg(msg->nSource).arg(msg->nSerial) << " nVersion " << recvMsg.nVersion;
 
                 // to Main Exchange Class do with the Data
                 // 处理接收到的报文
