@@ -386,7 +386,7 @@ void TCPDataProcess::RSCtoACCUpdateStateInfo()
     sendHead.MessageSerial = (unsigned long)(ltime);
     sendHead.MessageType = VLNMSG_RSC_STATE;
     memcpy(send_data, &sendHead, sizeof(NET_MSG_HEADER));
-
+    qDebug() << "------------------------RSCtoACCUpdateStateInfo----------------------------";
     packageAndSendData(send_data, send_len);
 }
 

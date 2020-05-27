@@ -288,7 +288,7 @@ bool RadioLinkManage::DeleteACCtoRSCMessageData(const int nSendID, const int nSe
             bFinder = true;
             if (serialHash.size() == 1)
             {
-                m_lMsgList.erase(iter);
+                iter = m_lMsgList.erase(iter);
                 qDebug() << "---------------VLNMSG_MSGEX_DELETED----------------, delete Serial: " << (*iter)->nSerial;
                 break;
             }
@@ -570,9 +570,7 @@ int RadioLinkManage::setDataAppend(ObjMsg& stumsg, int maxlength)
 
         //调试A01，需nVersion
         m_pLayer->setCodeVer(stumsg.nSendtimes + 1);
-        m_pLayer->onceMessageEncode(stumsg.pData,stumsg.nDataLen,
-                                             false,stumsg.nSource,stumsg.nReceive,m_pExDataSend,m_nExDataSLen,stumsg.nSerial);
-
+        m_pLayer->onceMessageEncode(stumsg.pData,stumsg.nDataLen,false,stumsg.nSource,stumsg.nReceive,m_pExDataSend,m_nExDataSLen,stumsg.nSerial);
         m_pLayer->DataLayerSendMemoryGather((char*)m_pExDataSend,m_nExDataSLen);
         stumsg.nSendtimes++;
     }
