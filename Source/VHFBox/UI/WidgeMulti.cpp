@@ -27,7 +27,7 @@ WidgeMulti::WidgeMulti()
     icon2_inRes  = new QMovie("images/vol-disabled-lt.jpg");
 
     QSize iconSize1(64,64);
-    QSize iconSize2(64,64);
+    QSize iconSize2(50,50);
     icon1_outActSelf->setScaledSize(iconSize1);
     icon1_outActOthr->setScaledSize(iconSize1);
     icon1_outRes->setScaledSize(iconSize1);
@@ -197,6 +197,8 @@ void WidgeMulti::onTimer()
 
 //    qDebug()<< "Index1 =" << index1;
 //    qDebug()<< "Index2 =" << index2;
+
+      updateRadioState();
 
       resetIconMovie();
 
@@ -424,6 +426,58 @@ void WidgeMulti::onKeyLeft()
 
 void WidgeMulti::onKeyRight()
 {
+
+}
+
+void WidgeMulti::updateRadioState()
+{
+    WidgeBase * widget1 = UIManager::getInstance()->getWidge(index1);
+    WidgeBase * widget2 = UIManager::getInstance()->getWidge(index2);
+//    qDebug()<< "widget1->getState()"<< widget1->getState();
+//    qDebug()<< "widget2->getState()"<< widget2->getState();
+
+    //断连状态显示
+    if(widget1->getState() == -1) {
+        ui->lblRadioState1->setStyleSheet("QLabel{color:red;}");
+        ui->lblRadioState1->setText(QString::fromUtf8("无网络"));
+    } else if(widget1->getState() == 1) {
+        ui->lblRadioState1->setStyleSheet("QLabel{color:red;}");
+        ui->lblRadioState1->setText(QString::fromUtf8("电台控制异常"));
+    } else {
+        ui->lblRadioState1->setStyleSheet("QLabel{color:red;}");
+        ui->lblRadioState1->setText(QString::fromUtf8(""));
+    }
+
+    //注册状态显示
+    if(widget1->getRegsitACK() == 1){
+        ui->lblRadioState1->setStyleSheet("QLabel{color:red;}");
+        ui->lblRadioState1->setText(QString::fromUtf8("通道注册已上限"));
+    } else if(widget1->getRegsitACK() == 2){
+        ui->lblRadioState1->setStyleSheet("QLabel{color:red;}");
+        ui->lblRadioState1->setText(QString::fromUtf8("控制电台不匹配"));
+    }
+
+
+    //断连状态显示
+    if(widget2->getState() == -1) {
+        ui->lblRadioState2->setStyleSheet("QLabel{color:red;}");
+        ui->lblRadioState2->setText(QString::fromUtf8("无网络"));
+    } else if(widget2->getState() == 1) {
+        ui->lblRadioState2->setStyleSheet("QLabel{color:red;}");
+        ui->lblRadioState2->setText(QString::fromUtf8("电台控制异常"));
+    } else {
+        ui->lblRadioState2->setStyleSheet("QLabel{color:red;}");
+        ui->lblRadioState2->setText(QString::fromUtf8(""));
+    }
+
+    //注册状态显示
+    if(widget2->getRegsitACK() == 1){
+        ui->lblRadioState2->setStyleSheet("QLabel{color:red;}");
+        ui->lblRadioState2->setText(QString::fromUtf8("通道注册已上限"));
+    } else if(widget2->getRegsitACK() == 2){
+        ui->lblRadioState2->setStyleSheet("QLabel{color:red;}");
+        ui->lblRadioState2->setText(QString::fromUtf8("控制电台不匹配"));
+    }
 
 }
 

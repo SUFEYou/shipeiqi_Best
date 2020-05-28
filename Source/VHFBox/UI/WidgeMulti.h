@@ -52,6 +52,7 @@ public:
 
 private:
     void resetIconMovie();
+    void updateRadioState();
 
 
 private slots:

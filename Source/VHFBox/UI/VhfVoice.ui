@@ -75,9 +75,9 @@
    <property name="geometry">
     <rect>
      <x>90</x>
-     <y>50</y>
-     <width>70</width>
-     <height>70</height>
+     <y>60</y>
+     <width>50</width>
+     <height>50</height>
     </rect>
    </property>
    <property name="text">
@@ -88,9 +88,9 @@
    <property name="geometry">
     <rect>
      <x>240</x>
-     <y>50</y>
-     <width>70</width>
-     <height>70</height>
+     <y>60</y>
+     <width>50</width>
+     <height>50</height>
     </rect>
    </property>
    <property name="text">
@@ -148,6 +148,38 @@
    </property>
    <property name="text">
     <string>音量</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lblRadioState1">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>180</y>
+     <width>121</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="lblRadioState2">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>180</y>
+     <width>121</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
    </property>
   </widget>
  </widget>
