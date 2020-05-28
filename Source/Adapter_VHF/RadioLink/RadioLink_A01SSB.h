@@ -9,7 +9,7 @@ public:
 
     void SetAvailable(bool available);
     bool GetAvailable();
-    void recvData(const char* pchar,const int nlength);
+    void recvData(char* pchar,const int nlength);
     void timerProcess();
 
 private:

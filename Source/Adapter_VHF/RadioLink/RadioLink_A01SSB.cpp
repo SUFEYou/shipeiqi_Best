@@ -2,6 +2,10 @@
 #include "RadioLinkManage.h"
 #include <QDebug>
 
+
+#define A01SSB_MSG 100
+#define A01SSB_FILE 101
+
 RadioLink_A01SSB::RadioLink_A01SSB()
                  : m_bAvailable(false)
 {
@@ -23,7 +27,7 @@ bool RadioLink_A01SSB::GetAvailable()
     return m_bAvailable;
 }
 
-void RadioLink_A01SSB::recvData(const char* pchar,const int nlength)
+void RadioLink_A01SSB::recvData(char* pchar,const int nlength)
 {
     //发送ID(4字节)+接收ID(4字节)+序号(4字节)+数据类型(1字节)
     if (nlength < 13)
@@ -36,6 +40,10 @@ void RadioLink_A01SSB::recvData(const char* pchar,const int nlength)
     //报文 文件
     if (type == 0 || type == 1)
     {
+        if (type == 0)
+            pchar[12] = A01SSB_MSG;
+        else
+            pchar[12] = A01SSB_FILE;
         RadioLinkManage::getInstance()->PackToSendRMTtoRSCMessageData(sendID, recvID, (char*)(&pchar[12]), nlength-12, false);
         //接收到报文后，发送回复报
         packageData(2, sendID, recvID, serial, NULL, 0);
@@ -86,7 +94,10 @@ void RadioLink_A01SSB::packageData(const char type, const int sendid, const int 
     tmp[offset++] = (serial>>8)  & 0xFF;
     tmp[offset++] =  serial      & 0xFF;
     //数据类型(1字节)
-    tmp[offset++] = type;
+    if (type == A01SSB_FILE)
+        tmp[offset++] = 1;
+    else
+        tmp[offset++] = 0;
     //数据
     memcpy(&tmp[offset], data, datalen);
     offset += datalen;
