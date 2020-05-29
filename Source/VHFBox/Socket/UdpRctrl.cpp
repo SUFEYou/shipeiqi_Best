@@ -7,6 +7,7 @@
 #include "UI/WidgeBase.h"
 
 UDPRctrl::UDPRctrl()
+        : m_udpSocket(new QUdpSocket(this))
 {
     priority = 1;
 }
@@ -17,7 +18,7 @@ void UDPRctrl::init(int recivPort, QString sndToIP, int sndToPort)
     this->m_recivPort = recivPort;
     this->m_sndToPort = sndToPort;
 
-    m_udpSocket = new QUdpSocket(this);
+   // m_udpSocket = new QUdpSocket(this);
 
     connect(m_udpSocket, SIGNAL(readyRead()), this, SLOT(onRev()));
     connect(m_udpSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));

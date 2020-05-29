@@ -3,6 +3,7 @@
 #include "UI/UIManager.h"
 
 UdpRevCast::UdpRevCast()
+          : m_udpSocket(new QUdpSocket(this))
 {
 
 }
@@ -11,7 +12,7 @@ void UdpRevCast::init(int recivPort)
 {
     this->m_recivPort = recivPort;
 
-    m_udpSocket = new QUdpSocket(this);
+    //m_udpSocket = new QUdpSocket(this);
 
     connect(m_udpSocket, SIGNAL(readyRead()), this, SLOT(onRev()));
     connect(m_udpSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
