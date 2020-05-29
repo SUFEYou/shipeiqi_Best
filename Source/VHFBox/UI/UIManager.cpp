@@ -374,10 +374,14 @@ void UIManager::changeCurrWidge()
     }
 
     if(curWidgetID != changeToID){
-        getCurrWidge()->hide();
 
-        curWidgetID = changeToID;
-        getCurrWidge()->show();
+        if (getCurrWidge() != NULL)
+        {
+            getCurrWidge()->hide();
+
+            curWidgetID = changeToID;
+            getCurrWidge()->show();
+        }
     }
 }
 

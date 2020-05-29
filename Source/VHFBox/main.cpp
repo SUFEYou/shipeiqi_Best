@@ -10,7 +10,7 @@
 #include "UI/WidgeBase.h"
 #include "UI/WidgeVHF181d.h"
 #include "UI/WidgeSSB.h"
-
+#include <QMessageBox>
 #include <QTextCodec>
 
 int main(int argc, char *argv[])
@@ -62,7 +62,17 @@ int main(int argc, char *argv[])
     UIManager::getInstance()->updateAllVolume(volumnLev);               // 设置启动UI音量
 
     WidgeBase *widget = UIManager::getInstance()->getCurrWidge();
-    widget->show();
+    if (widget != NULL)
+        widget->show();
+    else
+    {
+        QMessageBox messagebox;
+        messagebox.setWindowFlags(Qt::FramelessWindowHint);
+        messagebox.setText(QString::fromUtf8("电台类型不支持\n请更改配置!"));
+        messagebox.setIcon(QMessageBox::Warning);
+        messagebox.setStandardButtons(0);
+        messagebox.exec();
+    }
 
     return a.exec();
 }
