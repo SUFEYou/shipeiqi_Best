@@ -99,6 +99,7 @@ void RadioLinkManage::init()
          ConfigLoader::getInstance()->getRadioTyp() == RADIO_230))
     {
         m_radioLink_A01SSB->SetAvailable(true);
+        m_radioLink_A01SSB->setCodeMe(m_nIDMe);
     }
     else
     {

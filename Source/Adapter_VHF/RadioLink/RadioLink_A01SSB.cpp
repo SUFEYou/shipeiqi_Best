@@ -8,6 +8,7 @@
 
 RadioLink_A01SSB::RadioLink_A01SSB()
                  : m_bAvailable(false)
+                 , m_nCodeMe(0)
 {
 
 }
@@ -27,16 +28,25 @@ bool RadioLink_A01SSB::GetAvailable()
     return m_bAvailable;
 }
 
+void RadioLink_A01SSB::setCodeMe(int x)
+{
+    m_nCodeMe = x;
+}
+
 void RadioLink_A01SSB::recvData(char* pchar,const int nlength)
 {
     //发送ID(4字节)+接收ID(4字节)+序号(4字节)+数据类型(1字节)
     if (nlength < 13)
         return;
-    qint32 sendID = pchar[0]<<24 | pchar[1]<<16 | pchar[2]<<8 | pchar[3];
-    qint32 recvID = pchar[4]<<24 | pchar[5]<<16 | pchar[6]<<8 | pchar[7];
-    qint32 serial = pchar[8]<<24 | pchar[9]<<16 | pchar[10]<<8 | pchar[11];
+    qint32 sendID = (pchar[0]<<24&0xFF000000) | (pchar[1]<<16&0xFF0000) | (pchar[2]<<8 &0xFF00) | (pchar[3] &0xFF);
+    qint32 recvID = (pchar[4]<<24&0xFF000000) | (pchar[5]<<16&0xFF0000) | (pchar[6]<<8 &0xFF00) | (pchar[7] &0xFF);
+    qint32 serial = (pchar[8]<<24&0xFF000000) | (pchar[9]<<16&0xFF0000) | (pchar[10]<<8&0xFF00) | (pchar[11]&0xFF);
     char type = pchar[12];
-    qDebug() << "sendID: " << sendID << ", recvID: " << recvID << ", serial: " << serial << ", type: " << type;
+    if (recvID != m_nCodeMe && recvID != BROADCAST_ID)
+    {
+        return ;
+    }
+    qDebug() << "sendID: " << sendID << ", recvID: " << recvID << ", serial: " << serial << ", type: " << QString::number(type);
     //报文 文件
     if (type == 0 || type == 1)
     {
@@ -46,7 +56,7 @@ void RadioLink_A01SSB::recvData(char* pchar,const int nlength)
             pchar[12] = A01SSB_FILE;
         RadioLinkManage::getInstance()->PackToSendRMTtoRSCMessageData(sendID, recvID, (char*)(&pchar[12]), nlength-12, false);
         //接收到报文后，发送回复报
-        packageData(2, sendID, recvID, serial, NULL, 0);
+        packageData(2, recvID, sendID, serial, NULL, 0);
     }
     else if (type == 2)//回复报
     {
@@ -58,10 +68,10 @@ void RadioLink_A01SSB::timerProcess()
 {
     static uint8_t sendCnt = 0;
     //定时器一个周期为200ms,sendCnt控制发送频率，暂定为3s
-    if (sendCnt < 15)
+    if (sendCnt > 15)
     {
+        sendCnt = 0;
         pVHFMsg msg = RadioLinkManage::getInstance()->sendDataFromListWait_A01SSB();
-        ++sendCnt;
         if (!msg.isNull())
         {
             packageData(msg->pData[0], msg->nSource, msg->nReceive, msg->nSerial, &(msg->pData[1]), msg->nDataLen-1);
@@ -70,7 +80,7 @@ void RadioLink_A01SSB::timerProcess()
 
     }
     else
-        sendCnt = 0;
+        ++sendCnt;
 }
 
 void RadioLink_A01SSB::packageData(const char type, const int sendid, const int recvid, const int serial, const char* data, const int datalen)
@@ -94,10 +104,12 @@ void RadioLink_A01SSB::packageData(const char type, const int sendid, const int 
     tmp[offset++] = (serial>>8)  & 0xFF;
     tmp[offset++] =  serial      & 0xFF;
     //数据类型(1字节)
-    if (type == A01SSB_FILE)
+    if (type == A01SSB_MSG)
+        tmp[offset++] = 0;
+    else if (type == A01SSB_FILE)
         tmp[offset++] = 1;
     else
-        tmp[offset++] = 0;
+        tmp[offset++] = type;
     //数据
     memcpy(&tmp[offset], data, datalen);
     offset += datalen;
