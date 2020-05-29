@@ -242,7 +242,10 @@ bool UIManager::init()
         widgeMulti = NULL;
     }
 
-    return true;
+    if (widge1 == NULL || widge2 == NULL)
+        return false;
+    else
+        return true;
 }
 
 

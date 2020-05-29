@@ -51,8 +51,15 @@ int main(int argc, char *argv[])
     QString status;
     ConfigLoader::getInstance()->load();   
     AudioControl::getInstance()->init(status);
-
-    UIManager::getInstance()->init();
+    if (false == UIManager::getInstance()->init())
+    {
+        QMessageBox messagebox;
+        messagebox.setWindowFlags(Qt::FramelessWindowHint);
+        messagebox.setText(QString::fromUtf8("电台类型不支持\n请更改配置!"));
+        messagebox.setIcon(QMessageBox::Warning);
+        messagebox.setStandardButtons(0);
+        messagebox.exec();
+    }
     KeyUart::getInstance()->serialInit();
     SocketManage::getInstance()->init();
 
@@ -62,17 +69,7 @@ int main(int argc, char *argv[])
     UIManager::getInstance()->updateAllVolume(volumnLev);               // 设置启动UI音量
 
     WidgeBase *widget = UIManager::getInstance()->getCurrWidge();
-    if (widget != NULL)
-        widget->show();
-    else
-    {
-        QMessageBox messagebox;
-        messagebox.setWindowFlags(Qt::FramelessWindowHint);
-        messagebox.setText(QString::fromUtf8("电台类型不支持\n请更改配置!"));
-        messagebox.setIcon(QMessageBox::Warning);
-        messagebox.setStandardButtons(0);
-        messagebox.exec();
-    }
+    widget->show();
 
     return a.exec();
 }
