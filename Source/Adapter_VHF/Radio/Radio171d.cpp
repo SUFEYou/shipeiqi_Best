@@ -279,7 +279,8 @@ void Radio171D::parseData()
         decode(tmpArray.data(), tmpArray.length(), dstData, dstLen);
         //CRC校验
         uint16_t t_crc = getCRC((unsigned char*)dstData, dstLen-2);
-        uint16_t recv_crc = ((unsigned char)dstData[dstLen-2]<<8) | ((unsigned char)dstData[dstLen-1]);
+        //uint16_t recv_crc = ((unsigned char)dstData[dstLen-2]<<8) | ((unsigned char)dstData[dstLen-1]);
+         uint16_t recv_crc = ((dstData[dstLen-2]<<8)&0xFF00) | (dstData[dstLen-1]&0xFF);
         if ( t_crc != recv_crc)
         {
             qDebug() << "In Radio171D::recvDataParse(), CRC Err";
@@ -287,7 +288,7 @@ void Radio171D::parseData()
             continue;
         }
         //数据长度校验
-        uint16_t msgLen = (dstData[2]<<8) | (dstData[3]);
+        uint16_t msgLen = ((dstData[2]<<8)&0xFF00) | ((dstData[3])&0xFF);
         //dstLen-6 == 数据域长度 == dstLen - 类型ID(2字节) - 信息长度(2字节) - 校验(2字节)
         if (msgLen != (dstLen-6))
         {
@@ -296,7 +297,7 @@ void Radio171D::parseData()
             continue;
         }
         //消息类型
-        uint16_t msgType = (dstData[0]<<8) | (dstData[1]&0xFF);
+        uint16_t msgType = ((dstData[0]<<8)&0xFF00) | (dstData[1]&0xFF);
         //数传
         if (msgType == 0X5500)
         {
@@ -451,34 +452,11 @@ uint16_t Radio171D::getCRC(unsigned char* buf, unsigned int len)
 {
     unsigned int i, j;
     uint16_t crc, flag;
-    bool escapeCharacter = false;
     crc = 0x0000;
 
     for (i = 0; i < len; i++)
     {
-        if ((buf[i] == 0xDB) && !escapeCharacter)
-        {
-            escapeCharacter = true;
-            continue;
-        }
-        else
-        {
-            if ((buf[i] == 0xDC) && escapeCharacter)
-            {
-                buf[i] = 0xC0;
-                escapeCharacter =false;
-            }
-            else if ((buf[i] == 0xDD) && escapeCharacter)
-            {
-                buf[i] = 0xDB;
-                escapeCharacter =false;
-            }
-            else if (escapeCharacter)
-            {
-                return 0;
-            }
-        }
-        crc ^= ((static_cast<unsigned short>(buf[i]))<<8);
+        crc^= (((unsigned short)buf[i])<<8);
         for (j = 0; j < 8; j++)
         {
             flag = crc&0x8000;

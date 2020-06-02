@@ -9,7 +9,8 @@
 #define     PACK_LENGTHLIMIT 1020
 #define     BROADCAST_ID	 0
 #define		NETMSGPACK_LEN	 15000
-#define		RADIORTCCMDLEN	 1500            //RADIORTCCMDLEN为指令长
+//#define		RADIORTCCMDLEN	 1500            //RADIORTCCMDLEN为指令长
+#define		RADIORTCCMDLEN	 1000
 #define		NETMSG_PACKLEN	 4096			// A break was detected on input.
 #define		MESSAGE_VERSION  16
 
