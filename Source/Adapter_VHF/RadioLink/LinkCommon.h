@@ -6,11 +6,12 @@
 #include <QTime>
 #include <stdint.h>
 
-#define     PACK_LENGTHLIMIT 1020
+//#define     PACK_LENGTHLIMIT 1020
+//171电台发送报文长度大于1000字节时会产生阻塞，导致断链
+#define     PACK_LENGTHLIMIT 900
 #define     BROADCAST_ID	 0
 #define		NETMSGPACK_LEN	 15000
-//#define		RADIORTCCMDLEN	 1500            //RADIORTCCMDLEN为指令长
-#define		RADIORTCCMDLEN	 1000
+#define		RADIORTCCMDLEN	 1500            //RADIORTCCMDLEN为指令长
 #define		NETMSG_PACKLEN	 4096			// A break was detected on input.
 #define		MESSAGE_VERSION  16
 

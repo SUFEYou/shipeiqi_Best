@@ -279,8 +279,7 @@ void Radio171D::parseData()
         decode(tmpArray.data(), tmpArray.length(), dstData, dstLen);
         //CRC校验
         uint16_t t_crc = getCRC((unsigned char*)dstData, dstLen-2);
-        //uint16_t recv_crc = ((unsigned char)dstData[dstLen-2]<<8) | ((unsigned char)dstData[dstLen-1]);
-         uint16_t recv_crc = ((dstData[dstLen-2]<<8)&0xFF00) | (dstData[dstLen-1]&0xFF);
+        uint16_t recv_crc = ((unsigned char)dstData[dstLen-2]<<8) | ((unsigned char)dstData[dstLen-1]);
         if ( t_crc != recv_crc)
         {
             qDebug() << "In Radio171D::recvDataParse(), CRC Err";

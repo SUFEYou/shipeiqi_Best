@@ -109,8 +109,8 @@ void RadioLinkManage::init()
         QSharedPointer<ConfigRadio> tmp = ConfigLoader::getInstance()->getConfigRadio();
         if (!tmp.isNull())
         {
-            m_radioLinkClient->setDataMaxLen(1020);
-            m_radioLinkMaster->setDataMaxLen(1020);
+            m_radioLinkClient->setDataMaxLen(PACK_LENGTHLIMIT);
+            m_radioLinkMaster->setDataMaxLen(PACK_LENGTHLIMIT);
 
             m_radioLinkClient->setTimeFactor(tmp->getTimerFactor());
             m_radioLinkMaster->setTimeFactor(tmp->getTimerFactor());
@@ -122,8 +122,8 @@ void RadioLinkManage::init()
         }
         else
         {
-            m_radioLinkClient->setDataMaxLen(1020);
-            m_radioLinkMaster->setDataMaxLen(1020);
+            m_radioLinkClient->setDataMaxLen(PACK_LENGTHLIMIT);
+            m_radioLinkMaster->setDataMaxLen(PACK_LENGTHLIMIT);
 
             m_radioLinkClient->setTimeFactor(5);
             m_radioLinkMaster->setTimeFactor(5);
