@@ -190,7 +190,11 @@ void Radio171D::onTimer()
         {
             cnt = 0;
             radioState.errState = 0;
+            //查询功率
+            writeData(0x0046, NULL, 0);
+            //查询开关状态：静噪，提示音等参数
             writeData(0x0048, NULL, 0);
+            //查询当前信道参数：信道号,波形类型,工作模式,频率,密钥,主属,网络模式
             writeData(0x0141, NULL, 0);
         }
         //断连计数，接收到电台消息时清零，否则每秒递增1，超时后，电台状态为断连
