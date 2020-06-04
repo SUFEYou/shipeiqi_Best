@@ -29,7 +29,7 @@ void Radio181D::serialInit()
     dataCom = new QextSerialPort("/dev/ttymxc2");
 #endif
     connect(dataCom, SIGNAL(readyRead()), this, SLOT(readDataCom()));
-    dataCom->setBaudRate(BAUD38400);    //设置波特率
+    dataCom->setBaudRate(BAUD19200);    //设置波特率
     dataCom->setDataBits(DATA_8);       //设置数据位
     dataCom->setParity(PAR_NONE);       //设置校验
     dataCom->setStopBits(STOP_1);       //设置停止位
