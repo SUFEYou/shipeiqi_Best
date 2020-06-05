@@ -17,7 +17,7 @@ WidgeMulti::WidgeMulti()
     icon1_outRes     = new QMovie("images/mic-disabled-lt.jpg");
 
     icon2_outActSelf = new QMovie("images/mic-green-lt.gif");
-    icon2_outActOthr = new QMovie("images/mic-orange-lt.jpg");
+    icon2_outActOthr = new QMovie("images/mic-orange-lt.gif");
     icon2_outRes     = new QMovie("images/mic-disabled-lt.jpg");
 
     icon1_inAct  = new QMovie("images/vol-green-lt.jpg");
