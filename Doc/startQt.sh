@@ -23,6 +23,7 @@ while [ 1 ] ; do
 	checkprocess "VHF_Box"
 	check_result1=$?
 	if [ $check_result0 -eq 1 ] && [ $check_result1 -eq 1 ]; then
+		/opt/killQt.sh
 		if [ -e Adapter_VHF ]; then
 			chmod 777 /opt/Adapter_VHF
 			/opt/Adapter_VHF &
