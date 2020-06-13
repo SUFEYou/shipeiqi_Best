@@ -41,7 +41,7 @@ void ConfigLog::createConfig()
     settings.setValue("LoggerDisplay", true);
     settings.setValue("LoggerFileLine", true);
     //0:TRACE 1:DEBUG 2:INFO 3:WARN 4:ERROR 5:ALARM 6:FATAL
-    settings.setValue("LoggerLevel", 1);
+    settings.setValue("LoggerLevel", 2);
     settings.endGroup();
 }
 
@@ -61,5 +61,5 @@ void ConfigLog::loadConfig()
     ILog4zManager::getRef().setLoggerLevel(LOG4Z_MAIN_LOGGER_ID, m_loggerLevel);
     ILog4zManager::getRef().start();
 
-    LOGD("Adapter Start");
+    LOGI("Adapter Start");
 }

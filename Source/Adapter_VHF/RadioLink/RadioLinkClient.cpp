@@ -2,6 +2,9 @@
 #include "RadioLinkManage.h"
 #include "config/ConfigLoader.h"
 #include <QDebug>
+#include "log/log4z.h"
+
+using namespace zsummer::log4z;
 
 RadioLinkClient::RadioLinkClient()
 {
@@ -43,7 +46,7 @@ void RadioLinkClient::recvDataAnalyze(ObjMsg &recvMsg)
     {
     case LAYMSG_CONTROL:
         {
-            //qDebug() << "Client  LAYMSG_CONTROL";
+            LOGD("In RadioLinkClient::recvDataAnalyze, Recv CONTROL");
             if (ActSenLAYMSG_CONTROLUnpack(recvMsg.pData,recvMsg.nDataLen))
             {
                 // Judge is in the Chain & Can Send
@@ -76,13 +79,12 @@ void RadioLinkClient::recvDataAnalyze(ObjMsg &recvMsg)
                     m_nTNotInChainCt = 0;
                     LinkLayerCircleMomentToCircle();
                 }
-                strDesc = QString("%1=>LAYMSG_CONTROL").arg(recvMsg.nSource);
             }
         }
         break;
     case LAYMSG_STATE:
         {
-            //qDebug() << "Client  LAYMSG_STATE";
+            LOGD("In RadioLinkClient::recvDataAnalyze, Recv STATE");
             if(m_nRecvState == LAYAPP_STILL)	// Still Online
             {
             }
@@ -92,7 +94,7 @@ void RadioLinkClient::recvDataAnalyze(ObjMsg &recvMsg)
         break;
     case LAYMSG_MSGCAST:
         {
-            //qDebug() << "Client  LAYMSG_MSGCAST";
+            LOGD("In RadioLinkClient::recvDataAnalyze, Recv CAST");
             if (ActSenLAYMSG_MSGCASTUnpack(recvMsg.pData,recvMsg.nDataLen))
             {
                 // to Main Exchange Class do with the Data
@@ -106,7 +108,6 @@ void RadioLinkClient::recvDataAnalyze(ObjMsg &recvMsg)
         break;
     case LAYMSG_MSGONCE:
         {
-            //qDebug() << "Client  LAYMSG_MSGONCE";
             if (ActSenLAYMSG_MSGONCEUnpack(recvMsg.pData,recvMsg.nDataLen))
             {
                 // Add the Recall
@@ -114,7 +115,7 @@ void RadioLinkClient::recvDataAnalyze(ObjMsg &recvMsg)
                 msg->nSource = recvMsg.nSource;
                 msg->nSerial = m_pMsgRecvSn;
                 m_nListRecall.push_back(msg);
-                qDebug() << "CLIENT LAYMSG_MSGONCE msg.nSource " << msg->nSource << " msg.nSerial " << msg->nSerial << " nVersion " << recvMsg.nVersion;
+                LOGD(QString("In RadioLinkClient::recvDataAnalyze, Recv ONCE, Source %1, Serial %2").arg(msg->nSource).arg(msg->nSerial).toStdString().c_str());
                 // to Main Exchange Class do with the Data
                 // 处理接收到的报文
                 RadioLinkManage::getInstance()->PackToSendRMTtoRSCMessageData(recvMsg.nSource,recvMsg.nReceive,\
@@ -127,7 +128,7 @@ void RadioLinkClient::recvDataAnalyze(ObjMsg &recvMsg)
         break;
     case LAYMSG_MSGCALL:
         {
-            //qDebug() << "Client  LAYMSG_MSGCALL";
+            LOGD("In RadioLinkClient::recvDataAnalyze, Recv CALL");
             if (ActSenLAYMSG_MSGCALLUnpack(recvMsg.pData,recvMsg.nDataLen))
             {
                 // to Main Exchange Class do with the data
@@ -157,10 +158,9 @@ void RadioLinkClient::recvDataAnalyze(ObjMsg &recvMsg)
 // Send Message
 void RadioLinkClient::LinkLayerComSendMemoryData()
 {
-    qDebug() << "LinkLayerComSendMemoryData";
     if (m_bSendOK)
     {
-        qDebug() << "return LinkLayerComSendMemoryData  m_bSendOK";
+        LOGD("return LinkLayerComSendMemoryData  m_bSendOK");
         return;
     }
 
@@ -172,7 +172,7 @@ void RadioLinkClient::LinkLayerComSendMemoryData()
     int nRecall = RadioLinkManage::getInstance()->sendDataFromListWait(m_nDataMaxLen);
     if (nRecall == 1)
     {
-        qDebug() << "Client nRecall";
+        LOGD("Client nRecall");
     }
 
     // Still Online
@@ -201,13 +201,13 @@ void RadioLinkClient::LinkLayerComSendMemoryData()
 
     // Send Data to the Layer
     m_bSendOK = ComSendOutData(m_pDSendData,m_pDSendLen);
-    //qDebug() << "Com Send Out Data";
+    LOGD(QString("In RadioLinkClient::LinkLayerComSendMemoryData, Send Len: %1").arg(m_pDSendLen).toStdString().c_str());
 }
 
 void RadioLinkClient::LinkLayerComSendApplyData()
 {
     // Send the Apply Moment Data
-    qDebug() << "Client  LinkLayerComSendApplyData";
+    LOGD("Client  LinkLayerComSendApplyData");
     if (m_bSendApplyCan)
     {
         ComSendOutData(m_pDApplyData,m_pDApplyLen);
@@ -273,7 +273,7 @@ void RadioLinkClient::LinkLayerMainCircle()
                 {
                     ///////////////////////////////////////////////////////
                     // Send the Message
-                    qDebug() << "Client MOMENT_CIRCLE id " << m_nCodeMe;
+                    LOGD(QString("Client MOMENT_CIRCLE id %1").arg( m_nCodeMe).toStdString().c_str());
                     LinkLayerComSendMemoryData();
                     m_nTOutCount = 0;
 
@@ -325,8 +325,7 @@ void RadioLinkClient::LinkLayerMainCircle()
             {
                 m_bChainCircleFlag = false;
                 m_nTNotInChainCt = -m_IsInChainWhereNum * 50;
-                qDebug() << QString("Client m_nTNotInChainCt %1  MOMENT_DRIFT m_nTOutCount >= m_nChain.nLimitDrift*m_nTimeFactor").arg(m_nTNotInChainCt);
-
+                LOGD(QString("Client m_nTNotInChainCt %1  MOMENT_DRIFT m_nTOutCount >= m_nChain.nLimitDrift*m_nTimeFactor").arg(m_nTNotInChainCt).toStdString().c_str());
                 m_nChain.Clear();		// Clear Chain
             }
         }

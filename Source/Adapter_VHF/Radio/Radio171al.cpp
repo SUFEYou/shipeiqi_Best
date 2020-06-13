@@ -1,5 +1,8 @@
 #include "Radio171al.h"
 #include <QDebug>
+#include "log/log4z.h"
+
+using namespace zsummer::log4z;
 
 Radio171AL::Radio171AL()
            : m_timer(new QTimer(this))
@@ -42,9 +45,10 @@ void Radio171AL::serialInit()
     //
     if (false == dataCom->open(QIODevice::ReadWrite))
     {
-        qDebug() << "171AL Serail Open Err!";
+        LOGE("171AL Serail Open Err!");
+
     } else {
-        qDebug() << "171AL Serail Open Success!";
+        LOGI("171AL Serail Open Success!");
         m_timer->start(1000);
     }
 }
@@ -127,9 +131,7 @@ int Radio171AL::writeCtrlData(uint16_t funCode, char* data, int len)
 
 int Radio171AL::writeLinkData(char* data, int len)
 {
-
     writeData(0x5500, data, len);
-
     return 0;
 }
 
@@ -286,8 +288,7 @@ void Radio171AL::parseData()
         uint16_t recv_crc = ((unsigned char)dstData[dstLen-2]<<8) | ((unsigned char)dstData[dstLen-1]);
         if ( t_crc != recv_crc)
         {
-            qDebug() << "In Radio171AL::recvDataParse(), CRC Err";
-            //return;
+            LOGD("In Radio171AL::recvDataParse(), CRC Err");
             continue;
         }
         //数据长度校验
@@ -295,8 +296,7 @@ void Radio171AL::parseData()
         //dstLen-6 == 数据域长度 == dstLen - 类型ID(2字节) - 信息长度(2字节) - 校验(2字节)
         if (msgLen != (dstLen-6))
         {
-            qDebug() << "In Radio171AL::recvDataParse(), Message Len Err";
-            //return;
+            LOGD("In Radio171AL::recvDataParse(), Message Len Err");
             continue;
         }
         //消息类型
@@ -385,7 +385,7 @@ void Radio171AL::updateRadioState(uint16_t type, char* data, const int len)
         break;
     default:
     {
-        qDebug() << "In Radio171AL::updateRadioState, Recv unknown msg type!, Type: " << type;
+        LOGD(QString("In Radio171AL::updateRadioState, Recv unknown msg type!, Type: %1").arg(type).toStdString().c_str());
     }
         break;
     }

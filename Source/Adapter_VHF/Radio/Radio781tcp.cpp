@@ -1,6 +1,9 @@
 #include "Radio781tcp.h"
 #include <QDebug>
 #include <QDateTime>
+#include "log/log4z.h"
+
+using namespace zsummer::log4z;
 
 Radio781TCP::Radio781TCP()
 {
@@ -37,9 +40,9 @@ void Radio781TCP::serialInit()
     //
     if (false == dataCom->open(QIODevice::ReadWrite))
     {
-        qDebug() << "781 Data Serail Open Err!";
+        LOGE("781 Data Serail Open Err!");
     } else {
-        qDebug() << "781 Data Serail Open Success!";
+        LOGI("781 Data Serail Open Success!");
     }
 
 #if WIN32
@@ -58,9 +61,9 @@ void Radio781TCP::serialInit()
     //
     if (false == ctrlCom->open(QIODevice::ReadWrite))
     {
-        qDebug() << "781 Ctrl Serail Open Err!";
+        LOGE("781 Ctrl Serail Open Err!");
     } else {
-        qDebug() << "781 Ctrl Serail Open Success 100ms!";
+        LOGI("781 Ctrl Serail Open Success 100ms!");
     }
 
     timer = new QTimer(this);

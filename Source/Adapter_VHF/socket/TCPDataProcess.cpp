@@ -4,6 +4,9 @@
 #include "config/ConfigLoader.h"
 #include <time.h>
 #include <QDebug>
+#include "log/log4z.h"
+
+using namespace zsummer::log4z;
 
 TCPDataProcess* TCPDataProcess:: m_instance = NULL;
 QMutex TCPDataProcess::m_mutex;
@@ -96,6 +99,7 @@ void TCPDataProcess::packageAndSendData(const char* data, const quint16 len)
 void TCPDataProcess::sendData(const char* pData,const quint16 nLen)
 {
     SocketManage::getInstance()->getTcpClient()->sendData(pData,nLen);
+    LOGD(QString("In TCPDataProcess::sendData, Send Data Len: %1").arg(nLen).toStdString().c_str());
 }
 
 void TCPDataProcess::TCPDataSubpackage()
@@ -165,7 +169,7 @@ void TCPDataProcess::TCPDataParse()
 
         if (tmpArray.length() < 2 || tmpArray.length() > MAXDATALENGTH)
         {
-            qDebug() << "In TCPDataParse(), Recv TCP Data Len Err, Too Short or Too Long";
+            LOGD("In TCPDataParse(), Recv TCP Data Len Err, Too Short or Too Long");
             continue;
         }
 
@@ -277,6 +281,7 @@ void TCPDataProcess::analyzeNetMsg(char* pData,const int nLen)
                 memcpy(m_MRTPosData,pData+nCurLen-1,sText.TextLength);
                 m_MRTPosDataLen = sText.TextLength;
                 RadioLinkManage::getInstance()->ACCtoRSCPosData(m_MRTPosData, m_MRTPosDataLen);
+                LOGD("In TCPDataProcess::analyzeNetMsg, Recv VLNMSG_MRT_POSITION 移动台位置报文");
             }
         }
         break;
@@ -289,7 +294,7 @@ void TCPDataProcess::analyzeNetMsg(char* pData,const int nLen)
             nCurLen += sizeof(NET_MSGEX_TEXT);
 
             RadioLinkManage::getInstance()->ACCtoRSCMessageData(sText.SendID, sText.RecvID, pData+nCurLen-1, sText.TextLength, sText.Encrypt, sText.Degree, sText.Serial);
-
+            LOGD("In TCPDataProcess::analyzeNetMsg, Recv VLNMSG_MSGEX_TEXT 二进制短报文信息");
         }
         break;
     case VLNMSG_MSGEX_DELETED:
@@ -301,6 +306,7 @@ void TCPDataProcess::analyzeNetMsg(char* pData,const int nLen)
             nCurLen += sizeof(NET_MSGEX_MSGDELETED);
 
             RadioLinkManage::getInstance()->DeleteACCtoRSCMessageData(dObject.SendID, dObject.SerialBegin, dObject.SerialEnd);
+            LOGD("In TCPDataProcess::analyzeNetMsg, Recv VLNMSG_MSGEX_DELETED 删除报文");
         }
         break;
     case VLNMSG_MSGEX_SETLINKMODE:
@@ -315,6 +321,7 @@ void TCPDataProcess::analyzeNetMsg(char* pData,const int nLen)
         {
             RadioLinkManage::getInstance()->changeMasterToClient();
         }
+        LOGD("In TCPDataProcess::analyzeNetMsg, Recv VLNMSG_MSGEX_SETLINKMODE 设置链路模式");
     }
         break;
     case VLNMSG_MSGEX_RECALLCODE:			// 二进制短报文回馈序号
@@ -386,8 +393,8 @@ void TCPDataProcess::RSCtoACCUpdateStateInfo()
     sendHead.MessageSerial = (unsigned long)(ltime);
     sendHead.MessageType = VLNMSG_RSC_STATE;
     memcpy(send_data, &sendHead, sizeof(NET_MSG_HEADER));
-    qDebug() << "------------------------RSCtoACCUpdateStateInfo----------------------------";
     packageAndSendData(send_data, send_len);
+    LOGD("In TCPDataProcess::RSCtoACCUpdateStateInfo()!");
 }
 
 int TCPDataProcess::getRSCID()

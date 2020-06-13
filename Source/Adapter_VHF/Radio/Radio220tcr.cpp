@@ -1,6 +1,9 @@
 #include "Radio220tcr.h"
 #include <QDateTime>
 #include <QDebug>
+#include "log/log4z.h"
+
+using namespace zsummer::log4z;
 
 Radio220tcr::Radio220tcr()
             : updTim(0)
@@ -45,9 +48,9 @@ void Radio220tcr::serialInit()
     //
     if (false == dataCom->open(QIODevice::ReadWrite))
     {
-        qDebug() << "220TCR Data Serail Open Err!";
+        LOGE("220TCR Data Serail Open Err!");
     } else {
-        qDebug() << "220TCR Data Serail Open Success!";
+        LOGI("220TCR Data Serail Open Success!");
     }
 
     timer = new QTimer(this);

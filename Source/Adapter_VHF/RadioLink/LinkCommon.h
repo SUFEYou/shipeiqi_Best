@@ -5,6 +5,9 @@
 #include <QList>
 #include <QTime>
 #include <stdint.h>
+#include "log/log4z.h"
+
+using namespace zsummer::log4z;
 
 //#define     PACK_LENGTHLIMIT 1020
 //171电台发送报文长度大于1000字节时会产生阻塞，导致断链

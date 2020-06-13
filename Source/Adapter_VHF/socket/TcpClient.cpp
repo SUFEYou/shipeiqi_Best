@@ -5,7 +5,9 @@
 #include "TCPDataProcess.h"
 #include <QDebug>
 #include <QTimer>
+#include "log/log4z.h"
 
+using namespace zsummer::log4z;
 
 TcpClient::TcpClient()
 {
@@ -49,20 +51,20 @@ void TcpClient::sendData(const char* pData,const int nLen)
 
 void TcpClient::tcpConnected()
 {
-    qDebug() << "TCP Connected";
+    LOGI("TCP Connected");
     m_bACCLinkOk = true;
 }
 
 void TcpClient::tcpDisconnected()
 {
-    qDebug() << "TCP Disconnected";
+    LOGE("TCP Disconnected");
     m_bACCLinkOk = false;
 }
 
 void TcpClient::tcpError(QAbstractSocket::SocketError socketError)
 {
     Q_UNUSED(socketError);
-    qDebug() << "TCP Err: " << m_tcpSocket->errorString();
+    LOGE(QString("In TcpClient::tcpError, Err: %1").arg(m_tcpSocket->errorString()).toStdString().c_str());
     m_bACCLinkOk = false;
 }
 

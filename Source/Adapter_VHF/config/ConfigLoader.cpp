@@ -4,6 +4,9 @@
 #include <QFileInfo>
 #include <QFile>
 #include "Radio/RadioType.h"
+#include "log/log4z.h"
+
+using namespace zsummer::log4z;
 
 ConfigLoader* ConfigLoader::m_instance = NULL;
 QMutex ConfigLoader::m_Mutex;
@@ -73,6 +76,15 @@ void ConfigLoader::loadConfig()
     this->radioTyp    = settings.value("Apt-Static/RadioTyp").toInt();
     this->radioID     = settings.value("Apt-Static/RadioID").toInt();
     loadRadioConfig();
+
+    QString str = QString("<<<<<<<<<<SYS INFO>>>>>>>>>>SysType: %1, RadioType: %2, TCP_IP: %3, TCP_Port: %4, Ctrl_Port: %5, Voice_Port: %6")\
+                  .arg(sysType) \
+                  .arg(radioTyp) \
+                  .arg(TcpIP) \
+                  .arg(TcpPort) \
+                  .arg(ctrlPort) \
+                  .arg(voicPort);
+    LOGI(str.toStdString().c_str());
 }
 
 

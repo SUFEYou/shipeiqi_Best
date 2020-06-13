@@ -1,6 +1,9 @@
 #include "Radio181d.h"
 #include <QDebug>
 #include <QDateTime>
+#include "log/log4z.h"
+
+using namespace zsummer::log4z;
 
 Radio181D::Radio181D()
 {
@@ -38,9 +41,9 @@ void Radio181D::serialInit()
     //
     if (false == dataCom->open(QIODevice::ReadWrite))
     {
-        qDebug() << "181D Data Serail Open Err!";
+        LOGE("181D Data Serail Open Err!");
     } else {
-        qDebug() << "181D Data Serail Open Success!";
+        LOGI("181D Data Serail Open Success!");
     }
 
 #if WIN32
@@ -59,9 +62,9 @@ void Radio181D::serialInit()
     //
     if (false == ctrlCom->open(QIODevice::ReadWrite))
     {
-        qDebug() << "181D Ctrl Serail Open Err!";
+        LOGE("181D Ctrl Serail Open Err!");
     } else {
-        qDebug() << "181D Ctrl Serail Open Success 100ms!";
+        LOGI("181D Ctrl Serail Open Success 100ms!");
     }
 
     timer = new QTimer(this);
@@ -78,8 +81,6 @@ void Radio181D::readDataCom()
     QByteArray data = dataCom->readAll();
     if(!data.isEmpty())
     {
-
-        //qDebug() << "181D DataCom Recv size: " << data.size();
         RadioManage::getInstance()->onRecvLinkData(data);
     }
 }
@@ -87,7 +88,6 @@ void Radio181D::readDataCom()
 
 void Radio181D::readCtrlCom()
 {
-
     dataArray.push_back(ctrlCom->readAll());
 
     if (dataArray.length() < 7)
@@ -340,7 +340,6 @@ int Radio181D::writeCtrlData(uint16_t funCode, char* data, int len)
         }
 
     }
-
     //            char x[1024];
     //            memset(x, 0, 1024);
     //            memcpy(x, dstData, dstLen);
@@ -400,7 +399,6 @@ void Radio181D::wConverte(char* srcData, int srcLen, char* dstData, int &dstLen)
 int Radio181D::writeLinkData(char* data, int len)
 {
     QMutexLocker locker(&m_dataMutex);
-
     dataCom->write(data, len);
     return 0;
 }

@@ -361,7 +361,7 @@ void RadioLink::recvDataParse()
 
         if (tmp[2] != a)
         {
-            qDebug() << "In RadioLink::recvDataParse() CRC Err";
+            LOGW("In RadioLink::recvDataParse() CRC Err");
 
 //            printf("\n>>>>>>>>>>>>>>>>>>>>>> CRC Err >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 
@@ -376,7 +376,7 @@ void RadioLink::recvDataParse()
         // Message Length
         if (((unsigned char)tmp[3]) != tmpArray.length())
         {
-            qDebug() << "In RadioLink::recvDataParse() Length Err";
+            LOGW("In RadioLink::recvDataParse() Length Err");
 
 //            printf("\n>>>>>>>>>>>>>>>>>>>>>> Length Err >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 

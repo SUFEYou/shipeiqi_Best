@@ -1,6 +1,9 @@
 #include "Radio212tcr.h"
 #include <QDateTime>
 #include <QDebug>
+#include "log/log4z.h"
+
+using namespace zsummer::log4z;
 
 Radio212TCR::Radio212TCR()
             : updTim(0)
@@ -45,9 +48,9 @@ void Radio212TCR::serialInit()
     //
     if (false == dataCom->open(QIODevice::ReadWrite))
     {
-        qDebug() << "212TCR Data Serail Open Err!";
+        LOGE("212TCR Data Serail Open Err!");
     } else {
-        qDebug() << "212TCR Data Serail Open Success!";
+        LOGI("212TCR Data Serail Open Success!");
     }
 
     timer = new QTimer(this);
@@ -827,7 +830,6 @@ int Radio212TCR::writeCtrlData(uint16_t funCode, char* data, int len)
             break;
         }
     }
-
     return 0;
 }
 
@@ -851,7 +853,6 @@ int Radio212TCR::writeLinkData(char* data, int len)
             m_RequestCount = 4;
         }
     }
-
     return 0;
 }
 

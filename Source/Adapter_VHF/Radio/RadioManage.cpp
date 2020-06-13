@@ -9,6 +9,9 @@
 #include "Radio212tcr.h"
 #include "Radio220tcr.h"
 #include <QDebug>
+#include "log/log4z.h"
+
+using namespace zsummer::log4z;
 
 RadioManage* RadioManage::m_instance = NULL;
 QMutex RadioManage::m_mutex;
@@ -76,10 +79,9 @@ void RadioManage::init()
 
 void RadioManage::writeLinkData(char* pChar,int nLen)
 {
-    qDebug() << "Com Send size: " << nLen;
-
     if (radio != NULL)
         radio->writeLinkData(pChar, nLen);
+    LOGD(QString("In RadioManage::writeLinkData, Com Send size: %1").arg(nLen).toStdString().c_str());
 }
 
 
@@ -87,10 +89,12 @@ void RadioManage::writeCtrlData(uint16_t funCode, char* pChar,int nLen)
 {
     if (radio != NULL)
         radio->writeCtrlData(funCode, pChar, nLen);
+    LOGD(QString("In RadioManage::writeCtrlData").toStdString().c_str());
 }
 
 
-void RadioManage::onCtrlAck(uint16_t funCode, char* pChar,int nLen){
+void RadioManage::onCtrlAck(uint16_t funCode, char* pChar,int nLen)
+{
     SocketManage::getInstance()->getCtrlUdp()->sendCtrlAck(funCode, pChar, nLen);
 }
 
@@ -98,9 +102,11 @@ void RadioManage::onCtrlAck(uint16_t funCode, char* pChar,int nLen){
 void RadioManage::onRecvLinkData(QByteArray data)
 {
     RadioLinkManage::getInstance()->OnCommRecData(data);
+    LOGD(QString("In RadioManage::onRecvLinkData, recv len: %1").arg(data.size()).toStdString().c_str());
 }
 
 void RadioManage::onRecvLinkData(const char* data, const uint16_t len)
 {
     RadioLinkManage::getInstance()->OnCommRecData(data, len);
+    LOGD(QString("In RadioManage::onRecvLinkData, recv len: %1").arg(len).toStdString().c_str());
 }

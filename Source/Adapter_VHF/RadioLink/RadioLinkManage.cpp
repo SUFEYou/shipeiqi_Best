@@ -10,6 +10,9 @@
 #include <QSharedPointer>
 #include <QHash>
 #include <QDebug>
+#include "log/log4z.h"
+
+using namespace zsummer::log4z;
 
 RadioLinkManage* RadioLinkManage::m_instance = NULL;
 QMutex RadioLinkManage::m_mutex;
@@ -289,13 +292,13 @@ bool RadioLinkManage::DeleteACCtoRSCMessageData(const int nSendID, const int nSe
             bFinder = true;
             if (serialHash.size() == 1)
             {
-                qDebug() << "---------------VLNMSG_MSGEX_DELETED----------------, delete Serial: " << (*iter)->nSerial;
+                LOGD(QString("In RadioLinkManage::DeleteACCtoRSCMessageData, Delete Serial: %1").arg((*iter)->nSerial).toStdString().c_str());
                 iter = m_lMsgList.erase(iter);
                 break;
             }
             else
             {
-                qDebug() << "---------------VLNMSG_MSGEX_DELETED----------------, delete Serial: " << (*iter)->nSerial;
+                LOGD(QString("In RadioLinkManage::DeleteACCtoRSCMessageData, Delete Serial: %1").arg((*iter)->nSerial).toStdString().c_str());
                 iter = m_lMsgList.erase(iter);
                 serialHash.remove((*iter)->nSerial);
             }
@@ -577,7 +580,7 @@ int RadioLinkManage::setDataAppend(ObjMsg& stumsg, int maxlength)
     }
     else
     {
-        qDebug() << "In CE_VHFNodeManage::XSetVHFDataAppend() t != 1";
+        LOGD("In CE_VHFNodeManage::XSetVHFDataAppend() t != 1");
     }
 
     return t;
@@ -635,7 +638,7 @@ void RadioLinkManage::msgListProcess()
         {
             if ((*iter)->nSendtimes >= 6|| (*iter)->nTimeCount > 300)
             {
-                qDebug() << "TimerDriverDealWith RemoveAt SendID " << (*iter)->nSource << ", nSerial" << (*iter)->nSerial;
+                LOGI(QString("TimerDriverDealWith RemoveAt SendID: %1, nSerial: %2").arg((*iter)->nSource).arg((*iter)->nSerial).toStdString().c_str());
                 iter = m_lMsgList.erase(iter);
             }
             else
@@ -645,7 +648,7 @@ void RadioLinkManage::msgListProcess()
         {
             if ((*iter)->nSendtimes >= 3 || (*iter)->nTimeCount > 300)
             {
-                qDebug() << "TimerDriverDealWith RemoveAt SendID " << (*iter)->nSource << ", nSerial" << (*iter)->nSerial;
+                LOGI(QString("TimerDriverDealWith RemoveAt SendID: %1, nSerial: %2").arg((*iter)->nSource).arg((*iter)->nSerial).toStdString().c_str());
                 iter = m_lMsgList.erase(iter);
             }
             else

@@ -1,5 +1,8 @@
 #include "Radio171d.h"
 #include <QDebug>
+#include "log/log4z.h"
+
+using namespace zsummer::log4z;
 
 Radio171D::Radio171D()
     : m_timer(new QTimer(this))
@@ -42,9 +45,10 @@ void Radio171D::serialInit()
     //
     if (false == dataCom->open(QIODevice::ReadWrite))
     {
-        qDebug() << "171d Serail Open Err!";
+        LOGE("171D Serail Open Err!");
+
     } else {
-        qDebug() << "171d Serail Open Success!";
+        LOGI("171D Serail Open Success!");
         m_timer->start(1000);
     }
 }
@@ -127,9 +131,7 @@ int Radio171D::writeCtrlData(uint16_t funCode, char* data, int len)
 
 int Radio171D::writeLinkData(char* data, int len)
 {
-
     writeData(0x5500, data, len);
-
     return 0;
 }
 
@@ -385,7 +387,7 @@ void Radio171D::updateRadioState(uint16_t type, char* data, const int len)
         break;
     default:
     {
-        //qDebug() << "In Radio171D::updateRadioState, Recv unknown msg type!";
+        LOGD(QString("In Radio171D::updateRadioState, Recv unknown msg type!, Type: %1").arg(type).toStdString().c_str());
     }
         break;
     }

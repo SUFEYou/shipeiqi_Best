@@ -2,6 +2,9 @@
 #include "RadioLinkManage.h"
 #include "RadioLinkClient.h"
 #include <QDebug>
+#include "log/log4z.h"
+
+using namespace zsummer::log4z;
 
 RadioLinkMaster::RadioLinkMaster()
 {
@@ -92,15 +95,13 @@ void RadioLinkMaster::recvDataAnalyze(ObjMsg &recvMsg)
 
                     }
                 }
-
-                qDebug() << QString("%1=>LAYMSG_CONTROL").arg(recvMsg.nSource);
-                qDebug() << "Head LAYMSG_CONTROL";
+                LOGD("In RadioLinkMaster::recvDataAnalyze, Recv CONTROL");
             }
         }
         break;
     case LAYMSG_STATE:
         {
-            qDebug() << "Head LAYMSG_STATE";
+            LOGD("In RadioLinkMaster::recvDataAnalyze, Recv STATE");
             if (ActSenLAYMSG_STATEUnpack(recvMsg.pData,recvMsg.nDataLen))
             {
                 // Do with the Apply
@@ -109,20 +110,17 @@ void RadioLinkMaster::recvDataAnalyze(ObjMsg &recvMsg)
                     LinkLayerChainDealWithStageApply(recvMsg.nSource,m_nRecvState);
 
                     // Send to main exchange Class that one Apply enjoin the chain
-                    qDebug() << QString("%1=>LAYAPP_ONLINE").arg(recvMsg.nSource);
-                    qDebug() << "Head LAYMSG_STATE  LAYAPP_ONLINE";
+                    LOGD("In RadioLinkMaster::recvDataAnalyze, Head LAYMSG_STATE  LAYAPP_ONLINE");
 
                 }
                 else if(m_nRecvState == LAYAPP_STILL)	// Still Online
                 {
-                    qDebug() << QString("%1=>LAYAPP_STILL").arg(recvMsg.nSource);
-                    qDebug() << "Head LAYMSG_STATE  LAYAPP_STILL";
+                    LOGD("In RadioLinkMaster::recvDataAnalyze, Head LAYMSG_STATE  LAYAPP_STILL");
                 }
                 else if(m_nRecvState == LAYAPP_OFFLINE)	// offline
                 {
                     LinkLayerChainDealWithStageApply(recvMsg.nSource,m_nRecvState);
-                    qDebug() << QString("%1=>LAYAPP_OFFLINE").arg(recvMsg.nSource);
-                    qDebug() << "Head LAYMSG_STATE  LAYAPP_OFFLINE";
+                    LOGD("In RadioLinkMaster::recvDataAnalyze, Head LAYMSG_STATE  LAYAPP_OFFLINE");
                 }
                 else
                 {
@@ -139,8 +137,7 @@ void RadioLinkMaster::recvDataAnalyze(ObjMsg &recvMsg)
                 // 处理接收到的广播报文
                 RadioLinkManage::getInstance()->PackToSendRMTtoRSCMessageData(recvMsg.nSource,recvMsg.nReceive,
                                                                                m_pMsgRecvData,m_pMsgRecvLen,true);
-
-                qDebug() << QString("%1=>LAYMSG_MSGCAST").arg(recvMsg.nSource);
+                LOGD(QString("In RadioLinkMaster::recvDataAnalyze, Recv CAST, Source %1").arg(recvMsg.nSource).toStdString().c_str());
             }
         }
         break;
@@ -154,21 +151,17 @@ void RadioLinkMaster::recvDataAnalyze(ObjMsg &recvMsg)
                 msg->nSerial = m_pMsgRecvSn;
                 m_nListRecall.push_back(msg);
 
-                qDebug() << QString("HEAD LAYMSG_MSGONCE msg.nSource %1 msg.nSerial %2").arg(msg->nSource).arg(msg->nSerial) << " nVersion " << recvMsg.nVersion;
-
+                LOGD(QString("In RadioLinkMaster::recvDataAnalyze, Recv ONCE, Source %1, Serial %2").arg(msg->nSource).arg(msg->nSerial).toStdString().c_str());
                 // to Main Exchange Class do with the Data
                 // 处理接收到的报文
-
                 RadioLinkManage::getInstance()->PackToSendRMTtoRSCMessageData(recvMsg.nSource,recvMsg.nReceive,
                                                                                m_pMsgRecvData,m_pMsgRecvLen,false);
-
-                qDebug() << QString("%1=>LAYMSG_MSGONCE").arg(recvMsg.nSource);
             }
         }
         break;
     case LAYMSG_MSGCALL:
         {
-            qDebug() << "ActSenLAYMSG_MSGCALLUnpack " << recvMsg.nSerial;
+            LOGD(QString("In RadioLinkMaster::recvDataAnalyze, Recv MSGCALL, Serial: %1").arg(recvMsg.nSerial).toStdString().c_str());
             if (ActSenLAYMSG_MSGCALLUnpack(recvMsg.pData,recvMsg.nDataLen))
             {
                 for (int i = 0; i < m_nRecvCallList.length(); ++i)
@@ -177,8 +170,6 @@ void RadioLinkMaster::recvDataAnalyze(ObjMsg &recvMsg)
                 }
 
                 RadioLinkManage::getInstance()->ReSetListCountNum();
-
-                qDebug() << QString("%1=>LAYMSG_MSGCALL").arg(recvMsg.nSource);
             }
         }
         break;
@@ -243,10 +234,9 @@ void RadioLinkMaster::LinkLayerMainCircle()
             //////////////////////////////////////////////////////////////////////////
             // Wait for the time to Send Out Data
             m_nTOutCount++;
-            //qDebug() << "Head MOMENT_CIRCLE";
             if (m_nTOutCount >= m_nChain.nLimitOut*m_nTimeFactor)
             {
-                qDebug() << "Head MOMENT_CIRCLE  m_nTOutCount >= m_nChain.nLimitOut*m_nTimeFactor";
+                LOGD("Head MOMENT_CIRCLE  m_nTOutCount >= m_nChain.nLimitOut*m_nTimeFactor");
                 LinkLayerChainDealWithOuttime(m_nSeatNow);
             }
         }
@@ -255,7 +245,6 @@ void RadioLinkMaster::LinkLayerMainCircle()
         {
             //////////////////////////////////////////////////////////////////////////
             // Send What
-            //qDebug() << "Head MOMENT_APPLY";
             m_nTOutCount++;
             if (m_bSendApplyCan)
             {
@@ -263,14 +252,14 @@ void RadioLinkMaster::LinkLayerMainCircle()
                 {
                     // Send the Apply Information
                     LinkLayerComSendApplyData();
-                    qDebug() << "Head MOMENT_APPLY LinkLayerComSendApplyData";
+                    LOGD("Head MOMENT_APPLY LinkLayerComSendApplyData");
                 }
             }
 
             if (m_nTOutCount >= m_nChain.nLimitApply*m_nTimeFactor)
             {
                 LinkLayerCircleMomentToDrift();
-                qDebug() << "Head MOMENT_APPLY LinkLayerCircleMomentToDrift";
+                LOGD("Head MOMENT_APPLY LinkLayerCircleMomentToDrift");
             }
 
             // Chain is Changed
@@ -283,15 +272,13 @@ void RadioLinkMaster::LinkLayerMainCircle()
         break;
     case MOMENT_DRIFT:
         {
-            //qDebug() << "Head MOMENT_DRIFT";
             m_nTOutCount++;
             if (m_nTOutCount >= m_nChain.nLimitDrift*m_nTimeFactor)
             {
                 m_bChainCircleFlag = false;
                 m_bSendOK = false;
                 LinkLayerCircleMomentToBegin();
-
-                qDebug() << "Head MOMENT_DRIFT LinkLayerCircleMomentToBegin";
+                LOGD("Head MOMENT_DRIFT LinkLayerCircleMomentToBegin");
             }
 
         }
@@ -367,7 +354,7 @@ void RadioLinkMaster::LinkLayerComSendMemoryData()
     // 上报当前链表状态
 
     RadioLinkManage::getInstance()->RSCtoACCChainState();
-    qDebug() << QString("%1<=LAYAPP_CONTROL").arg(m_nCodeMe);
+    LOGD(QString("%1<=LAYAPP_CONTROL").arg(m_nCodeMe).toStdString().c_str());
 
     //////////////////////////////////////////////////////////////////////////
     // Send the Must to been Send's Information in the Send List
@@ -378,7 +365,7 @@ void RadioLinkMaster::LinkLayerComSendMemoryData()
     // Message
     m_bSendOK = ComSendOutData(m_pDSendData,m_pDSendLen);
 
-    qDebug() << "HEAD ComSendOutData SendLen " << m_pDSendLen;
+    LOGD(QString("HEAD ComSendOutData SendLen: %1").arg(m_pDSendLen).toStdString().c_str());
 
 }
 
@@ -532,7 +519,7 @@ void RadioLinkMaster::LinkLayerChainSetStageRecvOk(int& nid)
 // Set the Stage Out Time
 void RadioLinkMaster::LinkLayerChainSetStageOuttime(int& nid)
 {
-    qDebug() << "Head  LinkLayerChainSetStageOuttime";
+    LOGD("Head  LinkLayerChainSetStageOuttime");
     for (int i = 0; i < m_nChain.nListMember.length(); ++i)
     {
         pObjStage obj = m_nChain.nListMember[i];
