@@ -27,7 +27,6 @@ void ConfigRadio171d::load()
         createConfig();
         loadConfig();
     }
-//    qDebug() << "-----------------------------------";
 }
 
 void ConfigRadio171d::createConfig()

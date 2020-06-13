@@ -47,7 +47,9 @@ SOURCES += main.cpp \
     config/ConfigRadio220.cpp \
     config/ConfigRadio230.cpp \
     Radio/Radio230.cpp \
-    RadioLink/RadioLink_A01SSB.cpp
+    RadioLink/RadioLink_A01SSB.cpp \
+    log/log4z.cpp \
+    config/ConfigLog.cpp
 
 
 HEADERS += \
@@ -84,12 +86,16 @@ HEADERS += \
     config/ConfigRadio220.h \
     config/ConfigRadio230.h \
     Radio/Radio230.h \
-    RadioLink/RadioLink_A01SSB.h
+    RadioLink/RadioLink_A01SSB.h \
+    log/log4z.h \
+    config/ConfigLog.h
 
 win32{
     SOURCES += Uart/qextserialport_win.cpp
 
 #    HEADERS +=
+
+    LIBS += -L$$PWD/log/lib/win -lshlwapi
 }
 
 unix{

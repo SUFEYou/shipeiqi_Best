@@ -385,7 +385,7 @@ void Radio171AL::updateRadioState(uint16_t type, char* data, const int len)
         break;
     default:
     {
-        qDebug() << "In Radio171AL::updateRadioState, Recv unknown msg type!";
+        qDebug() << "In Radio171AL::updateRadioState, Recv unknown msg type!, Type: " << type;
     }
         break;
     }

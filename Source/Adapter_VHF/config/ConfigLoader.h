@@ -6,6 +6,7 @@
 #include <QSharedPointer>
 #include <stdint.h>
 #include "ConfigRadio.h"
+#include "ConfigLog.h"
 #include "ConfigRadio171al.h"
 #include "ConfigRadio171d.h"
 #include "ConfigRadio181d.h"
@@ -60,6 +61,7 @@ private:
     QString                                 TcpIP;
     int                                     TcpPort;
 
+    ConfigLog                               m_log;
     QSharedPointer<ConfigRadio>             m_radio171AL;
     QSharedPointer<ConfigRadio>             m_radio171D;
     QSharedPointer<ConfigRadio>             m_radio181D;

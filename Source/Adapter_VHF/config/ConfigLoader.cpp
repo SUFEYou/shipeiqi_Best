@@ -50,14 +50,12 @@ bool ConfigLoader::load()
         loadConfig();
     }
 
-//    qDebug() << "-----------------------------------";
-
     return true;
 }
 
 void ConfigLoader::loadConfig()
 {
-
+    m_log.load();
     QSettings settings("Apt-Config.ini", QSettings::IniFormat);
 
     this->TcpIP     = settings.value("Commu-TCP/TcpIP").toString();

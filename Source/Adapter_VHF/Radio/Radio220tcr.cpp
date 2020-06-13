@@ -31,7 +31,7 @@ Radio220tcr::~Radio220tcr()
 void Radio220tcr::serialInit()
 {
 #if WIN32
-    dataCom = new QextSerialPort("COM6");
+    dataCom = new QextSerialPort("COM12");
 #else
     dataCom = new QextSerialPort("/dev/ttymxc2");
 #endif
