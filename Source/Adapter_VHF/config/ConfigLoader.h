@@ -48,6 +48,7 @@ private:
     static ConfigLoader     *m_instance;
     static QMutex           m_Mutex;
 
+    QString                 version;
     uint32_t                sysType;
     uint16_t                programType;
     uint16_t                programID;

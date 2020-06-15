@@ -20,7 +20,7 @@ ConfigLoader::ConfigLoader()
              , m_radio781TCP(new ConfigRadio781tcp)
              , m_radio230(new ConfigRadio230)
 {
-
+    version = QString("V1.0.0");
 }
 
 ConfigLoader::~ConfigLoader()
@@ -77,6 +77,7 @@ void ConfigLoader::loadConfig()
     this->radioID     = settings.value("Apt-Static/RadioID").toInt();
     loadRadioConfig();
 
+    LOGI(QString("<<<<<<<<<<Version>>>>>>>>>>: %1").arg(version).toStdString().c_str());
     QString str = QString("<<<<<<<<<<SYS INFO>>>>>>>>>>SysType: %1, RadioType: %2, TCP_IP: %3, TCP_Port: %4, Ctrl_Port: %5, Voice_Port: %6")\
                   .arg(sysType) \
                   .arg(radioTyp) \
