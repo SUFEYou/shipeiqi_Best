@@ -292,13 +292,15 @@ bool RadioLinkManage::DeleteACCtoRSCMessageData(const int nSendID, const int nSe
             bFinder = true;
             if (serialHash.size() == 1)
             {
-                LOGD(QString("In RadioLinkManage::DeleteACCtoRSCMessageData, Delete Serial: %1").arg((*iter)->nSerial).toStdString().c_str());
+                if (iter != m_lMsgList.end())
+                    LOGI(QString("In RadioLinkManage::DeleteACCtoRSCMessageData, Delete Serial: %1").arg((*iter)->nSerial).toStdString().c_str());
                 iter = m_lMsgList.erase(iter);
                 break;
             }
             else
             {
-                LOGD(QString("In RadioLinkManage::DeleteACCtoRSCMessageData, Delete Serial: %1").arg((*iter)->nSerial).toStdString().c_str());
+                if (iter != m_lMsgList.end())
+                    LOGI(QString("In RadioLinkManage::DeleteACCtoRSCMessageData, Delete Serial: %1").arg((*iter)->nSerial).toStdString().c_str());
                 iter = m_lMsgList.erase(iter);
                 serialHash.remove((*iter)->nSerial);
             }
@@ -638,7 +640,8 @@ void RadioLinkManage::msgListProcess()
         {
             if ((*iter)->nSendtimes >= 6|| (*iter)->nTimeCount > 300)
             {
-                LOGI(QString("TimerDriverDealWith RemoveAt SendID: %1, nSerial: %2").arg((*iter)->nSource).arg((*iter)->nSerial).toStdString().c_str());
+                if (iter != m_lMsgList.end())
+                    LOGI(QString("TimerDriverDealWith RemoveAt SendID: %1, nSerial: %2").arg((*iter)->nSource).arg((*iter)->nSerial).toStdString().c_str());
                 iter = m_lMsgList.erase(iter);
             }
             else
@@ -648,7 +651,8 @@ void RadioLinkManage::msgListProcess()
         {
             if ((*iter)->nSendtimes >= 3 || (*iter)->nTimeCount > 300)
             {
-                LOGI(QString("TimerDriverDealWith RemoveAt SendID: %1, nSerial: %2").arg((*iter)->nSource).arg((*iter)->nSerial).toStdString().c_str());
+                if (iter != m_lMsgList.end())
+                    LOGI(QString("TimerDriverDealWith RemoveAt SendID: %1, nSerial: %2").arg((*iter)->nSource).arg((*iter)->nSerial).toStdString().c_str());
                 iter = m_lMsgList.erase(iter);
             }
             else
