@@ -42,6 +42,8 @@ void ConfigLog::createConfig()
     settings.setValue("LoggerFileLine", true);
     //0:TRACE 1:DEBUG 2:INFO 3:WARN 4:ERROR 5:ALARM 6:FATAL
     settings.setValue("LoggerLevel", 1);
+    //单位：M
+    settings.setValue("LoggerLimitSize", 20);
     settings.endGroup();
 }
 
@@ -54,11 +56,13 @@ void ConfigLog::loadConfig()
     m_loggerFileLine = settings.value("LogInfo/LoggerFileLine").toBool();
     //0:TRACE 1:DEBUG 2:INFO 3:WARN 4:ERROR 5:ALARM 6:FATAL
     m_loggerLevel = settings.value("LogInfo/LoggerLevel").toInt();
+    m_loggerLimitSize = settings.value("LogInfo/LoggerLimitSize").toInt();
 
     ILog4zManager::getRef().setLoggerPath(LOG4Z_MAIN_LOGGER_ID, m_loggerPath.toStdString().c_str());
     ILog4zManager::getRef().setLoggerDisplay(LOG4Z_MAIN_LOGGER_ID, m_loggerDisplay);
     ILog4zManager::getRef().setLoggerFileLine(LOG4Z_MAIN_LOGGER_ID, m_loggerFileLine);
     ILog4zManager::getRef().setLoggerLevel(LOG4Z_MAIN_LOGGER_ID, m_loggerLevel);
+    ILog4zManager::getRef().setLoggerLimitsize(LOG4Z_MAIN_LOGGER_ID, m_loggerLimitSize);
     ILog4zManager::getRef().start();
 
     LOGI("Adapter Start");

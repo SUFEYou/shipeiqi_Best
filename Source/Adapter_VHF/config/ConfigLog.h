@@ -19,6 +19,7 @@ private:
     bool        m_loggerDisplay;
     bool        m_loggerFileLine;
     quint8      m_loggerLevel;
+    quint8      m_loggerLimitSize;
 };
 
 #endif // CONFIGLOG_H
