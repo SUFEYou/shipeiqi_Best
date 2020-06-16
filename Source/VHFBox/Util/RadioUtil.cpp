@@ -35,6 +35,12 @@ QString RadioUtil::getRadioTypStr(int radioTyp)
     if(radioTyp == 2124){
         return "212TCR";
     }
+    if(radioTyp == 2204){
+        return "220";
+    }
+    if(radioTyp == 2304){
+        return "230";
+    }
 
     return "";
 }

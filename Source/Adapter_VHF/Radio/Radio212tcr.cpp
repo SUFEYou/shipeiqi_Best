@@ -199,7 +199,7 @@ void Radio212TCR::updateRadioState(const char* data, const int len)
             radioState.power = *(data+17);
             //radioState.workMod = *(data+18);
             //协议中标注，最后一个字节上送的为静噪等级
-            radioState.squelch = *(data+18);
+            //radioState.squelch = *(data+18);
         }
     }
         break;
