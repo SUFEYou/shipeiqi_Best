@@ -98,7 +98,8 @@ void RadioLinkManage::init()
 
     //A01短波电台220及230，不组网
     if ((ConfigLoader::getInstance()->getSysType()) == 0X0A01 && \
-        (ConfigLoader::getInstance()->getRadioTyp() == RADIO_220 || \
+        (ConfigLoader::getInstance()->getRadioTyp() == RADIO_212TCR || \
+         ConfigLoader::getInstance()->getRadioTyp() == RADIO_220    || \
          ConfigLoader::getInstance()->getRadioTyp() == RADIO_230))
     {
         m_radioLink_A01SSB->SetAvailable(true);
@@ -433,19 +434,16 @@ void RadioLinkManage::RSCtoACCChainState()
 // <==接收到链锯回馈的处理
 bool  RadioLinkManage::RMTtoRSCMessageSerial(const int nSendID,const int nSerial)
 {
-    //qDebug() << "RMTtoRSCMessageSerial SendID " << nSendID << " nSerial " << nSerial;
-
     QMutexLocker locker(&m_listMutex);
     bool bFinder = false;
     for (int i = 0; i < m_lMsgList.length(); ++i)
     {
         if ((m_lMsgList[i]->nSource == nSendID) && (m_lMsgList[i]->nSerial == nSerial))
         {
-            //qDebug() << "RMTtoRSCMessageSerial RemoveAt SendID " << nSendID << ", nSerial " << nSerial;
             m_lMsgList.removeAt(i);
             bFinder = true;
-
             PackToSendRMTtoRSCMessageSerial(nSendID,nSerial);
+            LOGD(QString("Pack To Send RMTtoRSC Message Serial, nSendID: %1, nSerial: %2").arg(nSendID).arg(nSerial).toStdString().c_str());
             break;
         }
     }

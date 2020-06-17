@@ -1,6 +1,9 @@
 #include "RadioLink_A01SSB.h"
 #include "RadioLinkManage.h"
 #include <QDebug>
+#include "log/log4z.h"
+
+using namespace zsummer::log4z;
 
 
 #define A01SSB_MSG 100
@@ -46,8 +49,7 @@ void RadioLink_A01SSB::recvData(char* pchar,const int nlength)
     {
         return ;
     }
-    qDebug() << "sendID: " << sendID << ", recvID: " << recvID << ", serial: " << serial << ", type: " << QString::number(type);
-    //报文 文件
+    LOGD(QString("A01 SSB Recv Data, sendID: %1, recvID: %2, serial: %3, type: %4").arg(sendID).arg(recvID).arg(serial).arg(QString::number(type)).toStdString().c_str());
     if (type == 0 || type == 1)
     {
         if (type == 0)
@@ -60,6 +62,7 @@ void RadioLink_A01SSB::recvData(char* pchar,const int nlength)
     }
     else if (type == 2)//回复报
     {
+        LOGD(QString("A01 SSB Recv Recall").toStdString().c_str());
         RadioLinkManage::getInstance()->RMTtoRSCMessageSerial(sendID, serial);
     }
 }
@@ -76,6 +79,7 @@ void RadioLink_A01SSB::timerProcess()
         {
             packageData(msg->pData[0], msg->nSource, msg->nReceive, msg->nSerial, &(msg->pData[1]), msg->nDataLen-1);
             msg->nSendtimes += 1;
+            LOGD(QString("A01 SSB Packing Data, Source: %1, Receive: %2, nSerial: %3").arg(msg->nSource).arg(msg->nReceive).arg(msg->nSerial).toStdString().c_str());
         }
 
     }
