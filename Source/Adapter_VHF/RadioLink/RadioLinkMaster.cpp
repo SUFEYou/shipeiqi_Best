@@ -49,10 +49,6 @@ void RadioLinkMaster::recvDataAnalyze(ObjMsg &recvMsg)
         return ;
     }
 
-    //过滤接收信息不为本艇或广播直接舍弃
-    if (recvMsg.nReceive != m_nCodeMe && recvMsg.nReceive != BROADCAST_ID)
-        return;
-
     // Judge the Information
     switch(recvMsg.pData[0])
     {
@@ -135,6 +131,9 @@ void RadioLinkMaster::recvDataAnalyze(ObjMsg &recvMsg)
         break;
     case LAYMSG_MSGCAST:
         {
+            //过滤接收信息不为本艇或广播直接舍弃
+            if (recvMsg.nReceive != m_nCodeMe && recvMsg.nReceive != BROADCAST_ID)
+                return;
             if (ActSenLAYMSG_MSGCASTUnpack(recvMsg.pData,recvMsg.nDataLen))
             {
                 // to Main Exchange Class do with the Data
@@ -147,6 +146,9 @@ void RadioLinkMaster::recvDataAnalyze(ObjMsg &recvMsg)
         break;
     case LAYMSG_MSGONCE:
         {
+            //过滤接收信息不为本艇或广播直接舍弃
+            if (recvMsg.nReceive != m_nCodeMe && recvMsg.nReceive != BROADCAST_ID)
+                return;
             if (ActSenLAYMSG_MSGONCEUnpack(recvMsg.pData,recvMsg.nDataLen))
             {
                 // Add the Recall

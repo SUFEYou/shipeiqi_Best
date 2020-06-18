@@ -39,9 +39,6 @@ void RadioLinkClient::recvDataAnalyze(ObjMsg &recvMsg)
             return ;
         }
     }
-    //过滤接收信息不为本艇或广播直接舍弃
-    if (recvMsg.nReceive != m_nCodeMe && recvMsg.nReceive != BROADCAST_ID)
-        return;
 
     QString strDesc;
     // Judge the Information
@@ -97,6 +94,9 @@ void RadioLinkClient::recvDataAnalyze(ObjMsg &recvMsg)
         break;
     case LAYMSG_MSGCAST:
         {
+            //过滤接收信息不为本艇或广播直接舍弃
+            if (recvMsg.nReceive != m_nCodeMe && recvMsg.nReceive != BROADCAST_ID)
+            return;
             LOGD("In RadioLinkClient::recvDataAnalyze, Recv CAST");
             if (ActSenLAYMSG_MSGCASTUnpack(recvMsg.pData,recvMsg.nDataLen))
             {
@@ -111,6 +111,9 @@ void RadioLinkClient::recvDataAnalyze(ObjMsg &recvMsg)
         break;
     case LAYMSG_MSGONCE:
         {
+            //过滤接收信息不为本艇或广播直接舍弃
+            if (recvMsg.nReceive != m_nCodeMe && recvMsg.nReceive != BROADCAST_ID)
+                return;
             if (ActSenLAYMSG_MSGONCEUnpack(recvMsg.pData,recvMsg.nDataLen))
             {
                 // Add the Recall
