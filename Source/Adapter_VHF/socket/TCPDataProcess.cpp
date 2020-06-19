@@ -287,12 +287,15 @@ void TCPDataProcess::analyzeNetMsg(char* pData,const int nLen)
         break;
     case VLNMSG_MSGEX_TEXT:					// 二进制短报文信息
         {
+
             // 报文信息
             // 解析，加入发送报文队列
             NET_MSGEX_TEXT sText;
             memcpy(&sText, pData+nCurLen, sizeof(NET_MSGEX_TEXT));
             nCurLen += sizeof(NET_MSGEX_TEXT);
-
+            //存储类ObjMsg内定义数据最大字节为512字节
+            if (sText.TextLength > 512)
+                break;
             RadioLinkManage::getInstance()->ACCtoRSCMessageData(sText.SendID, sText.RecvID, pData+nCurLen-1, sText.TextLength, sText.Encrypt, sText.Degree, sText.Serial);
             LOGD("In TCPDataProcess::analyzeNetMsg, Recv VLNMSG_MSGEX_TEXT 二进制短报文信息");
         }

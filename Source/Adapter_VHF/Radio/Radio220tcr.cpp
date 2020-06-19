@@ -5,6 +5,8 @@
 
 using namespace zsummer::log4z;
 
+#define DATA_MAX_SIZE 4096
+
 Radio220tcr::Radio220tcr()
             : updTim(0)
             , m_nModemSend(false)
@@ -15,6 +17,9 @@ Radio220tcr::Radio220tcr()
 {
     m_DycArrayData = new char[ARRAY_DATA_LEN];
     radioState.errState = 1;
+
+    m_pReceiveBuf = new char[DATA_MAX_SIZE];
+    m_dataSndLen = 0;
 }
 
 Radio220tcr::~Radio220tcr()
@@ -28,6 +33,11 @@ Radio220tcr::~Radio220tcr()
     {
         delete[] m_DycArrayData;
         m_DycArrayData = NULL;
+    }
+    if (NULL != m_pReceiveBuf)
+    {
+        delete[] m_pReceiveBuf;
+        m_pReceiveBuf = NULL;
     }
 }
 
@@ -289,12 +299,22 @@ void Radio220tcr::updateRadioState(const char* data, const int len)
         {
             m_nModemState	= RADIOMODEMSTATE_RECEIVING;
             qDebug() << "Recving Data";
+            memset(m_pReceiveBuf,0,DATA_MAX_SIZE);
+            m_dataSndLen = 0;
         }
             break;
         case 0x04:
         {
             m_nModemState	= RADIOMODEMSTATE_RECEIVEEND;
             qDebug() << "Recv Data Done";
+            if (m_dataSndLen <= 0)
+            {
+                break;
+            }
+            else
+            {
+                RadioManage::getInstance()->onRecvLinkData(m_pReceiveBuf, m_dataSndLen);
+            }
         }
             break;
         case 0x05:
@@ -312,26 +332,26 @@ void Radio220tcr::updateRadioState(const char* data, const int len)
             break;
         case 0x0B:
         {
-            if((RADIOMODEMSTATE_SENDING == m_nModemState ||
-                RADIOMODEMSTATE_BUFEMPTY == m_nModemState) &&
-                true == m_nModemSend)
-            {
-                m_SendingTimesCount++;
-                if (m_SendingTimesCount > 30)
-                {
-                    setModemNoticeSendEnd();
-                    qDebug() << "0x0B m_SendingTimesCount > 30  SetModemNoticeSendEnd!";
+//            if((RADIOMODEMSTATE_SENDING == m_nModemState ||
+//                RADIOMODEMSTATE_BUFEMPTY == m_nModemState) &&
+//                true == m_nModemSend)
+//            {
+//                m_SendingTimesCount++;
+//                if (m_SendingTimesCount > 30)
+//                {
+//                    setModemNoticeSendEnd();
+//                    qDebug() << "0x0B m_SendingTimesCount > 30  SetModemNoticeSendEnd!";
 
-                }
-                else if (m_SendingTimesCount > 40)
-                {
-                    setModemNoticeCancel();
-                    m_SendingTimesCount = 0;
-                    m_nModemSend = false;
-                    m_nModemState = 0;
-                    qDebug() << "0x0B m_SendingTimesCount > 40  SetModemNoticeCancel!";
-                }
-            }
+//                }
+//                else if (m_SendingTimesCount > 40)
+//                {
+//                    setModemNoticeCancel();
+//                    m_SendingTimesCount = 0;
+//                    m_nModemSend = false;
+//                    m_nModemState = 0;
+//                    qDebug() << "0x0B m_SendingTimesCount > 40  SetModemNoticeCancel!";
+//                }
+//            }
             //m_RadioStateMsgQueryCount = 0;
         }
             break;
@@ -344,7 +364,9 @@ void Radio220tcr::updateRadioState(const char* data, const int len)
     case 0x84:		// 2.3 接收非保密数据
     {
         qDebug() << "Recv Unclassified Data";
-        RadioManage::getInstance()->onRecvLinkData(data+5, len-5);
+        //RadioManage::getInstance()->onRecvLinkData(data+5, len-5);
+        memcpy(m_pReceiveBuf+m_dataSndLen, data+5, len-5);
+        m_dataSndLen += len-5;
     }
         break;
     case 0x87:		// 2.3 电台发送流控状态

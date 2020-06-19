@@ -281,7 +281,7 @@ public:
     bool	bEncrypt;		// Encrypt
     int		nVersion;		// Version
     int		nDataLen;		// Message Length
-    char	pData[255];		// Message Data
+    char	pData[512];		// Message Data
     int		nDegree;		// Degree
     int		nSerial;		// Message Serial
     int		nTimeCount;		// Time Count

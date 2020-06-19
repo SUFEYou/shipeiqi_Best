@@ -61,6 +61,9 @@ private:
     uint16_t                            m_DycArrayLen;
 
     uint8_t                             m_RequestCount;
+
+    char*                               m_pReceiveBuf;
+    uint32_t                            m_dataSndLen;
 };
 
 #endif // RADIO212TCR_H

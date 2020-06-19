@@ -41,15 +41,19 @@ void RadioLink_A01SSB::recvData(char* pchar,const int nlength)
     //发送ID(4字节)+接收ID(4字节)+序号(4字节)+数据类型(1字节)
     if (nlength < 13)
         return;
+
     qint32 sendID = (pchar[0]<<24&0xFF000000) | (pchar[1]<<16&0xFF0000) | (pchar[2]<<8 &0xFF00) | (pchar[3] &0xFF);
     qint32 recvID = (pchar[4]<<24&0xFF000000) | (pchar[5]<<16&0xFF0000) | (pchar[6]<<8 &0xFF00) | (pchar[7] &0xFF);
     qint32 serial = (pchar[8]<<24&0xFF000000) | (pchar[9]<<16&0xFF0000) | (pchar[10]<<8&0xFF00) | (pchar[11]&0xFF);
     char type = pchar[12];
+
+    LOGD(QString("A01 SSB Recv Data, sendID: %1, recvID: %2, serial: %3, type: %4, length: %5").arg(sendID).arg(recvID).arg(serial).arg(QString::number(type)).arg(nlength-12).toStdString().c_str());
+
     if (recvID != m_nCodeMe && recvID != BROADCAST_ID)
     {
         return ;
     }
-    LOGD(QString("A01 SSB Recv Data, sendID: %1, recvID: %2, serial: %3, type: %4").arg(sendID).arg(recvID).arg(serial).arg(QString::number(type)).toStdString().c_str());
+    LOGD(QString("A01 SSB Recv Data, sendID: %1, recvID: %2, serial: %3, type: %4, length: %5").arg(sendID).arg(recvID).arg(serial).arg(QString::number(type)).arg(nlength-12).toStdString().c_str());
     if (type == 0 || type == 1)
     {
         if (type == 0)
@@ -71,7 +75,7 @@ void RadioLink_A01SSB::timerProcess()
 {
     static uint8_t sendCnt = 0;
     //定时器一个周期为200ms,sendCnt控制发送频率，暂定为3s
-    if (sendCnt > 15)
+    if (sendCnt > 30)
     {
         sendCnt = 0;
         pVHFMsg msg = RadioLinkManage::getInstance()->sendDataFromListWait_A01SSB();
@@ -79,9 +83,8 @@ void RadioLink_A01SSB::timerProcess()
         {
             packageData(msg->pData[0], msg->nSource, msg->nReceive, msg->nSerial, &(msg->pData[1]), msg->nDataLen-1);
             msg->nSendtimes += 1;
-            LOGD(QString("A01 SSB Packing Data, Source: %1, Receive: %2, nSerial: %3").arg(msg->nSource).arg(msg->nReceive).arg(msg->nSerial).toStdString().c_str());
+            LOGD(QString("A01 SSB Packing Data, Source: %1, Receive: %2, nSerial: %3, MsgLen: %4").arg(msg->nSource).arg(msg->nReceive).arg(msg->nSerial).arg(msg->nDataLen-1).toStdString().c_str());
         }
-
     }
     else
         ++sendCnt;
@@ -107,10 +110,11 @@ void RadioLink_A01SSB::packageData(const char type, const int sendid, const int 
     tmp[offset++] = (serial>>16) & 0xFF;
     tmp[offset++] = (serial>>8)  & 0xFF;
     tmp[offset++] =  serial      & 0xFF;
+    qDebug() << "-----------------SSB Type: ---------------------" << QString::number(type);
     //数据类型(1字节)
     if (type == A01SSB_MSG)
         tmp[offset++] = 0;
-    else if (type == A01SSB_FILE)
+    else if (type == A01SSB_FILE || type == 25)
         tmp[offset++] = 1;
     else
         tmp[offset++] = type;
