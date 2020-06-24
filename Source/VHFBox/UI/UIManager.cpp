@@ -77,7 +77,8 @@ bool UIManager::init()
 
         if (widge1 != NULL)
         {
-            widge1->setIndex(1);
+            widgetCount = widgetCount + 1;
+            widge1->setIndex(widgetCount);
             widge1->setRadioTypInt(radioTyp);
             widge1->setRadioTyp(RadioUtil::getRadioTypStr(radioTyp));
             widge1->setBoxID(QString::number(boxConf1->getBoxID()));
@@ -88,7 +89,7 @@ bool UIManager::init()
             curWidgetID = 1;
         }
 
-        widgetCount = widgetCount + 1;
+
 
     } else {
 
@@ -122,7 +123,8 @@ bool UIManager::init()
 
         if (widge2 != NULL)
         {
-            widge2->setIndex(1);
+            widgetCount = widgetCount + 1;
+            widge2->setIndex(widgetCount);
             widge2->setRadioTypInt(radioTyp);
             widge2->setRadioTyp(RadioUtil::getRadioTypStr(radioTyp));
             widge2->setBoxID(QString::number(boxConf2->getBoxID()));
@@ -132,8 +134,6 @@ bool UIManager::init()
         if(curWidgetID <0){
             curWidgetID = 2;
         }
-
-        widgetCount = widgetCount + 1;
 
     } else {
 
@@ -167,7 +167,8 @@ bool UIManager::init()
 
         if (widge3 != NULL)
         {
-            widge3->setIndex(1);
+            widgetCount = widgetCount + 1;
+            widge3->setIndex(widgetCount);
             widge3->setRadioTypInt(radioTyp);
             widge3->setRadioTyp(RadioUtil::getRadioTypStr(radioTyp));
             widge3->setBoxID(QString::number(boxConf3->getBoxID()));
@@ -178,7 +179,6 @@ bool UIManager::init()
             curWidgetID = 3;
         }
 
-        widgetCount = widgetCount + 1;
 
     } else {
 
@@ -212,7 +212,8 @@ bool UIManager::init()
 
         if (widge4 != NULL)
         {
-            widge4->setIndex(1);
+            widgetCount = widgetCount + 1;
+            widge4->setIndex(widgetCount);
             widge4->setRadioTypInt(radioTyp);
             widge4->setRadioTyp(RadioUtil::getRadioTypStr(radioTyp));
             widge4->setBoxID(QString::number(boxConf4->getBoxID()));
@@ -223,7 +224,6 @@ bool UIManager::init()
             curWidgetID = 4;
         }
 
-        widgetCount = widgetCount + 1;
 
     } else {
 

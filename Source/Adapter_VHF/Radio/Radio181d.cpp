@@ -434,5 +434,9 @@ void Radio181D::checkDisconnect()
         updTim = curTim;
 
         radioState.errState = 1;       // 电台通信异常
+        //电台首次开机时，需设置工作模式才能正常工作
+        char data[sizeof(RADIO_SET)];
+        memcpy(data, &radioState, sizeof(RADIO_SET));
+        writeCtrlData(Set_WorkMod, data, sizeof(RADIO_SET));
     }
 }

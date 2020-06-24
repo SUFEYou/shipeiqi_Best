@@ -8,6 +8,7 @@
 #include "Radio781tcp.h"
 #include "Radio212tcr.h"
 #include "Radio220tcr.h"
+#include "Radio230.h"
 #include <QDebug>
 #include "log/log4z.h"
 
@@ -18,12 +19,16 @@ QMutex RadioManage::m_mutex;
 
 RadioManage::RadioManage()
 {
-
+    radio = NULL;
 }
 
 RadioManage::~RadioManage()
 {
-
+    if (radio != NULL)
+    {
+        delete radio;
+        radio = NULL;
+    }
 }
 
 RadioManage* RadioManage::getInstance()
@@ -70,6 +75,11 @@ void RadioManage::init()
     if(curRadioTyp == RADIO_220){
 
         radio = new Radio220tcr();
+    }
+
+    if(curRadioTyp == RADIO_230){
+
+        radio = new Radio230();
     }
 
     if (radio != NULL)

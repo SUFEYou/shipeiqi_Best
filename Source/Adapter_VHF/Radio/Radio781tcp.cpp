@@ -425,5 +425,9 @@ void Radio781TCP::checkDisconnect()
         char ackData[sizeof(RADIO_STATE)];
         memcpy(ackData, &radioState, sizeof(RADIO_STATE));
         RadioManage::getInstance()->onCtrlAck(Ack_State, ackData, sizeof(RADIO_STATE));
+        //电台首次开机时，需设置工作模式才能正常工作
+        char data[sizeof(RADIO_SET)];
+        memcpy(data, &radioState, sizeof(RADIO_SET));
+        writeCtrlData(Set_WorkMod, data, sizeof(RADIO_SET));
     }
 }

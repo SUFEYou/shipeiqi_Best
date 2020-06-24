@@ -74,6 +74,7 @@ bool SocketManage::init()
         qDebug() <<"boxConf1" << "cSndToPort---------------"    << cSndToPort;
         qDebug() <<"boxConf1" << "vRecivPort---------------"    << vRecivPort;
         qDebug() <<"boxConf1" << "vSndToPort---------------"    << vSndToPort;
+        qDebug() <<"boxConf1" << "devID-----------------"       << devID;
         qDebug() <<"boxConf1" << "priority-----------------"    << priority;
 
         voiceUdp1 = new UDPVoice();
@@ -112,6 +113,7 @@ bool SocketManage::init()
         qDebug() <<"boxConf2" << "cSndToPort---------------"    << cSndToPort;
         qDebug() <<"boxConf2" << "vRecivPort---------------"    << vRecivPort;
         qDebug() <<"boxConf2" << "vSndToPort---------------"    << vSndToPort;
+        qDebug() <<"boxConf1" << "devID-----------------"       << devID;
         qDebug() <<"boxConf2" << "priority-----------------"    << priority;
 
         voiceUdp2 = new UDPVoice();
