@@ -248,7 +248,7 @@ void Radio220tcr::updateRadioState(const char* data, const int len)
         radioState.workTyp = *(data+16);
         radioState.power = *(data+17);
         radioState.squelch = *(data+18);
-        radioState.workMod = *(data+19);
+        //radioState.workMod = *(data+19);
     }
         break;
     case 0x21:		// 2.4.3 电台报告功率等级
@@ -992,22 +992,11 @@ void Radio220tcr::onTimer()
     if (QueryStateCount > 5)
     {
         QueryStateCount = 0;
-        {
-            char tmp[10];
-            tmp[0] = 1;
-            //查询工作状态
-            writeData(0x40, 0xB1, tmp, 1);
-            //查询业务类型
-            writeData(0x40, 0x23, tmp, 1);
-            //查询信道信息
-            {
-                char tmp[3];
-                tmp[0] = 0x01;
-                tmp[1] = radioState.channel/255;
-                tmp[2] = radioState.channel%255;
-                writeData(0x40, 0x12, tmp, 3);
-            }
-        }
+        //返回0x17
+        char tmp[1];
+        tmp[0] = 1;
+        writeData(0x40, 0xB1, tmp, 1);
+        writeData(0x40, 0x23, tmp, 1);
     }
 
     if(m_RequestCount > 3)
@@ -1034,7 +1023,7 @@ void Radio220tcr::setWorkTyp(const uint8_t nWorkTyp)
     pPara[1]	= nWorkTyp;
 
     writeData(0x40, 0x20, pPara, 2);
-    radioState.workTyp = nWorkTyp;
+    //radioState.workTyp = nWorkTyp;
 }
 
 void Radio220tcr::setWorkMod(const uint8_t nWorkMod)
@@ -1044,7 +1033,7 @@ void Radio220tcr::setWorkMod(const uint8_t nWorkMod)
     pPara[1]	= nWorkMod;
 
     writeData(0x40, 0x23, pPara, 2);
-    radioState.workMod = nWorkMod;
+    //radioState.workMod = nWorkMod;
 //    char pPara[14];
 //    pPara[0]	= 0x02;
 //    pPara[1]	= radioState.channel/256;
@@ -1090,7 +1079,7 @@ void Radio220tcr::setChannel(const uint16_t nCHN)
     pPara[2]	= nCHN%256;
 
     writeData(0x40, 0x14, pPara, 3);
-    radioState.channel = nCHN;
+    //radioState.channel = nCHN;
 }
 
 void Radio220tcr::setPower(const uint8_t nPower)
@@ -1100,7 +1089,7 @@ void Radio220tcr::setPower(const uint8_t nPower)
     pPara[1]	= nPower;
 
     writeData(0x40, 0x21, pPara, 2);
-    radioState.power = nPower;
+    //radioState.power = nPower;
 }
 
 void Radio220tcr::setSquelch(const uint8_t nSquelch)
@@ -1110,7 +1099,7 @@ void Radio220tcr::setSquelch(const uint8_t nSquelch)
     pPara[1]	= nSquelch;
 
     writeData(0x40, 0x22, pPara, 2);
-    radioState.power = nSquelch;
+    //radioState.power = nSquelch;
 }
 
 void Radio220tcr::setTxFreq(const uint64_t nTxFreq)
@@ -1163,7 +1152,7 @@ void Radio220tcr::setTxFreq(const uint64_t nTxFreq)
     pPara[13] = radioState.workMod;
 
     writeData(0x40, 0x12, pPara, 14);
-    radioState.txFreq = nTxFreq;
+    //radioState.txFreq = nTxFreq;
 }
 
 void Radio220tcr::setRxFreq(const uint64_t nRxFreq)
@@ -1216,7 +1205,7 @@ void Radio220tcr::setRxFreq(const uint64_t nRxFreq)
     pPara[13] = radioState.workMod;
 
     writeData(0x40, 0x12, pPara, 14);
-    radioState.rxFreq = nRxFreq;
+    //radioState.rxFreq = nRxFreq;
 }
 
 void Radio220tcr::checkDisconnect()
