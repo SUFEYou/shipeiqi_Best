@@ -751,8 +751,7 @@ void Radio230::radioModemCanSendData(bool isSend)
                 memset(tempData, 0, HFSENDDATA_LIMITLEN);
                 memcpy(tempData, m_DycArrayData+(HFSENDDATA_LIMITLEN*i), copyLen);
                 writeData(0x41, 0x84, tempData,copyLen);
-
-                qDebug() << "On radioModemCanSendData copyLen " << copyLen;
+                LOGD(QString("On radioModemCanSendData copyLen %1").arg(copyLen).toStdString().c_str());
             }
 
             m_nModemState = RADIOMODEMSTATE_SENDING;
@@ -763,7 +762,7 @@ void Radio230::radioModemCanSendData(bool isSend)
         {
             setModemNoticeSendEnd();
             m_nModemState = 0;
-            qDebug() << "else m_DycArrayLen < ARRAY_DATA_LEN";
+            LOGD(QString("else m_DycArrayLen < ARRAY_DATA_LEN").toStdString().c_str());
         }
     }
 }
@@ -990,7 +989,7 @@ void Radio230::onTimer()
         writeData(0x40, 0x23, tmp, 1);
     }
 
-    if (QueryStateCount > 5)
+    if (QueryStateCount > 3)
     {
         QueryStateCount = 0;
         //返回0x17

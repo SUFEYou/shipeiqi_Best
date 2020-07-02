@@ -429,6 +429,7 @@ void RadioLinkManage::RSCtoACCChainState()
     memcpy(m_pBufSend,&m_sSendHead,sizeof(NET_MSG_HEADER));
 
     TCPDataProcess::getInstance()->packageAndSendData(m_pBufSend, m_nBufSendLen);
+    LOGD(QString("In RadioLinkManage::RSCtoACCChainState, 上报链路状态").toStdString().c_str());
 }
 
 // <==接收到链锯回馈的处理
