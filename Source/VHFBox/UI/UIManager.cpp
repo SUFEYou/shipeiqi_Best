@@ -71,8 +71,16 @@ bool UIManager::init()
             widge1 = new WidgeVHF171al();
         }
 
-        if(radioTyp == 2124 || radioTyp == 2204 || radioTyp == 2304){
-            widge1 = new WidgeSSB();
+        if(radioTyp == 2124){
+            widge1 = new WidgeSSB212();
+        }
+
+        if(radioTyp == 2204){
+            widge1 = new WidgeSSB220();
+        }
+
+        if(radioTyp == 2304){
+            widge1 = new WidgeSSB230();
         }
 
         if (widge1 != NULL)
@@ -117,8 +125,16 @@ bool UIManager::init()
             widge2 = new WidgeVHF171al();
         }
 
-        if(radioTyp == 2124 || radioTyp == 2204 || radioTyp == 2304){
-            widge2 = new WidgeSSB();
+        if(radioTyp == 2124){
+            widge2 = new WidgeSSB212();
+        }
+
+        if(radioTyp == 2204){
+            widge2 = new WidgeSSB220();
+        }
+
+        if(radioTyp == 2304){
+            widge2 = new WidgeSSB230();
         }
 
         if (widge2 != NULL)
@@ -161,8 +177,16 @@ bool UIManager::init()
             widge3 = new WidgeVHF171al();
         }
 
-        if(radioTyp == 2124 || radioTyp == 2204 || radioTyp == 2304){
-            widge3 = new WidgeSSB();
+        if(radioTyp == 2124){
+            widge3 = new WidgeSSB212();
+        }
+
+        if(radioTyp == 2204){
+            widge3 = new WidgeSSB220();
+        }
+
+        if(radioTyp == 2304){
+            widge3 = new WidgeSSB230();
         }
 
         if (widge3 != NULL)
@@ -206,8 +230,16 @@ bool UIManager::init()
             widge4 = new WidgeVHF171al();
         }
 
-        if(radioTyp == 2124 || radioTyp == 2204 || radioTyp == 2304){
-            widge4 = new WidgeSSB();
+        if(radioTyp == 2124){
+            widge4 = new WidgeSSB212();
+        }
+
+        if(radioTyp == 2204){
+            widge4 = new WidgeSSB220();
+        }
+
+        if(radioTyp == 2304){
+            widge4 = new WidgeSSB230();
         }
 
         if (widge4 != NULL)

@@ -7,7 +7,9 @@
 #include "UI/WidgeVHF781tcp.h"
 #include "UI/WidgeVHF171d.h"
 #include "UI/WidgeVHF171al.h"
-#include "UI/WidgeSSB.h"
+#include "UI/WidgeSSB212.h"
+#include "UI/WidgeSSB220.h"
+#include "UI/WidgeSSB230.h"
 #include "UI/WidgeMulti.h"
 
 class UIManager

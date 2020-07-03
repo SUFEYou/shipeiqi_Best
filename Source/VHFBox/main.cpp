@@ -9,7 +9,9 @@
 #include "UI/UIManager.h"
 #include "UI/WidgeBase.h"
 #include "UI/WidgeVHF181d.h"
-#include "UI/WidgeSSB.h"
+#include "UI/WidgeSSB212.h"
+#include "UI/WidgeSSB220.h"
+#include "UI/WidgeSSB230.h"
 #include <QMessageBox>
 #include <QTextCodec>
 

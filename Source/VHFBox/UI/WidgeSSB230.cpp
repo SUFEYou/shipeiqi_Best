@@ -1,4 +1,4 @@
-#include "WidgeSSB.h"
+#include "WidgeSSB230.h"
 #include "ui_SsbCtrl.h"
 #include <QObject>
 #include <QDebug>
@@ -11,7 +11,7 @@
 #include "Util/RadioUtil.h"
 #include "UI/UIManager.h"
 
-WidgeSSB::WidgeSSB()
+WidgeSSB230::WidgeSSB230()
 {
     ui = new Ui::SsbCtrl;
     ui->setupUi(this);
@@ -68,7 +68,7 @@ WidgeSSB::WidgeSSB()
     iconOthr_Dark->start();
 }
 
-void WidgeSSB::init()
+void WidgeSSB230::init()
 {
 
     curChannel = "";
@@ -115,7 +115,7 @@ void WidgeSSB::init()
 
 }
 
-void WidgeSSB::onTimer()
+void WidgeSSB230::onTimer()
 {
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -367,7 +367,7 @@ void WidgeSSB::onTimer()
 }
 
 
-void WidgeSSB::setMute()
+void WidgeSSB230::setMute()
 {
 
     ui->lblMute->setText(QString::fromUtf8("静音"));
@@ -375,7 +375,7 @@ void WidgeSSB::setMute()
     ui->barSound->setVisible(false);
 }
 
-void WidgeSSB::setVolume(int volumnLev)
+void WidgeSSB230::setVolume(int volumnLev)
 {
     int volBar  = this->getVolumnBar(volumnLev);
 
@@ -384,7 +384,7 @@ void WidgeSSB::setVolume(int volumnLev)
     ui->barSound->setValue(volBar);
 }
 
-void WidgeSSB::setBkLight(int bkLightLev)
+void WidgeSSB230::setBkLight(int bkLightLev)
 {
     // 面板背景
     this->setAutoFillBackground(true);
@@ -465,7 +465,7 @@ void WidgeSSB::setBkLight(int bkLightLev)
 
 }
 
-void WidgeSSB::setTmpChannel(QString param)
+void WidgeSSB230::setTmpChannel(QString param)
 {
     setChnlTim = QTime::currentTime().addSecs(3);
     isSettingChnl = true;
@@ -485,7 +485,7 @@ void WidgeSSB::setTmpChannel(QString param)
 
 }
 
-void WidgeSSB::cancelTmpChannel()
+void WidgeSSB230::cancelTmpChannel()
 {
     ui->lblChnlVal->setText(curChannel);
     ui->lblChnlVal->setStyleSheet(DEF_CNANNEL_STYLE);
@@ -493,7 +493,7 @@ void WidgeSSB::cancelTmpChannel()
     showChnlErr(false);
 }
 
-void WidgeSSB::showChnlErr(bool isErr) {
+void WidgeSSB230::showChnlErr(bool isErr) {
     // 恢复临时默认信道
     tmpChannel = "000";
     isSettingChnl = false;
@@ -513,7 +513,7 @@ void WidgeSSB::showChnlErr(bool isErr) {
     }
 }
 
-void WidgeSSB::setTmpFreq(QString param)
+void WidgeSSB230::setTmpFreq(QString param)
 {
     setFreqTim = QTime::currentTime().addSecs(3);
     isSettingFreq = true;
@@ -567,7 +567,7 @@ void WidgeSSB::setTmpFreq(QString param)
 
 }
 
-void WidgeSSB::cancelTmpFreq()
+void WidgeSSB230::cancelTmpFreq()
 {
     ui->lblRxFreq->setText(curRxFreq);
     ui->lblTxFreq->setText(curTxFreq);
@@ -577,7 +577,7 @@ void WidgeSSB::cancelTmpFreq()
     showFreqErr(false);
 }
 
-void WidgeSSB::showFreqErr(bool isErr) {
+void WidgeSSB230::showFreqErr(bool isErr) {
     lblRxFreq = NULL;
     lblTxFreq = NULL;
     // 恢复临时值
@@ -602,7 +602,7 @@ void WidgeSSB::showFreqErr(bool isErr) {
 
 //////////////////////////////////////////////////////////////////////////////////
 
-void WidgeSSB::onKey(int key)
+void WidgeSSB230::onKey(int key)
 {
     if(key == 0x41){
         onKeyA();
@@ -675,7 +675,7 @@ void WidgeSSB::onKey(int key)
 
 }
 
-void WidgeSSB::onKeyA()
+void WidgeSSB230::onKeyA()
 {
      //qDebug()<<"A";
      UDPRctrl *udpRctrl = SocketManage::getInstance()->getCtrlUdp(index);
@@ -698,7 +698,7 @@ void WidgeSSB::onKeyA()
      }
 }
 
-void WidgeSSB::onKeyB()
+void WidgeSSB230::onKeyB()
 {
     //qDebug()<<"B";
     // 静噪
@@ -713,7 +713,7 @@ void WidgeSSB::onKeyB()
     udpRctrl->sendRadioCtrl(Set_Squelch, tmpSquelch);
 }
 
-void WidgeSSB::onKeyC()
+void WidgeSSB230::onKeyC()
 {
     //qDebug()<<"C";
     // 功率
@@ -728,7 +728,7 @@ void WidgeSSB::onKeyC()
     udpRctrl->sendRadioCtrl(Set_Power, tmpPower);
 }
 
-void WidgeSSB::onKeyD()
+void WidgeSSB230::onKeyD()
 {
     //qDebug()<<"D";
     // 方式
@@ -743,7 +743,7 @@ void WidgeSSB::onKeyD()
     udpRctrl->sendRadioCtrl(Set_WorkTyp, tmpWorkTyp);
 }
 
-void WidgeSSB::onKeyChannelUp()
+void WidgeSSB230::onKeyChannelUp()
 {
     int currChanl = tmpChannel.toInt();
     if(!isSettingChnl){
@@ -760,7 +760,7 @@ void WidgeSSB::onKeyChannelUp()
     setTmpChannel(QString("%1").arg(currChanl, 3, 10, QLatin1Char('0')));
 }
 
-void WidgeSSB::onKeyChannelDw()
+void WidgeSSB230::onKeyChannelDw()
 {
     int currChanl = tmpChannel.toInt();
     if(!isSettingChnl){
@@ -780,13 +780,13 @@ void WidgeSSB::onKeyChannelDw()
 
 //////////////////////////////////////////////////////////////////////////////////
 
-void WidgeSSB::onKeyCancel()
+void WidgeSSB230::onKeyCancel()
 {
     cancelTmpFreq();
     cancelTmpChannel();
 }
 
-void WidgeSSB::onKeyConfirm()
+void WidgeSSB230::onKeyConfirm()
 {
     //qDebug()<<"待设置信道号为："<<tmpChannel.toInt();
     if(!tmpChannel.isNull() && !tmpChannel.isEmpty() && isSettingChnl == true) {
@@ -809,7 +809,7 @@ void WidgeSSB::onKeyConfirm()
     }
 
     if(!tmpFreq.isNull() && !tmpFreq.isEmpty() && isSettingFreq == true) {
-        if(tmpFreq.toInt() > maxFreq) {
+        if(freqOverRange(tmpFreq.toInt())) {
             showFreqErr(true);
         } else {
             //TODO::
@@ -843,57 +843,57 @@ void WidgeSSB::onKeyConfirm()
 
 }
 
-void WidgeSSB::onKey0()
+void WidgeSSB230::onKey0()
 {
     keyInputParam("0");
 }
 
-void WidgeSSB::onKey1()
+void WidgeSSB230::onKey1()
 {
     keyInputParam("1");
 }
 
-void WidgeSSB::onKey2()
+void WidgeSSB230::onKey2()
 {
     keyInputParam("2");
 }
 
-void WidgeSSB::onKey3()
+void WidgeSSB230::onKey3()
 {
     keyInputParam("3");
 }
 
-void WidgeSSB::onKey4()
+void WidgeSSB230::onKey4()
 {
     keyInputParam("4");
 }
 
-void WidgeSSB::onKey5()
+void WidgeSSB230::onKey5()
 {
     keyInputParam("5");
 }
 
-void WidgeSSB::onKey6()
+void WidgeSSB230::onKey6()
 {
     keyInputParam("6");
 }
 
-void WidgeSSB::onKey7()
+void WidgeSSB230::onKey7()
 {
     keyInputParam("7");
 }
 
-void WidgeSSB::onKey8()
+void WidgeSSB230::onKey8()
 {
     keyInputParam("8");
 }
 
-void WidgeSSB::onKey9()
+void WidgeSSB230::onKey9()
 {
     keyInputParam("9");
 }
 
-void WidgeSSB::onKeyUp()
+void WidgeSSB230::onKeyUp()
 {
     cancelTmpChannel();
     cancelTmpFreq();
@@ -903,7 +903,7 @@ void WidgeSSB::onKeyUp()
     setTmpFreq(curRxFreq);
 }
 
-void WidgeSSB::onKeyDw()
+void WidgeSSB230::onKeyDw()
 {
     cancelTmpChannel();
     cancelTmpFreq();
@@ -913,7 +913,7 @@ void WidgeSSB::onKeyDw()
     setTmpFreq(curTxFreq);
 }
 
-void WidgeSSB::onKeyLeft()
+void WidgeSSB230::onKeyLeft()
 {
     cancelTmpChannel();
     cancelTmpFreq();
@@ -925,7 +925,7 @@ void WidgeSSB::onKeyLeft()
     setTmpFreq(curTxFreq);
 }
 
-void WidgeSSB::onKeyRight()
+void WidgeSSB230::onKeyRight()
 {
    cancelTmpFreq();
    cancelTmpChannel();
@@ -934,7 +934,7 @@ void WidgeSSB::onKeyRight()
 }
 
 
-void WidgeSSB::keyInputParam(QString param)
+void WidgeSSB230::keyInputParam(QString param)
 {
     if(isSettingChnl) {
         setTmpChannel(param);
@@ -946,19 +946,19 @@ void WidgeSSB::keyInputParam(QString param)
 
 }
 
-void WidgeSSB::setRxFreq(int param)
+void WidgeSSB230::setRxFreq(int param)
 {
     int freqBar = this->getFreqBar(param);
     ui->barRx->setValue(freqBar);
 }
 
-void WidgeSSB::setTxFreq(int param)
+void WidgeSSB230::setTxFreq(int param)
 {
     int freqBar = this->getFreqBar(param);
     ui->barTx->setValue(freqBar);
 }
 
-int WidgeSSB::getFreqBar(int param)
+int WidgeSSB230::getFreqBar(int param)
 {
     if(param >=100 && param <6000){
         return 20;
@@ -979,7 +979,7 @@ int WidgeSSB::getFreqBar(int param)
     return 0;
 }
 
-void WidgeSSB::resetIconMovie()
+void WidgeSSB230::resetIconMovie()
 {
     if(lightLev == 0){
         if(pttAck == 1) {
@@ -1000,3 +1000,24 @@ void WidgeSSB::resetIconMovie()
     }
 
 }
+
+bool WidgeSSB230::freqOverRange(const int curFreq)
+{
+    if (freqTyp == "TX") {
+        if ((curFreq < 16000) || (curFreq > 300000))
+            return true;
+        else
+            return false;
+    } else if (freqTyp == "RX") {
+        if ((curFreq < 1000) || (curFreq > 300000))
+            return true;
+        else
+            return false;
+    } else {
+        if ((curFreq < 16000) || (curFreq > 300000))
+            return true;
+        else
+            return false;
+    }
+}
+

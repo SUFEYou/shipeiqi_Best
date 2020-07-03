@@ -54,14 +54,16 @@ SOURCES += main.cpp\
     Config/BoxConf.cpp \
     UI/UIManager.cpp \
     UI/WidgeBase.cpp \
-    UI/WidgeSSB.cpp \
     Util/RadioUtil.cpp \
     UI/WidgeVHF181d.cpp \
     UI/WidgeMulti.cpp \
     Socket/UdpRevCast.cpp \
     UI/WidgeVHF781tcp.cpp \
     UI/WidgeVHF171d.cpp \
-    UI/WidgeVHF171al.cpp
+    UI/WidgeVHF171al.cpp \
+    UI/WidgeSSB212.cpp \
+    UI/WidgeSSB220.cpp \
+    UI/WidgeSSB230.cpp
 
 
 HEADERS  += \
@@ -82,7 +84,6 @@ HEADERS  += \
     Config/BoxConf.h \
     UI/UIManager.h \
     UI/WidgeBase.h \
-    UI/WidgeSSB.h \
     Util/RadioUtil.h \
     UI/WidgeVHF181d.h \
     Socket/SocketCommu.h \
@@ -90,7 +91,10 @@ HEADERS  += \
     Socket/UdpRevCast.h \
     UI/WidgeVHF781tcp.h \
     UI/WidgeVHF171d.h \
-    UI/WidgeVHF171al.h
+    UI/WidgeVHF171al.h \
+    UI/WidgeSSB212.h \
+    UI/WidgeSSB220.h \
+    UI/WidgeSSB230.h
 
 
 FORMS    += \

@@ -1,7 +1,6 @@
 QT -= gui
 QT += network
 
-#CONFIG += console
 CONFIG -= app_bundle
 
 # The following define makes your compiler emit warnings if you use
@@ -91,6 +90,8 @@ HEADERS += \
     config/ConfigLog.h
 
 win32{
+    CONFIG += console
+
     SOURCES += Uart/qextserialport_win.cpp
 
 #    HEADERS +=

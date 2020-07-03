@@ -1,5 +1,5 @@
-#ifndef WIDGESSB_H
-#define WIDGESSB_H
+#ifndef WIDGESSB230_H
+#define WIDGESSB230_H
 
 #include "UI/WidgeBase.h"
 #include <QTimer>
@@ -12,11 +12,11 @@ namespace Ui {
 class SsbCtrl;
 }
 
-class WidgeSSB : public WidgeBase
+class WidgeSSB230 : public WidgeBase
 {
     Q_OBJECT
 public:
-    WidgeSSB();
+    WidgeSSB230();
 
     virtual void init();
     virtual void onKey(int key);
@@ -67,6 +67,8 @@ private:
     int  getFreqBar(int param);
 
     void resetIconMovie();
+
+    bool freqOverRange(const int curFreq);
 
 signals:
 
@@ -128,4 +130,4 @@ private:
 
 };
 
-#endif // WIDGESSB_H
+#endif // WIDGESSB230_H

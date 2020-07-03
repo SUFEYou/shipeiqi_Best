@@ -1121,7 +1121,7 @@ void Radio212TCR::setTxFreq(const uint64_t nTxFreq)
     pPara[2]	= radioState.channel%256;
     //传递设置的数据为khz*10000,转化为hz需除以10
     uint64_t tmp = radioState.rxFreq/10;
-    if (tmp < 1600000 || tmp > 30000000)
+    if (tmp < 1600000 || tmp >= 30000000)
         memset(&pPara[3], 0, 4);
     else
     {
@@ -1132,7 +1132,7 @@ void Radio212TCR::setTxFreq(const uint64_t nTxFreq)
     }
 
     tmp = nTxFreq/10;
-    if (tmp < 1600000 || tmp > 30000000)
+    if (tmp < 1600000 || tmp >= 30000000)
         memset(&pPara[7], 0, 4);
     else
     {
@@ -1174,7 +1174,7 @@ void Radio212TCR::setRxFreq(const uint64_t nRxFreq)
     pPara[2]	= radioState.channel%256;
     //传递设置的数据为khz*10000,转化为hz需除以10
     uint64_t tmp = nRxFreq/10;
-    if (tmp < 1600000 || tmp > 30000000)
+    if (tmp < 1600000 || tmp >= 30000000)
         memset(&pPara[3], 0, 4);
     else
     {
@@ -1185,7 +1185,7 @@ void Radio212TCR::setRxFreq(const uint64_t nRxFreq)
     }
 
     tmp = radioState.txFreq/10;
-    if (tmp < 1600000 || tmp > 30000000)
+    if (tmp < 1600000 || tmp >= 30000000)
         memset(&pPara[7], 0, 4);
     else
     {

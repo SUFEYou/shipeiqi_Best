@@ -1124,7 +1124,7 @@ void Radio230::setTxFreq(const uint64_t nTxFreq)
     pPara[2]	= radioState.channel%256;
     //传递设置的数据为khz*10000,转化为hz需除以10
     uint64_t tmp = radioState.rxFreq/10;
-    if (tmp < 1600000 || tmp > 30000000)
+    if (tmp < 100000 || tmp > 30000000)
         memset(&pPara[3], 0, 4);
     else
     {
@@ -1177,7 +1177,7 @@ void Radio230::setRxFreq(const uint64_t nRxFreq)
     pPara[2]	= radioState.channel%256;
     //传递设置的数据为khz*10000,转化为hz需除以10
     uint64_t tmp = nRxFreq/10;
-    if (tmp < 1600000 || tmp > 30000000)
+    if (tmp < 100000 || tmp > 30000000)
         memset(&pPara[3], 0, 4);
     else
     {
