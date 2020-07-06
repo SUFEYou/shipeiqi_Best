@@ -27,7 +27,7 @@ Radio181D::~Radio181D()
 void Radio181D::serialInit()
 {
 #if WIN32
-    dataCom = new QextSerialPort("COM10");
+    dataCom = new QextSerialPort(QString("COM%1").arg(ConfigLoader::getInstance()->getConfigRadio()->getDataCom()));
 #else
     dataCom = new QextSerialPort("/dev/ttymxc2");
 #endif
@@ -47,7 +47,7 @@ void Radio181D::serialInit()
     }
 
 #if WIN32
-    ctrlCom = new QextSerialPort("COM7");
+    ctrlCom = new QextSerialPort(QString("COM%1").arg(ConfigLoader::getInstance()->getConfigRadio()->getCtrlCom()));
 #else
     ctrlCom = new QextSerialPort("/dev/ttymxc3");
 #endif

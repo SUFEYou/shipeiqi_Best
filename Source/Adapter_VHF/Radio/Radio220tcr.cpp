@@ -44,7 +44,7 @@ Radio220tcr::~Radio220tcr()
 void Radio220tcr::serialInit()
 {
 #if WIN32
-    dataCom = new QextSerialPort("COM12");
+    dataCom = new QextSerialPort(QString("COM%1").arg(ConfigLoader::getInstance()->getConfigRadio()->getDataCom()));
 #else
     dataCom = new QextSerialPort("/dev/ttymxc2");
 #endif
@@ -1151,7 +1151,7 @@ void Radio220tcr::setTxFreq(const uint64_t nTxFreq)
     pPara[13] = radioState.workMod;
 
     writeData(0x40, 0x12, pPara, 14);
-    //radioState.txFreq = nTxFreq;
+    radioState.txFreq = nTxFreq;
 }
 
 void Radio220tcr::setRxFreq(const uint64_t nRxFreq)
@@ -1204,7 +1204,7 @@ void Radio220tcr::setRxFreq(const uint64_t nRxFreq)
     pPara[13] = radioState.workMod;
 
     writeData(0x40, 0x12, pPara, 14);
-    //radioState.rxFreq = nRxFreq;
+    radioState.rxFreq = nRxFreq;
 }
 
 void Radio220tcr::checkDisconnect()

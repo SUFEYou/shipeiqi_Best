@@ -31,7 +31,7 @@ Radio171AL::~Radio171AL()
 void Radio171AL::serialInit()
 {
 #if WIN32
-    dataCom = new QextSerialPort("COM10");
+    dataCom = new QextSerialPort(QString("COM%1").arg(ConfigLoader::getInstance()->getConfigRadio()->getDataCom()));
 #else
     dataCom = new QextSerialPort("/dev/ttymxc2");
 #endif

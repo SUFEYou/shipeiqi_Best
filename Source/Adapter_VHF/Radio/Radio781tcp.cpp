@@ -26,7 +26,7 @@ Radio781TCP::~Radio781TCP()
 void Radio781TCP::serialInit()
 {
 #if WIN32
-    dataCom = new QextSerialPort("COM10");
+    dataCom = new QextSerialPort(QString("COM%1").arg(ConfigLoader::getInstance()->getConfigRadio()->getDataCom()));
 #else
     dataCom = new QextSerialPort("/dev/ttymxc1");
 #endif
@@ -46,7 +46,7 @@ void Radio781TCP::serialInit()
     }
 
 #if WIN32
-    ctrlCom = new QextSerialPort("COM2");
+    ctrlCom = new QextSerialPort(QString("COM%1").arg(ConfigLoader::getInstance()->getConfigRadio()->getCtrlCom()));
 #else
     ctrlCom = new QextSerialPort("/dev/ttymxc2");
 #endif

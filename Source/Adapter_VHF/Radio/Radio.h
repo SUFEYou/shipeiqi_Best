@@ -6,6 +6,7 @@
 #include <QTimer>
 #include <stdint.h>
 #include "RadioManage.h"
+#include "config/ConfigLoader.h"
 #include "Uart/qextserialport.h"
 #include "socket/SocketCommu.h"
 
