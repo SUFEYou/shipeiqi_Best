@@ -233,6 +233,7 @@ void RadioLinkManage::ACCtoRSCMessageData(const int nSendID, const int nRecvID, 
     //qDebug() << "Recv ACC Message, Message Serial: " << Newmsg->nSerial;
 
     bool bInsert = false;
+    //nDegree值越小，优先级越高，并且排在队列的前端
     for (int i = 0; i < m_lMsgList.length(); ++i)
     {
         if (m_lMsgList[i]->nDegree > Newmsg->nDegree)
