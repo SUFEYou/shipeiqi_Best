@@ -219,6 +219,9 @@ void RadioLinkManage::changeMasterToClient()
 // 发送报文
 void RadioLinkManage::ACCtoRSCMessageData(const int nSendID, const int nRecvID, char* pChar,const int nLen, bool bEncrypt,int nDegree, const int nSerial)
 {
+    //ObjMsg中Message Data最大长度为512字节
+    if (nLen > 512)
+        return;
     pVHFMsg Newmsg(new ObjMsg);
     Newmsg->nSource		= nSendID;
     Newmsg->nReceive	= nRecvID;
