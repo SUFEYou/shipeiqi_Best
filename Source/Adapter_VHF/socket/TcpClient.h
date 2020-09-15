@@ -7,6 +7,16 @@
 #include <QAbstractSocket>
 #include <qtimer.h>
 
+class TCPSocket : public QTcpSocket
+{
+    Q_OBJECT
+public:
+    TCPSocket();
+    ~TCPSocket();
+
+    void setPort();
+};
+
 class TcpClient: public QObject
 {
     Q_OBJECT

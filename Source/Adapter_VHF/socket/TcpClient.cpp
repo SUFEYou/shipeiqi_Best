@@ -6,14 +6,29 @@
 #include <QDebug>
 #include <QTimer>
 #include "log/log4z.h"
+#include <ws2tcpip.h>
 
 using namespace zsummer::log4z;
+
+TCPSocket::TCPSocket()
+{
+
+}
+
+TCPSocket::~TCPSocket()
+{
+
+}
+
+void TCPSocket::setPort()
+{
+    setLocalPort(ConfigLoader::getInstance()->getMsegPort());
+}
 
 TcpClient::TcpClient()
 {
 
 }
-
 
 void TcpClient::init()
 {
@@ -25,7 +40,7 @@ void TcpClient::init()
     QString serIP = ConfigLoader::getInstance()->getTcpIP();
     int serPort   = ConfigLoader::getInstance()->getTcpPort();
 
-    m_tcpSocket = new QTcpSocket(this);
+    m_tcpSocket = new QTcpSocket;
     m_tcpSocket->abort();
     m_tcpSocket->connectToHost(QHostAddress(serIP), serPort);
 

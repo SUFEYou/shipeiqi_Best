@@ -5,7 +5,7 @@
 #include <QDateTime>
 #include <QDebug>
 
-#define MAXDATALENGTH 300
+#define MAXDATALENGTH 512
 
 RadioLink::RadioLink()
 {
@@ -338,6 +338,11 @@ void RadioLink::recvDataParse()
         QByteArray tmpArray = m_recvDataList.first();
         m_recvDataList.pop_front();
 
+        if (tmpArray.length() > MAXDATALENGTH)
+        {
+            LOGW(QString("In RadioLink::recvDataParse recv Len Too Long, Len: %1").arg(tmpArray.length()).toStdString().c_str());
+            return ;
+        }
         char tmp[MAXDATALENGTH];
         memset(tmp, 0, MAXDATALENGTH);
         memcpy(tmp, tmpArray.data(), tmpArray.length());
@@ -376,7 +381,7 @@ void RadioLink::recvDataParse()
         // Message Length
         if (((unsigned char)tmp[3]) != tmpArray.length())
         {
-            LOGW("In RadioLink::recvDataParse() Length Err");
+            LOGW(QString("In RadioLink::recvDataParse() Length Err, Len: %1").arg(tmpArray.length()).toStdString().c_str());
 
 //            printf("\n>>>>>>>>>>>>>>>>>>>>>> Length Err >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 
@@ -385,8 +390,8 @@ void RadioLink::recvDataParse()
 
 //            printf("\n>>>>>>>>>>>>>>>>>>>>>>> Length Err >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 //            fflush(stdout);
-
-            continue;
+            if (tmpArray.length() < 255)
+                continue;
         }
         // Version & Encrypt
         m_nRecvMsg.nVersion = tmp[4] >> 4;

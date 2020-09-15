@@ -32,6 +32,7 @@ public:
 
     inline QString getTcpIP()  const { return TcpIP; }
     inline int getTcpPort()    const { return TcpPort; }
+    inline int getMsegPort()   const { return MsegPort; }
 
     QSharedPointer<ConfigRadio> getConfigRadio();
 
@@ -61,6 +62,7 @@ private:
     //与通信平台通信配置信息
     QString                                 TcpIP;
     int                                     TcpPort;
+    int                                     MsegPort;
 
     ConfigLog                               m_log;
     QSharedPointer<ConfigRadio>             m_radio171AL;

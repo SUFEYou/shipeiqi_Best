@@ -67,8 +67,11 @@ void ConfigLoader::loadConfig()
     this->ctrlPort  = settings.value("Radio-Ctrl/CtrlPort").toInt();
     this->voicPort  = settings.value("Radio-Voice/VoicPort").toInt();
 
+    this->MsegPort = settings.value("Radio-Mseg/MsegPort").toInt();
+
     qDebug() << "Commu Server TcpIP: "      << TcpIP;
     qDebug() << "Commu Server TcpPort: "    << TcpPort;
+    qDebug() << "Commu Local MsegPort: "    << MsegPort;
 
     this->sysType     = settings.value("Apt-Static/SYSTYPE").toInt();
     this->programType = settings.value("Apt-Static/PROGRAMTYPE").toInt();
@@ -78,11 +81,12 @@ void ConfigLoader::loadConfig()
     loadRadioConfig();
 
     LOGI(QString("<<<<<<<<<<Version>>>>>>>>>>: %1").arg(version).toStdString().c_str());
-    QString str = QString("<<<<<<<<<<SYS INFO>>>>>>>>>>SysType: %1, RadioType: %2, TCP_IP: %3, TCP_Port: %4, Ctrl_Port: %5, Voice_Port: %6")\
+    QString str = QString("<<<<<<<<<<SYS INFO>>>>>>>>>>SysType: %1, RadioType: %2, TCP_IP: %3, TCP_Port: %4, Local_Port: %5, Ctrl_Port: %6, Voice_Port: %7")\
                   .arg(sysType) \
                   .arg(radioTyp) \
                   .arg(TcpIP) \
                   .arg(TcpPort) \
+                  .arg(MsegPort) \
                   .arg(ctrlPort) \
                   .arg(voicPort);
     LOGI(str.toStdString().c_str());
@@ -105,6 +109,10 @@ void ConfigLoader::createConfig()
     settings.beginGroup("Commu-TCP");
     settings.setValue("TcpIP",  "192.168.1.15");
     settings.setValue("TcpPort", 12000);
+    settings.endGroup();
+
+    settings.beginGroup("Radio-Mseg");
+    settings.setValue("MsegPort", 50016);
     settings.endGroup();
 
     settings.beginGroup("Radio-Ctrl");
