@@ -10,21 +10,6 @@
 
 using namespace zsummer::log4z;
 
-TCPSocket::TCPSocket()
-{
-
-}
-
-TCPSocket::~TCPSocket()
-{
-
-}
-
-void TCPSocket::setPort()
-{
-    setLocalPort(ConfigLoader::getInstance()->getMsegPort());
-}
-
 TcpClient::TcpClient()
 {
 
@@ -42,6 +27,7 @@ void TcpClient::init()
 
     m_tcpSocket = new QTcpSocket;
     m_tcpSocket->abort();
+    m_tcpSocket->bind(ConfigLoader::getInstance()->getMsegPort());
     m_tcpSocket->connectToHost(QHostAddress(serIP), serPort);
 
     m_timer = new QTimer(this);
@@ -115,6 +101,7 @@ void TcpClient::dealTimer()
             QString serIP = ConfigLoader::getInstance()->getTcpIP();
             int serPort   = ConfigLoader::getInstance()->getTcpPort();
             m_tcpSocket->abort();
+            m_tcpSocket->bind(ConfigLoader::getInstance()->getMsegPort());
             m_tcpSocket->connectToHost(QHostAddress(serIP), serPort);
         }
     }
