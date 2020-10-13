@@ -6,7 +6,6 @@
 #include <QDebug>
 #include <QTimer>
 #include "log/log4z.h"
-#include <ws2tcpip.h>
 
 using namespace zsummer::log4z;
 
@@ -14,6 +13,7 @@ TcpClient::TcpClient()
 {
 
 }
+
 
 void TcpClient::init()
 {
@@ -25,9 +25,11 @@ void TcpClient::init()
     QString serIP = ConfigLoader::getInstance()->getTcpIP();
     int serPort   = ConfigLoader::getInstance()->getTcpPort();
 
-    m_tcpSocket = new QTcpSocket;
+    m_tcpSocket = new QTcpSocket(this);
     m_tcpSocket->abort();
+#if (QT_VERSION >= QT_VERSION_CHECK(5,5,0))
     m_tcpSocket->bind(ConfigLoader::getInstance()->getMsegPort());
+#endif
     m_tcpSocket->connectToHost(QHostAddress(serIP), serPort);
 
     m_timer = new QTimer(this);
@@ -101,7 +103,9 @@ void TcpClient::dealTimer()
             QString serIP = ConfigLoader::getInstance()->getTcpIP();
             int serPort   = ConfigLoader::getInstance()->getTcpPort();
             m_tcpSocket->abort();
+#if         (QT_VERSION >= QT_VERSION_CHECK(5,5,0))
             m_tcpSocket->bind(ConfigLoader::getInstance()->getMsegPort());
+#endif
             m_tcpSocket->connectToHost(QHostAddress(serIP), serPort);
         }
     }

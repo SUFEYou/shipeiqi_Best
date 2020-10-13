@@ -1,6 +1,8 @@
 #include "SocketManage.h"
 #include "Config/ConfigLoader.h"
 #include "Config/BoxConf.h"
+#include "UI/UIManager.h"
+#include "UI/WidgeBase.h"
 
 
 SocketManage* SocketManage::m_instance = NULL;
@@ -294,18 +296,36 @@ void SocketManage::setPttOn(bool value)
 
 void SocketManage::sendPtt(bool pttOn)
 {
-    if(voiceUdp1 != NULL){
-        voiceUdp1->sendVoicePTTSet(pttOn);
+    WidgeBase *base = UIManager::getInstance()->getCurrWidge();
+    //qDebug()<< "CurrIndex =" << base->getIndex()<<" ptt:"<<pttOn;
+    if(base->getIndex() == 5) {
+        if(voiceUdp1 != NULL){
+            voiceUdp1->sendVoicePTTSet(pttOn);
+        }
+        if(voiceUdp2 != NULL){
+            voiceUdp2->sendVoicePTTSet(pttOn);
+        }
+        if(voiceUdp3 != NULL){
+            voiceUdp3->sendVoicePTTSet(pttOn);
+        }
+        if(voiceUdp4 != NULL){
+            voiceUdp4->sendVoicePTTSet(pttOn);
+        }
+    } else {
+        if(base->getIndex() == 1 && voiceUdp1 != NULL){
+            voiceUdp1->sendVoicePTTSet(pttOn);
+        }
+        if(base->getIndex() == 2 && voiceUdp2 != NULL){
+            voiceUdp2->sendVoicePTTSet(pttOn);
+        }
+        if(base->getIndex() == 3 && voiceUdp3 != NULL){
+            voiceUdp3->sendVoicePTTSet(pttOn);
+        }
+        if(base->getIndex() == 4 && voiceUdp4 != NULL){
+            voiceUdp4->sendVoicePTTSet(pttOn);
+        }
     }
-    if(voiceUdp2 != NULL){
-        voiceUdp2->sendVoicePTTSet(pttOn);
-    }
-    if(voiceUdp3 != NULL){
-        voiceUdp3->sendVoicePTTSet(pttOn);
-    }
-    if(voiceUdp4 != NULL){
-        voiceUdp4->sendVoicePTTSet(pttOn);
-    }
+
 }
 
 
